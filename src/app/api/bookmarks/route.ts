@@ -4,19 +4,13 @@ import connectDB from '@/lib/mongodb';
 import Bookmark from '@/models/Bookmark';
 import Folder from '@/models/Folder';
 import { CreateBookmarkRequest } from '@/types';
-
-// Ensure models are registered
-const ensureModelsRegistered = () => {
-  if (!mongoose.models.Folder || !mongoose.models.Bookmark) {
-    throw new Error('Models not properly registered');
-  }
-};
+import { registerModels } from '@/lib/models';
 
 // POST /api/bookmarks - Create a new bookmark and add it to a folder
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     await connectDB();
-    ensureModelsRegistered();
+    const { Bookmark, Folder } = await registerModels();
     
     const body: CreateBookmarkRequest = await request.json();
     const { title, url, description, folderId } = body;
@@ -81,11 +75,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     const bookmark = new Bookmark(bookmarkData);
     await bookmark.save();
-    
-    // Add bookmark to folder
-    folder.bookmarks.push(bookmark._id);
+
+    // Add bookmark to folder, ensuring correct ObjectId type
+    if (bookmark._id && mongoose.Types.ObjectId.isValid(bookmark._id.toString())) {
+      folder.bookmarks.push(new mongoose.Types.ObjectId(bookmark._id.toString()));
+    } else {
+      return NextResponse.json(
+        { error: 'Invalid bookmark ID' },
+        { status: 500 }
+      );
+    }
     await folder.save();
-    
+
     return NextResponse.json({ bookmark }, { status: 201 });
   } catch (error) {
     console.error('Error creating bookmark:', error);

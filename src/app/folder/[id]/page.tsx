@@ -1,0 +1,296 @@
+"use client";
+
+import AddBookmarkDialog from '@/components/bookmark/AddBookmarkDialog';
+import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
+import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Bookmark, Folder } from '@/types';
+import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+const FolderDetailPage = () => {
+  const params = useParams();
+  const router = useRouter();
+  const folderId = params.id as string;
+
+  const [folder, setFolder] = useState<Folder | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showAddBookmark, setShowAddBookmark] = useState(false);
+  const [showEditFolder, setShowEditFolder] = useState(false);
+  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+
+  const fetchFolder = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const response = await fetch(`/api/folders/${folderId}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setFolder(data.folder);
+      } else {
+        setError(data.error || 'Failed to fetch folder');
+      }
+    } catch (error) {
+      setError('An error occurred while fetching folder');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (folderId) {
+      fetchFolder();
+    }
+  }, [folderId]);
+
+  const handleDeleteBookmark = async (bookmarkId: string) => {
+    if (!confirm('Are you sure you want to delete this bookmark?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchFolder();
+      } else {
+        console.error('Failed to delete bookmark');
+      }
+    } catch (error) {
+      console.error('Error deleting bookmark:', error);
+    }
+  };
+
+  const handleDeleteFolder = async () => {
+    if (!confirm('Are you sure you want to delete this folder and all its bookmarks?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/folders/${folderId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        router.push('/');
+      } else {
+        console.error('Failed to delete folder');
+      }
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="container flex flex-col items-center justify-center min-h-[90vh] text-center">
+        <div className="max-w-md">
+          <p className="text-destructive mb-4">{error || 'Folder not found'}</p>
+          <Button onClick={() => router.push('/')} variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!folder) {
+    return (
+      <div className="container flex flex-col items-center justify-center min-h-[90vh] text-center">
+        <div className="max-w-md">
+          <RefreshCw className="h-8 w-8 mx-auto animate-spin text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">Loading your bookmarks...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-8 space-y-8 mt-12 min-h-screen">
+      {/* Header */}
+      <Button
+        onClick={() => router.push('/')}
+        variant="outline"
+        size="sm"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: folder.color }}
+              />
+              {folder.name}
+            </h1>
+            {folder.description && (
+              <p className="text-muted-foreground mt-2">{folder.description}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={fetchFolder}
+            variant="outline"
+            size="sm"
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => setShowEditFolder(true)}
+            variant="outline"
+            size="sm"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Folder
+          </Button>
+          <Button
+            onClick={handleDeleteFolder}
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Folder
+          </Button>
+          <Button onClick={() => setShowAddBookmark(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Bookmark
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="border rounded-2xl bg-secondary/20 p-4">
+          <div className="text-2xl font-bold">{folder.bookmarks.length}</div>
+          <div className="text-sm text-muted-foreground">Total Bookmarks</div>
+        </div>
+        <div className="border rounded-2xl bg-secondary/20 p-4">
+          <div className="text-2xl font-bold">
+            {folder.bookmarks.filter(bookmark => bookmark.favicon).length}
+          </div>
+          <div className="text-sm text-muted-foreground">With Favicons</div>
+        </div>
+      </div>
+
+      {/* Bookmarks List */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">Loading your bookmarks...</p>
+        </div>
+      ) : (
+        folder.bookmarks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mb-4">
+              <Plus className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-md">
+              Get started by adding your first bookmark to this folder.
+            </p>
+            <Button onClick={() => setShowAddBookmark(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Your First Bookmark
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {folder.bookmarks.map((bookmark) => (
+              <Card key={bookmark._id} className="border rounded-2xl mb-2 bg-secondary/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <Link href={bookmark.url} target="_blank" key={bookmark._id}>
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <img
+                          src={bookmark.favicon || `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
+                          alt="Favicon"
+                          className="w-9 h-9 rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`;
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{bookmark.title}</h3>
+                          <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
+                          {bookmark.description && (
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {bookmark.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingBookmark(bookmark)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      {/* <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteBookmark(bookmark._id!)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button> */}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )
+      )}
+
+      {/* Dialogs */}
+      <AddBookmarkDialog
+        open={showAddBookmark}
+        onOpenChange={setShowAddBookmark}
+        folderId={folderId}
+        onSuccess={fetchFolder}
+      />
+
+      {
+        editingBookmark && (
+          <EditBookmarkDialog
+            open={!!editingBookmark}
+            onOpenChange={(open) => !open && setEditingBookmark(null)}
+            bookmark={editingBookmark}
+            onSuccess={() => {
+              fetchFolder();
+              setEditingBookmark(null);
+            }}
+          />
+        )
+      }
+
+      <EditFolderDialog
+        open={showEditFolder}
+        onOpenChange={setShowEditFolder}
+        folder={folder}
+        onSuccess={fetchFolder}
+      />
+    </div >
+  );
+};
+
+export default FolderDetailPage; 
