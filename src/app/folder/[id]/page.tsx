@@ -5,7 +5,7 @@ import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bookmark, Folder } from '@/types';
+import type { Bookmark, Folder } from '@/types';
 import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -29,14 +29,14 @@ const FolderDetailPage = () => {
       setError('');
 
       const response = await fetch(`/api/folders/${folderId}`);
-      const data = await response.json();
+      const data = await response.json() as { folder?: Folder; error?: string };
 
       if (response.ok) {
-        setFolder(data.folder);
+        setFolder(data.folder ?? null);
       } else {
-        setError(data.error || 'Failed to fetch folder');
+        setError(data.error ?? 'Failed to fetch folder');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred while fetching folder');
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ const FolderDetailPage = () => {
 
   useEffect(() => {
     if (folderId) {
-      fetchFolder();
+      void fetchFolder();
     }
   }, [folderId]);
 
@@ -60,7 +60,7 @@ const FolderDetailPage = () => {
       });
 
       if (response.ok) {
-        fetchFolder();
+        void fetchFolder();
       } else {
         console.error('Failed to delete bookmark');
       }
@@ -141,12 +141,12 @@ const FolderDetailPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={fetchFolder}
-            variant="outline"
-            size="sm"
-            disabled={loading}
-          >
+                  <Button
+          onClick={() => void fetchFolder()}
+          variant="outline"
+          size="sm"
+          disabled={loading}
+        >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -218,7 +218,7 @@ const FolderDetailPage = () => {
                     <Link href={bookmark.url} target="_blank" key={bookmark._id}>
                       <div className="flex items-center gap-4 flex-1 min-w-0">
                         <img
-                          src={bookmark.favicon || `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
+                          src={bookmark.favicon ?? `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
                           alt="Favicon"
                           className="w-9 h-9 rounded-lg"
                           onError={(e) => {
@@ -276,7 +276,7 @@ const FolderDetailPage = () => {
             onOpenChange={(open) => !open && setEditingBookmark(null)}
             bookmark={editingBookmark}
             onSuccess={() => {
-              fetchFolder();
+              void fetchFolder();
               setEditingBookmark(null);
             }}
           />

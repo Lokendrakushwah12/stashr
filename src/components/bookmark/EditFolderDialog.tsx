@@ -1,18 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Folder } from '@/types';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { Folder } from '@/types';
+import { useEffect, useState } from 'react';
 
 interface EditFolderDialogProps {
   open: boolean;
@@ -41,9 +34,9 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
 
   useEffect(() => {
     if (open && folder) {
-      setName(folder.name || '');
-      setDescription(folder.description || '');
-      setColor(folder.color || '#3B82F6');
+      setName(folder.name);
+      setDescription(folder.description ?? '');
+      setColor(folder.color ?? '#3B82F6');
       setError('');
     }
   }, [open, folder]);
@@ -54,28 +47,30 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
     setError('');
 
     try {
+      const folderData = {
+        name: name.trim(),
+        description: description.trim(),
+        color,
+      };
+
       const response = await fetch(`/api/folders/${folder._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim(),
-          color,
-        }),
+        body: JSON.stringify(folderData),
       });
 
-      const data = await response.json();
+      const data = await response.json() as { folder?: unknown; error?: string };
 
       if (response.ok) {
-        onOpenChange(false);
         onSuccess();
+        onOpenChange(false);
       } else {
-        setError(data.error || 'Failed to update folder');
+        setError(data.error ?? 'Failed to update folder');
       }
-    } catch (error) {
-      setError('An error occurred while updating the folder');
+    } catch {
+      setError('An error occurred while updating folder');
     } finally {
       setLoading(false);
     }
@@ -93,17 +88,15 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Folder</DialogTitle>
-          <DialogDescription>
-            Update your folder details.
-          </DialogDescription>
+          {/* DialogDescription is removed as per new_code */}
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {error && (
               <div className="text-sm text-destructive">{error}</div>
             )}
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-name">Folder Name *</Label>
               <Input
@@ -115,7 +108,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
                 disabled={loading}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-description">Description</Label>
               <Input
@@ -126,7 +119,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
                 disabled={loading}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Color</Label>
               <div className="flex gap-2 flex-wrap">
@@ -134,9 +127,8 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
                   <button
                     key={colorOption}
                     type="button"
-                    className={`w-8 h-8 rounded-full border-2 ${
-                      color === colorOption ? 'border-foreground' : 'border-transparent'
-                    }`}
+                    className={`w-8 h-8 rounded-full border-2 ${color === colorOption ? 'border-foreground' : 'border-transparent'
+                      }`}
                     style={{ backgroundColor: colorOption }}
                     onClick={() => setColor(colorOption)}
                     disabled={loading}
@@ -145,11 +137,11 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleClose}
               disabled={loading}
             >

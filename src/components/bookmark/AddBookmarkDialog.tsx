@@ -33,32 +33,34 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
     setError('');
 
     try {
+      const bookmarkData = {
+        title: title.trim(),
+        url: url.trim(),
+        description: description.trim(),
+        folderId,
+      };
+
       const response = await fetch('/api/bookmarks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: title.trim(),
-          url: url.trim(),
-          description: description.trim(),
-          folderId,
-        }),
+        body: JSON.stringify(bookmarkData),
       });
 
-      const data = await response.json();
+      const data = await response.json() as { bookmark?: unknown; error?: string };
 
       if (response.ok) {
+        onSuccess();
+        onOpenChange(false);
         setTitle('');
         setUrl('');
         setDescription('');
-        onOpenChange(false);
-        onSuccess();
       } else {
-        setError(data.error || 'Failed to create bookmark');
+        setError(data.error ?? 'Failed to create bookmark');
       }
-    } catch (error) {
-      setError('An error occurred while creating the bookmark');
+    } catch {
+      setError('An error occurred while creating bookmark');
     } finally {
       setLoading(false);
     }

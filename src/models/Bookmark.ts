@@ -1,15 +1,16 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import type { Document, Model } from 'mongoose';
+import mongoose from 'mongoose';
 
 export interface BookmarkDocument extends Document {
   title: string;
   url: string;
-  description?: string;
-  favicon?: string;
+  description: string;
+  favicon: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const BookmarkSchema = new Schema<BookmarkDocument>(
+const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
   {
     title: {
       type: String,
@@ -19,6 +20,7 @@ const BookmarkSchema = new Schema<BookmarkDocument>(
     url: {
       type: String,
       required: [true, 'Bookmark URL is required'],
+      trim: true,
       validate: {
         validator: function(v: string) {
           try {
@@ -33,11 +35,12 @@ const BookmarkSchema = new Schema<BookmarkDocument>(
     },
     description: {
       type: String,
+      default: '',
       trim: true,
     },
     favicon: {
       type: String,
-      trim: true,
+      default: '',
     },
   },
   {
@@ -45,6 +48,19 @@ const BookmarkSchema = new Schema<BookmarkDocument>(
   }
 );
 
-// Properly type the model
-const BookmarkModel: Model<BookmarkDocument> = mongoose.models.Bookmark || mongoose.model<BookmarkDocument>('Bookmark', BookmarkSchema);
-export default BookmarkModel; 
+// Pre-save middleware to set favicon if not provided
+bookmarkSchema.pre('save', function(next) {
+  if (!this.favicon && this.url) {
+    try {
+      const urlObj = new URL(this.url);
+      this.favicon = `${urlObj.protocol}//${urlObj.hostname}/favicon.ico`;
+    } catch {
+      // Invalid URL will be caught by mongoose validation
+    }
+  }
+  next();
+});
+
+export type BookmarkModel = Model<BookmarkDocument>;
+
+export default mongoose.models.Bookmark as BookmarkModel ?? mongoose.model<BookmarkDocument>('Bookmark', bookmarkSchema); 

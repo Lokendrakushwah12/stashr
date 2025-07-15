@@ -3,7 +3,7 @@
 import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import { Button } from "@/components/ui/button";
-import { Folder } from '@/types';
+import type { Folder } from '@/types';
 import { Bookmark, FolderClosed, FolderOpen, Plus, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -19,14 +19,14 @@ const Hero = () => {
       setError('');
 
       const response = await fetch('/api/folders');
-      const data = await response.json();
+      const data = await response.json() as { folders?: Folder[]; error?: string };
 
       if (response.ok) {
-        setFolders(data.folders || []);
+        setFolders(data.folders ?? []);
       } else {
-        setError(data.error || 'Failed to fetch folders');
+        setError(data.error ?? 'Failed to fetch folders');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred while fetching folders');
     } finally {
       setLoading(false);
@@ -34,7 +34,7 @@ const Hero = () => {
   };
 
   useEffect(() => {
-    fetchFolders();
+    void fetchFolders();
   }, []);
 
   if (error) {

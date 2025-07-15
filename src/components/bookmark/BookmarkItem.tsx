@@ -1,9 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import type { Bookmark } from '@/types';
+import { Edit, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Bookmark } from '@/types';
-import { ExternalLink, Edit, Trash2, MoreVertical } from 'lucide-react';
 import EditBookmarkDialog from './EditBookmarkDialog';
 
 interface BookmarkItemProps {
@@ -42,13 +42,13 @@ const BookmarkItem = ({ bookmark, onUpdate }: BookmarkItemProps) => {
   return (
     <>
       <div className="group flex items-center justify-between p-2 rounded-md hover:bg-accent/50 transition-colors">
-        <div 
+        <div
           className="flex items-center gap-2 flex-1 cursor-pointer"
           onClick={handleOpenLink}
         >
           {bookmark.favicon && (
-            <img 
-              src={bookmark.favicon} 
+            <img
+              src={bookmark.favicon}
               alt=""
               className="w-4 h-4 rounded-sm"
               onError={(e) => {
@@ -75,11 +75,11 @@ const BookmarkItem = ({ bookmark, onUpdate }: BookmarkItemProps) => {
               setShowActions(!showActions);
             }}
           >
-            <MoreVertical className="h-3 w-3" />
+            <MoreHorizontal className="h-3 w-3" />
           </Button>
 
           {showActions && (
-            <div 
+            <div
               className="absolute right-0 top-6 bg-background border rounded-md shadow-lg py-1 z-20"
               onMouseLeave={() => setShowActions(false)}
             >
@@ -102,7 +102,7 @@ const BookmarkItem = ({ bookmark, onUpdate }: BookmarkItemProps) => {
                 className="w-full justify-start px-3 py-1 text-xs text-destructive hover:text-destructive"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteBookmark();
+                  void handleDeleteBookmark();
                   setShowActions(false);
                 }}
               >

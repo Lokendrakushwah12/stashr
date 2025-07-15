@@ -1,13 +1,12 @@
 "use client";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Folder } from '@/types';
-import { Edit, FolderOpen, MoreVertical, Plus, Trash2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Folder } from '@/types';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AddBookmarkDialog from './AddBookmarkDialog';
-import BookmarkItem from './BookmarkItem';
 import EditFolderDialog from './EditFolderDialog';
 
 interface FolderCardProps {
@@ -102,7 +101,7 @@ const FolderCard = ({ folder, onUpdate }: FolderCardProps) => {
                                 className="w-full justify-start px-3 py-1 text-destructive hover:text-destructive"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteFolder();
+                                    void handleDeleteFolder();
                                     setShowActions(false);
                                 }}
                             >

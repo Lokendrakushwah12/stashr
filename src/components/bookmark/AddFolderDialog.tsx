@@ -43,31 +43,32 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
     setError('');
 
     try {
+      const folderData = {
+        name: name.trim(),
+        description: description.trim(),
+        color,
+      };
       const response = await fetch('/api/folders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim(),
-          color,
-        }),
+        body: JSON.stringify(folderData),
       });
 
-      const data = await response.json();
+      const data = await response.json() as { folder?: unknown; error?: string };
 
       if (response.ok) {
+        onSuccess();
+        onOpenChange(false);
         setName('');
         setDescription('');
         setColor('#3B82F6');
-        onOpenChange(false);
-        onSuccess();
       } else {
-        setError(data.error || 'Failed to create folder');
+        setError(data.error ?? 'Failed to create folder');
       }
-    } catch (error) {
-      setError('An error occurred while creating the folder');
+    } catch {
+      setError('An error occurred while creating folder');
     } finally {
       setLoading(false);
     }

@@ -1,18 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Bookmark } from '@/types';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { Bookmark } from '@/types';
 
 interface EditBookmarkDialogProps {
   open: boolean;
@@ -30,9 +23,9 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
 
   useEffect(() => {
     if (open && bookmark) {
-      setTitle(bookmark.title || '');
-      setUrl(bookmark.url || '');
-      setDescription(bookmark.description || '');
+      setTitle(bookmark.title);
+      setUrl(bookmark.url);
+      setDescription(bookmark.description ?? '');
       setError('');
     }
   }, [open, bookmark]);
@@ -43,28 +36,30 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
     setError('');
 
     try {
+      const bookmarkData = {
+        title: title.trim(),
+        url: url.trim(),
+        description: description.trim(),
+      };
+
       const response = await fetch(`/api/bookmarks/${bookmark._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: title.trim(),
-          url: url.trim(),
-          description: description.trim(),
-        }),
+        body: JSON.stringify(bookmarkData),
       });
 
-      const data = await response.json();
+      const data = await response.json() as { bookmark?: unknown; error?: string };
 
       if (response.ok) {
-        onOpenChange(false);
         onSuccess();
+        onOpenChange(false);
       } else {
-        setError(data.error || 'Failed to update bookmark');
+        setError(data.error ?? 'Failed to update bookmark');
       }
-    } catch (error) {
-      setError('An error occurred while updating the bookmark');
+    } catch {
+      setError('An error occurred while updating bookmark');
     } finally {
       setLoading(false);
     }

@@ -17,14 +17,24 @@ interface CachedConnection {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
+// eslint-disable-next-line no-var
 declare global {
-  var mongoose: CachedConnection | undefined;
+  var mongooseGlobal: CachedConnection | undefined;
 }
 
-let cached: CachedConnection = global.mongoose || { conn: null, promise: null };
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace NodeJS {
+    interface Global {
+      mongooseGlobal: CachedConnection | undefined;
+    }
+  }
+}
 
-if (!global.mongoose) {
-  global.mongoose = cached;
+const cached: CachedConnection = global.mongooseGlobal ?? { conn: null, promise: null };
+
+if (!global.mongooseGlobal) {
+  global.mongooseGlobal = cached;
 }
 
 async function connectDB(): Promise<typeof mongoose> {

@@ -1,9 +1,9 @@
 import { registerModels } from "@/lib/models";
 import connectDB from "@/lib/mongodb";
-import Folder from "@/models/Folder";
-import { CreateFolderRequest } from "@/types";
+import type { CreateFolderRequest } from "@/types";
 import mongoose from "mongoose";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 
 // GET /api/folders - Get all folders with their bookmarks
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await connectDB();
     const { Folder } = await registerModels();
 
-    const body: CreateFolderRequest = await request.json();
+    const body = await request.json() as CreateFolderRequest;
     const { name, description, color } = body;
 
     // Validate required fields
@@ -75,8 +75,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create new folder
     const folderData = {
       name: trimmedName,
-      description: description?.trim() || "",
-      color: color || "#3B82F6",
+      description: description?.trim() ?? "",
+      color: color ?? "#3B82F6",
       bookmarks: [],
     };
 

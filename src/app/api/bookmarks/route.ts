@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
-import Bookmark from '@/models/Bookmark';
-import Folder from '@/models/Folder';
-import { CreateBookmarkRequest } from '@/types';
+import type { CreateBookmarkRequest } from '@/types';
 import { registerModels } from '@/lib/models';
 
 // POST /api/bookmarks - Create a new bookmark and add it to a folder
@@ -12,7 +11,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await connectDB();
     const { Bookmark, Folder } = await registerModels();
     
-    const body: CreateBookmarkRequest = await request.json();
+    const body = await request.json() as CreateBookmarkRequest;
     const { title, url, description, folderId } = body;
     
     // Validate required fields
@@ -69,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const bookmarkData = {
       title: title.trim(),
       url: url.trim(),
-      description: description?.trim() || '',
+      description: description?.trim() ?? '',
       favicon,
     };
     
@@ -77,8 +76,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await bookmark.save();
 
     // Add bookmark to folder, ensuring correct ObjectId type
-    if (bookmark._id && mongoose.Types.ObjectId.isValid(bookmark._id.toString())) {
-      folder.bookmarks.push(new mongoose.Types.ObjectId(bookmark._id.toString()));
+    const bookmarkId = bookmark._id?.toString();
+    if (bookmarkId && mongoose.Types.ObjectId.isValid(bookmarkId)) {
+      folder.bookmarks.push(new mongoose.Types.ObjectId(bookmarkId));
     } else {
       return NextResponse.json(
         { error: 'Invalid bookmark ID' },

@@ -1,30 +1,26 @@
 import { registerModels } from '@/lib/models';
 import connectDB from '@/lib/mongodb';
 import Bookmark from '@/models/Bookmark';
-import { FolderDocument } from '@/models/Folder';
+import type { FolderDocument } from '@/models/Folder';
 import mongoose from 'mongoose';
-import { NextRequest, NextResponse } from 'next/server';
-
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // GET /api/folders/[id] - Get a specific folder with its bookmarks
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const resolvedParams = await params;
     await connectDB();
     const { Folder } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const folder = await Folder.findById(params.id)
+    const folder = await Folder.findById(resolvedParams.id)
       .populate("bookmarks")
       .lean()
       .exec();
@@ -54,17 +50,18 @@ export async function GET(
 // PUT /api/folders/[id] - Update a folder
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const resolvedParams = await params;
     await connectDB();
     const { Folder } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const body = await request.json();
+    const body = await request.json() as { name?: string; description?: string; color?: string };
     const { name, description, color } = body;
 
     // Validate input
@@ -86,7 +83,7 @@ export async function PUT(
     if (name) {
       const existingFolder = await Folder.findOne({
         name: name.trim(),
-        _id: { $ne: params.id },
+        _id: { $ne: resolvedParams.id },
       }).exec();
 
       if (existingFolder) {
@@ -101,10 +98,10 @@ export async function PUT(
     const updateData: Partial<FolderDocument> = {};
     if (name) updateData.name = name.trim();
     if (description !== undefined)
-      updateData.description = description?.trim() || "";
+      updateData.description = description?.trim() ?? "";
     if (color) updateData.color = color;
 
-    const folder = await Folder.findByIdAndUpdate(params.id, updateData, {
+    const folder = await Folder.findByIdAndUpdate(resolvedParams.id, updateData, {
       new: true,
       runValidators: true,
     })
@@ -146,17 +143,18 @@ export async function PUT(
 // DELETE /api/folders/[id] - Delete a folder and its bookmarks
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const resolvedParams = await params;
     await connectDB();
     const { Folder } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const folder = await Folder.findById(params.id).exec();
+    const folder = await Folder.findById(resolvedParams.id).exec();
     if (!folder) {
       return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
@@ -167,7 +165,7 @@ export async function DELETE(
     }
 
     // Delete the folder
-    await Folder.findByIdAndDelete(params.id).exec();
+    await Folder.findByIdAndDelete(resolvedParams.id).exec();
 
     return NextResponse.json(
       { message: "Folder and its bookmarks deleted successfully" },

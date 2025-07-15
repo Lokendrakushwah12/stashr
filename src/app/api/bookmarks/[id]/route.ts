@@ -2,7 +2,8 @@ import { registerModels } from '@/lib/models';
 import connectDB from '@/lib/mongodb';
 import Folder from '@/models/Folder';
 import mongoose from 'mongoose';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // PUT /api/bookmarks/[id] - Update a bookmark
 export async function PUT(
@@ -21,11 +22,11 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as { title?: string; url?: string; description?: string };
     const { title, url, description } = body;
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (title !== undefined) {
       if (!title.trim()) {
         return NextResponse.json(
@@ -66,7 +67,7 @@ export async function PUT(
     }
 
     if (description !== undefined) {
-      updateData.description = description?.trim() || "";
+      updateData.description = description?.trim() ?? "";
     }
 
     const bookmark = await Bookmark.findByIdAndUpdate(resolvedParams.id, updateData, {
