@@ -19,7 +19,7 @@ export default function SignInPage() {
   }, [session, router]);
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/" });
+    void signIn("google", { callbackUrl: "/" });
   };
 
   if (status === "loading") {
