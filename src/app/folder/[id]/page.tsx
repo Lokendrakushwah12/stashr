@@ -6,10 +6,11 @@ import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Bookmark, Folder } from '@/types';
+import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const FolderDetailPage = () => {
   const params = useParams();
@@ -22,6 +23,8 @@ const FolderDetailPage = () => {
   const [showAddBookmark, setShowAddBookmark] = useState(false);
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  const [showActions, setShowActions] = useState<string | null>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
 
   const fetchFolder = async () => {
     try {
@@ -48,6 +51,20 @@ const FolderDetailPage = () => {
       void fetchFolder();
     }
   }, [folderId]);
+
+  // Close actions menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
+        setShowActions(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     if (!confirm('Are you sure you want to delete this bookmark?')) {
@@ -198,11 +215,11 @@ const FolderDetailPage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {folder.bookmarks.map((bookmark) => (
-              <Card key={bookmark._id} className="border rounded-2xl mb-2 bg-secondary/20">
-                <CardContent className="p-4">
-                  <div className="flex w-full items-center justify-between">
-                    <Link href={bookmark.url} target="_blank" key={bookmark._id}>
-                      <div className="flex items-center gap-4">
+              <Card key={bookmark._id} className="rounded-2xl mb-2 bg-secondary/20">
+                <CardContent className="p-2 sm:p-4 w-full">
+                  <div className="flex w-full items-center">
+                    <Link href={bookmark.url} target="_blank" key={bookmark._id} className='w-full -mr-8'>
+                      <div className="flex items-center gap-2 sm:gap-4 w-full">
                         <img
                           src={bookmark.favicon ?? `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
                           alt="Favicon"
@@ -211,7 +228,7 @@ const FolderDetailPage = () => {
                             e.currentTarget.src = `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`;
                           }}
                         />
-                        <div className="max-w-xs">
+                        <div className="w-full overflow-hidden">
                           <h3 className="font-semibold truncate">{bookmark.title}</h3>
                           <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
                           {bookmark.description && (
@@ -222,22 +239,43 @@ const FolderDetailPage = () => {
                         </div>
                       </div>
                     </Link>
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-2 relative" ref={actionsRef}>
                       <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
-                        onClick={() => setEditingBookmark(bookmark)}
+                        className='size-9'
+                        onClick={() => setShowActions(showActions === bookmark._id ? null : bookmark._id!)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <DotsVerticalIcon />
                       </Button>
-                      {/* <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteBookmark(bookmark._id!)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button> */}
+                      {showActions === bookmark._id && (
+                        <div className="absolute right-0 top-full mt-1 bg-secondary/20 backdrop-blur-2xl border rounded-2xl shadow-lg p-1 z-10 min-w-[120px]">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              setEditingBookmark(bookmark);
+                              setShowActions(null);
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-destructive hover:text-destructive"
+                            onClick={() => {
+                              void handleDeleteBookmark(bookmark._id!);
+                              setShowActions(null);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -254,6 +292,7 @@ const FolderDetailPage = () => {
         folderId={folderId}
         onSuccess={fetchFolder}
       />
+
 
       {
         editingBookmark && (

@@ -56,7 +56,7 @@ const BookmarkItem = ({ bookmark, onUpdate }: BookmarkItemProps) => {
               }}
             />
           )}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 max-w-[200px] border">
             <p className="text-sm font-medium truncate">{bookmark.title}</p>
             {bookmark.description && (
               <p className="text-xs text-muted-foreground truncate">{bookmark.description}</p>

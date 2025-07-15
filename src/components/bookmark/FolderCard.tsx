@@ -1,13 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Folder } from '@/types';
-import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import AddBookmarkDialog from './AddBookmarkDialog';
-import EditFolderDialog from './EditFolderDialog';
 
 interface FolderCardProps {
     folder: Folder;
@@ -47,71 +43,16 @@ const FolderCard = ({ folder, onUpdate }: FolderCardProps) => {
     return (
         <>
             <Card
-                className="group relative rounded-2xl h-32 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                className="group relative rounded-2xl h-32 overflow-hidden transition-all duration-200 cursor-pointer"
                 style={{ background: `${folder.color}3A`, borderColor: `${folder.color}2A` }}
                 onClick={handleCardClick}
             >
-                <div
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onMouseLeave={() => setShowActions(false)}
-                >
-                    {/* <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setShowActions(!showActions);
-                        }}
-                    >
-                        <MoreVertical className="h-4 w-4" />
-                    </Button> */}
-
-                    {showActions && (
-                        <div className="absolute right-0 top-8 bg-background border rounded-md shadow-lg py-1 z-10">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start px-3 py-1"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAddBookmark(true);
-                                    setShowActions(false);
-                                }}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Bookmark
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start px-3 py-1"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowEditFolder(true);
-                                    setShowActions(false);
-                                }}
-                            >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit Folder
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start px-3 py-1 text-destructive hover:text-destructive"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    void handleDeleteFolder();
-                                    setShowActions(false);
-                                }}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                            </Button>
-                        </div>
-                    )}
+                <div className="border dark:border-white/10 w-[70%] h-[60%] bg-white/70 dark:bg-white/20 z-20 p-2 backdrop-blur-2xl rounded-tl-2xl absolute -bottom-1 -right-1" >
+                    <div className="w-[50%] h-[50%] bg-black/5 dark:bg-white/10 rounded-lg mb-2" />
+                    <div className="w-full h-[50%] bg-black/5 dark:bg-white/10 rounded-lg" />
                 </div>
-
+                <div className="border dark:border-white/10 w-[70%] h-[60%] scale-95 bg-white/70 dark:bg-white/20 z-10 backdrop-blur-2xl p-2 rounded-tl-2xl absolute bottom-1.5 -right-2" />
+                <div className="border dark:border-white/10 w-[70%] h-[60%] scale-90 bg-white/70 dark:bg-white/20 z-0 p-2 rounded-tl-2xl absolute bottom-3.5 -right-4" />
                 <CardHeader
                     className="pb-3"
                 >
@@ -130,20 +71,6 @@ const FolderCard = ({ folder, onUpdate }: FolderCardProps) => {
                     )}
                 </CardHeader>
             </Card>
-
-            <AddBookmarkDialog
-                open={showAddBookmark}
-                onOpenChange={setShowAddBookmark}
-                folderId={folder._id!}
-                onSuccess={onUpdate}
-            />
-
-            <EditFolderDialog
-                open={showEditFolder}
-                onOpenChange={setShowEditFolder}
-                folder={folder}
-                onSuccess={onUpdate}
-            />
         </>
     );
 };

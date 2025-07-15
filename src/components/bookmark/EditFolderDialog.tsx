@@ -91,7 +91,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
           {/* DialogDescription is removed as per new_code */}
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form className='p-3 pt-0 bg-background rounded-xl' onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {error && (
               <div className="text-sm text-destructive">{error}</div>
@@ -127,7 +127,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
                   <button
                     key={colorOption}
                     type="button"
-                    className={`w-8 h-8 rounded-full border-2 ${color === colorOption ? 'border-foreground' : 'border-transparent'
+                    className={`w-8 h-8 rounded-xl border-2 ${color === colorOption ? 'border-foreground/50' : 'border-transparent'
                       }`}
                     style={{ backgroundColor: colorOption }}
                     onClick={() => setColor(colorOption)}

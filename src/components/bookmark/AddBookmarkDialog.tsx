@@ -102,7 +102,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit}>
+        <form className='p-3 pt-0 bg-background rounded-xl' onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {error && (
               <div className="text-sm text-destructive">{error}</div>
