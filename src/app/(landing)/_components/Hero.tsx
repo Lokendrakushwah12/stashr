@@ -29,6 +29,19 @@ const Hero = () => {
           </Button>
         </div>
 
+        {/* dashboard image */}
+        <div className="relative max-w-7xl mx-auto">
+          <div className="absolute bottom-0 z-30 w-full h-60 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          <div className="relative rounded-t-2xl bg-[#09090b] overflow-hidden border border-border/50 border-b-0">
+            <img
+              src="/og.png"
+              alt="Stashr Dashboard Preview"
+              className="w-full h-auto object-cover scale-105 mt-5"
+              width={1200}
+              height={630}
+            />
+          </div>
+        </div>
 
       </div>
     </section>

@@ -6,9 +6,60 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Stashr",
-  description: "Stash/save all my Bookmarks in organized way",
-  icons: [{ rel: "icon", url: "/favicon.svg" }],
+  title: "Stashr - Modern Bookmark Management",
+  description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management built with Next.js.",
+  keywords: ["bookmarks", "organizer", "web", "folders", "management", "nextjs", "typescript"],
+  authors: [{ name: "Lokendra" }],
+  creator: "Lokendra",
+  publisher: "Stashr",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://stashr.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://stashr.vercel.app",
+    title: "Stashr - Modern Bookmark Management",
+    description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
+    siteName: "Stashr",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Stashr - Modern Bookmark Management",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stashr - Modern Bookmark Management",
+    description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
+    images: ["/og.png"],
+    creator: "@lokendratwt",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: [
+    { rel: "icon", url: "/favicon.svg" },
+    { rel: "apple-touch-icon", url: "/favicon.svg" },
+  ],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
