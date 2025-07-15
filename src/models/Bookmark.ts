@@ -6,6 +6,8 @@ export interface BookmarkDocument extends Document {
   url: string;
   description: string;
   favicon: string;
+  userId: string;
+  folderId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +43,16 @@ const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
     favicon: {
       type: String,
       default: '',
+    },
+    userId: {
+      type: String,
+      required: [true, 'User ID is required'],
+      index: true,
+    },
+    folderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Folder',
+      required: [true, 'Folder ID is required'],
     },
   },
   {

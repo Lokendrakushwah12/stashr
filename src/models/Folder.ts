@@ -5,6 +5,7 @@ export interface FolderDocument extends Document {
   name: string;
   description: string;
   color: string;
+  userId: string;
   bookmarks: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -16,7 +17,6 @@ const folderSchema = new mongoose.Schema<FolderDocument>(
       type: String,
       required: [true, 'Folder name is required'],
       trim: true,
-      unique: true,
     },
     description: {
       type: String,
@@ -33,6 +33,11 @@ const folderSchema = new mongoose.Schema<FolderDocument>(
         message: 'Please provide a valid hex color code'
       }
     },
+    userId: {
+      type: String,
+      required: [true, 'User ID is required'],
+      index: true,
+    },
     bookmarks: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Bookmark',
@@ -42,6 +47,9 @@ const folderSchema = new mongoose.Schema<FolderDocument>(
     timestamps: true,
   }
 );
+
+// Compound index to ensure unique folder names per user
+folderSchema.index({ userId: 1, name: 1 }, { unique: true });
 
 export type FolderModel = Model<FolderDocument>;
 

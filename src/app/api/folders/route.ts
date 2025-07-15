@@ -4,15 +4,25 @@ import type { CreateFolderRequest } from "@/types";
 import mongoose from "mongoose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-
-// GET /api/folders - Get all folders with their bookmarks
+// GET /api/folders - Get all folders with their bookmarks for the authenticated user
 export async function GET(): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     const { Folder } = await registerModels();
 
-    const folders = await Folder.find({})
+    const folders = await Folder.find({ userId: session.user.id })
       .populate("bookmarks")
       .sort({ createdAt: -1 })
       .lean()
@@ -36,9 +46,18 @@ export async function GET(): Promise<NextResponse> {
   }
 }
 
-// POST /api/folders - Create a new folder
+// POST /api/folders - Create a new folder for the authenticated user
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     const { Folder } = await registerModels();
 
@@ -49,67 +68,49 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!name?.trim()) {
       return NextResponse.json(
         { error: "Folder name is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const trimmedName = name.trim();
+    // Check if folder with same name already exists for this user
+    const existingFolder = await Folder.findOne({
+      userId: session.user.id,
+      name: name.trim()
+    }).exec();
 
-    // Check for existing folder with same name
-    const existingFolder = await Folder.findOne({ name: trimmedName }).exec();
     if (existingFolder) {
       return NextResponse.json(
-        { error: "Folder with this name already exists" },
-        { status: 409 },
+        { error: "A folder with this name already exists" },
+        { status: 409 }
       );
     }
 
-    // Validate color format if provided
-    if (color && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)) {
-      return NextResponse.json(
-        { error: "Please provide a valid hex color code" },
-        { status: 400 },
-      );
-    }
+    const folder = new Folder({
+      name: name.trim(),
+      description: description?.trim() || "",
+      color: color || "#3B82F6",
+      userId: session.user.id,
+    });
 
-    // Create new folder
-    const folderData = {
-      name: trimmedName,
-      description: description?.trim() ?? "",
-      color: color ?? "#3B82F6",
-      bookmarks: [],
-    };
-
-    const folder = new Folder(folderData);
     await folder.save();
 
-    // Populate bookmarks and return
-    await folder.populate("bookmarks");
-
-    return NextResponse.json({ folder }, { status: 201 });
+    return NextResponse.json(
+      { folder: folder.toObject() },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating folder:", error);
-
-    if (error instanceof mongoose.Error.ValidationError) {
-      const validationErrors = Object.values(error.errors).map(
-        (err) => err.message,
-      );
-      return NextResponse.json(
-        { error: "Validation failed", details: validationErrors },
-        { status: 400 },
-      );
-    }
 
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to create folder: ${error.message}` },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
       { error: "Failed to create folder" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

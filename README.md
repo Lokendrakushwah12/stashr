@@ -3,10 +3,11 @@
   <h1>Stashr</h1>
 </div>
 
-A modern, fast, and beautiful bookmark management application built with Next.js, TypeScript, and MongoDB. Organize your web bookmarks into colorful folders with an intuitive interface.
+A modern, fast, and beautiful bookmark management application built with Next.js, TypeScript, and MongoDB. Organize your web bookmarks into colorful folders with an intuitive interface and secure user authentication.
 
 ## ✨ Features
 
+- **🔐 User Authentication**: Secure login with Google OAuth using NextAuth.js
 - **📁 Folder Organization**: Create and manage bookmark folders with custom colors
 - **🔖 Smart Bookmarks**: Automatic favicon detection and URL validation
 - **🎨 Beautiful UI**: Modern, responsive design with dark/light theme support
@@ -14,10 +15,12 @@ A modern, fast, and beautiful bookmark management application built with Next.js
 - **📱 Mobile Friendly**: Responsive design that works on all devices
 - **🔍 Easy Search**: Quick access to your organized bookmarks
 - **🔄 Real-time Updates**: Instant feedback when adding or editing bookmarks
+- **🔒 Data Privacy**: Each user's bookmarks are completely isolated
 
 ## 🚀 Tech Stack
 
 - **Frontend**: Next.js 15, React 18, TypeScript
+- **Authentication**: NextAuth.js with Google OAuth
 - **Styling**: Tailwind CSS, Radix UI Components
 - **Database**: MongoDB with Mongoose ODM
 - **Animations**: Framer Motion
@@ -43,103 +46,138 @@ A modern, fast, and beautiful bookmark management application built with Next.js
    cp env.example .env.local
    ```
    
-   Edit `.env.local` and add your MongoDB connection string:
-   ```env
-   MONGODB_URI=mongodb://localhost:27017/stashr
-   # or for MongoDB Atlas:
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/stashr
-   ```
+   Fill in the following variables in `.env.local`:
+   - `MONGODB_URI`: Your MongoDB connection string
+   - `NEXTAUTH_URL`: Your app URL (http://localhost:3000 for development)
+   - `NEXTAUTH_SECRET`: A random secret key (generate with `openssl rand -base64 32`)
+   - `GOOGLE_CLIENT_ID`: Google OAuth client ID
+   - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
 
-4. **Run the development server**
+4. **Set up Google OAuth**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Enable the Google+ API
+   - Go to "Credentials" and create an OAuth 2.0 Client ID
+   - Add `http://localhost:3000/api/auth/callback/google` to authorized redirect URIs
+   - Copy the Client ID and Client Secret to your `.env.local` file
+
+5. **Run the development server**
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
+6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🛠️ Available Scripts
+## 🔧 Development
 
-- `npm run dev` - Start development server with Turbo
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors
-- `npm run typecheck` - Run TypeScript type checking
-- `npm run format:write` - Format code with Prettier
-- `npm run format:check` - Check code formatting
+```bash
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Run linting
+npm run lint
+
+# Run type checking
+npm run typecheck
+```
 
 ## 📁 Project Structure
 
 ```
 stashr/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── (landing)/         # Landing page components
+│   ├── app/                    # Next.js app directory
 │   │   ├── api/               # API routes
-│   │   │   ├── bookmarks/     # Bookmark CRUD operations
-│   │   │   └── folders/       # Folder CRUD operations
-│   │   └── folder/            # Folder detail pages
-│   ├── components/            # Reusable UI components
-│   │   ├── bookmark/          # Bookmark-specific components
-│   │   ├── ui/               # Base UI components (shadcn/ui)
-│   │   └── layouts/          # Layout components
-│   ├── lib/                  # Utility libraries
-│   ├── models/               # MongoDB/Mongoose models
+│   │   │   ├── auth/          # NextAuth.js routes
+│   │   │   ├── bookmarks/     # Bookmark API endpoints
+│   │   │   └── folders/       # Folder API endpoints
+│   │   ├── auth/              # Authentication pages
+│   │   ├── folder/            # Protected folder management
+│   │   └── (landing)/         # Public landing page
+│   ├── components/            # React components
+│   │   ├── auth/              # Authentication components
+│   │   ├── bookmark/          # Bookmark management components
+│   │   ├── layouts/           # Layout components
+│   │   └── ui/                # Reusable UI components
+│   ├── lib/                   # Utility libraries
+│   │   ├── auth.ts           # NextAuth configuration
+│   │   ├── mongodb.ts        # Database connection
+│   │   └── utils.ts          # Utility functions
+│   ├── models/               # Mongoose models
 │   └── types/                # TypeScript type definitions
 ├── public/                   # Static assets
-└── styles/                   # Global styles
+└── middleware.ts            # NextAuth middleware
 ```
+
+## 🔐 Authentication
+
+Stashr uses NextAuth.js with Google OAuth for secure user authentication. Each user's bookmarks and folders are completely isolated and protected.
+
+### Features:
+- **Google OAuth**: One-click sign-in with Google
+- **Session Management**: Secure session handling with JWT
+- **Route Protection**: Middleware protects all bookmark management routes
+- **User Isolation**: Each user can only access their own data
 
 ## 🗄️ Database Schema
 
-### Folder Model
-- `name` (required): Unique folder name
+### User (Managed by NextAuth.js)
+- `id`: Unique user identifier
+- `name`: User's display name
+- `email`: User's email address
+- `image`: User's profile picture
+
+### Folder
+- `name`: Folder name (unique per user)
 - `description`: Optional folder description
 - `color`: Hex color code for folder styling
-- `bookmarks`: Array of bookmark ObjectIds
-- `createdAt` / `updatedAt`: Timestamps
+- `userId`: Reference to the user who owns the folder
+- `bookmarks`: Array of bookmark IDs
+- `createdAt`, `updatedAt`: Timestamps
 
-### Bookmark Model
-- `title` (required): Bookmark title
-- `url` (required): Valid URL with automatic validation
+### Bookmark
+- `title`: Bookmark title
+- `url`: Bookmark URL
 - `description`: Optional bookmark description
-- `favicon`: Auto-generated favicon URL
-- `createdAt` / `updatedAt`: Timestamps
+- `favicon`: Automatic favicon URL
+- `userId`: Reference to the user who owns the bookmark
+- `folderId`: Reference to the folder containing the bookmark
+- `createdAt`, `updatedAt`: Timestamps
 
-## 🎯 Usage
+## 🚀 Deployment
 
-### Creating Folders
-1. Click the "Add Folder" button
-2. Enter a folder name and optional description
-3. Choose a color for your folder
-4. Click "Create Folder"
+### Vercel (Recommended)
 
-### Adding Bookmarks
-1. Navigate to a folder
-2. Click "Add Bookmark"
-3. Enter the URL (title and favicon are auto-detected)
-4. Add an optional description
-5. Click "Add Bookmark"
+1. **Push to GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
 
-### Managing Bookmarks
-- Edit bookmarks by clicking the edit icon
-- Delete bookmarks with the delete button
-- Organize bookmarks by moving them between folders
+2. **Deploy to Vercel**
+   - Connect your GitHub repository to Vercel
+   - Add environment variables in Vercel dashboard
+   - Deploy automatically on push
 
-## 🔧 Configuration
+3. **Update Google OAuth**
+   - Add your production domain to Google OAuth redirect URIs
+   - Update `NEXTAUTH_URL` in environment variables
 
-### Environment Variables
+### Other Platforms
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `MONGODB_URI` | MongoDB connection string | Yes |
-
-### Customization
-
-- **Colors**: Modify the default folder colors in `src/models/Folder.ts`
-- **Styling**: Customize the design system in `tailwind.config.ts`
-- **Components**: Extend UI components in `src/components/ui/`
+The app can be deployed to any platform that supports Next.js:
+- Netlify
+- Railway
+- DigitalOcean App Platform
+- AWS Amplify
 
 ## 🤝 Contributing
 
@@ -149,16 +187,20 @@ stashr/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
-- UI components from [Radix UI](https://www.radix-ui.com/)
-- Styling with [Tailwind CSS](https://tailwindcss.com/)
-- Icons from [Lucide](https://lucide.dev/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Icons from [Lucide React](https://lucide.dev/)
+- Authentication with [NextAuth.js](https://next-auth.js.org/)
+- Database with [MongoDB](https://www.mongodb.com/)
+
 ---
 
-Made with ❤️ and minimalism.
+<div align="center">
+  <p>Made with ❤️ by <a href="https://x.com/lokendratwt">Lokendra</a></p>
+</div>

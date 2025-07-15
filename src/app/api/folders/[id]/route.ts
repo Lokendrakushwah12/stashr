@@ -5,13 +5,24 @@ import type { FolderDocument } from '@/models/Folder';
 import mongoose from 'mongoose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-// GET /api/folders/[id] - Get a specific folder with its bookmarks
+// GET /api/folders/[id] - Get a specific folder with its bookmarks for the authenticated user
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const resolvedParams = await params;
     await connectDB();
     const { Folder } = await registerModels();
@@ -20,7 +31,10 @@ export async function GET(
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const folder = await Folder.findById(resolvedParams.id)
+    const folder = await Folder.findOne({
+      _id: resolvedParams.id,
+      userId: session.user.id
+    })
       .populate("bookmarks")
       .lean()
       .exec();
@@ -47,12 +61,21 @@ export async function GET(
   }
 }
 
-// PUT /api/folders/[id] - Update a folder
+// PUT /api/folders/[id] - Update a folder for the authenticated user
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const resolvedParams = await params;
     await connectDB();
     const { Folder } = await registerModels();
@@ -79,16 +102,17 @@ export async function PUT(
       );
     }
 
-    // Check if name already exists (excluding current folder)
+    // Check if name already exists for this user (excluding current folder)
     if (name) {
       const existingFolder = await Folder.findOne({
         name: name.trim(),
+        userId: session.user.id,
         _id: { $ne: resolvedParams.id },
       }).exec();
 
       if (existingFolder) {
         return NextResponse.json(
-          { error: "Folder with this name already exists" },
+          { error: "A folder with this name already exists" },
           { status: 409 },
         );
       }
@@ -101,10 +125,14 @@ export async function PUT(
       updateData.description = description?.trim() ?? "";
     if (color) updateData.color = color;
 
-    const folder = await Folder.findByIdAndUpdate(resolvedParams.id, updateData, {
-      new: true,
-      runValidators: true,
-    })
+    const folder = await Folder.findOneAndUpdate(
+      { _id: resolvedParams.id, userId: session.user.id },
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
       .populate("bookmarks")
       .exec();
 
@@ -140,12 +168,21 @@ export async function PUT(
   }
 }
 
-// DELETE /api/folders/[id] - Delete a folder and its bookmarks
+// DELETE /api/folders/[id] - Delete a folder and its bookmarks for the authenticated user
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const resolvedParams = await params;
     await connectDB();
     const { Folder } = await registerModels();
@@ -154,14 +191,21 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const folder = await Folder.findById(resolvedParams.id).exec();
+    const folder = await Folder.findOne({
+      _id: resolvedParams.id,
+      userId: session.user.id
+    }).exec();
+    
     if (!folder) {
       return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
 
-    // Delete all bookmarks in this folder
+    // Delete all bookmarks in this folder that belong to the user
     if (folder.bookmarks.length > 0) {
-      await Bookmark.deleteMany({ _id: { $in: folder.bookmarks } }).exec();
+      await Bookmark.deleteMany({ 
+        _id: { $in: folder.bookmarks },
+        userId: session.user.id
+      }).exec();
     }
 
     // Delete the folder

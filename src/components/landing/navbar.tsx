@@ -1,11 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import UserMenu from "../auth/user-menu";
 import { ThemeToggle } from "../layouts/theme-toggle";
+import { Button } from "../ui/button";
 import { StashrLogo } from "../ui/icons";
 
 const Navbar = () => {
+  const { data: session, status } = useSession();
+
   return (
     <div className="relative h-full w-full">
       <header
@@ -17,7 +22,7 @@ const Navbar = () => {
           <div className="sticky inset-x-0 flex w-full items-center justify-between">
             <div className="flex items-center gap-6 lg:flex-none">
               <Link
-                href="/"
+                href={session ? "/folder" : "/"}
                 className="flex items-center gap-2 text-lg font-semibold text-foreground"
               >
                 <StashrLogo width={20} />
@@ -27,6 +32,15 @@ const Navbar = () => {
           </div>
           <div className="flex items-center justify-center space-x-4 py-4">
             <ThemeToggle />
+            {status === "loading" ? (
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            ) : session ? (
+              <UserMenu />
+            ) : (
+              <Button asChild size="sm">
+                <Link href="/auth/signin">Sign In</Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>

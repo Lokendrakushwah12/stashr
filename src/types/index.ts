@@ -4,6 +4,8 @@ export interface Bookmark {
   url: string;
   description?: string;
   favicon?: string;
+  userId?: string;
+  folderId?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -13,6 +15,7 @@ export interface Folder {
   name: string;
   description?: string;
   color?: string;
+  userId?: string;
   bookmarks: Bookmark[];
   createdAt?: Date;
   updatedAt?: Date;
@@ -29,4 +32,27 @@ export interface CreateBookmarkRequest {
   url: string;
   description?: string;
   folderId: string;
+}
+
+export interface User {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
+
+declare module "next-auth" {
+  interface Session {
+    user: User;
+  }
+  
+  interface User {
+    id: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+  }
 } 

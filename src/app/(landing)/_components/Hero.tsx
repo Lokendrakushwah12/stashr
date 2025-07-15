@@ -1,146 +1,80 @@
 "use client";
 
-import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
-import FolderCard from '@/components/bookmark/FolderCard';
 import { Button } from "@/components/ui/button";
-import type { Folder } from '@/types';
-import { Bookmark, FolderClosed, FolderOpen, Plus, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { StashrLogo } from "@/components/ui/icons";
+import { Bookmark, FolderClosed, Plus, RefreshCw } from 'lucide-react';
+import Link from "next/link";
 
 const Hero = () => {
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddFolder, setShowAddFolder] = useState(false);
-  const [error, setError] = useState('');
+  return (
+    <section className="container flex flex-col items-center justify-center min-h-[60vh] text-center">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-center mb-8">
+          <StashrLogo width={80} />
+        </div>
+        
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          Organize Your Bookmarks
+        </h1>
+        
+        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Stashr helps you organize your web bookmarks into beautiful, colorful folders. 
+          Never lose track of your favorite websites again.
+        </p>
 
-  const fetchFolders = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await fetch('/api/folders');
-      const data = await response.json() as { folders?: Folder[]; error?: string };
-
-      if (response.ok) {
-        setFolders(data.folders ?? []);
-      } else {
-        setError(data.error ?? 'Failed to fetch folders');
-      }
-    } catch {
-      setError('An error occurred while fetching folders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void fetchFolders();
-  }, []);
-
-  if (error) {
-    return (
-      <section className="container flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="max-w-md">
-          <p className="text-destructive mb-4">{error}</p>
-          <Button onClick={fetchFolders} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <Button asChild size="lg" className="text-lg px-8 py-6">
+            <Link href="/auth/signin">
+              Get Started
+            </Link>
+          </Button>
+          <Button variant="outline" asChild size="lg" className="text-lg px-8 py-6">
+            <Link href="#features">
+              Learn More
+            </Link>
           </Button>
         </div>
-      </section>
-    );
-  }
 
-  return (
-    <>
-      <section className="container space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Your Bookmarks</h1>
-            <p className="text-muted-foreground mt-2">
-              Organize and manage your web bookmarks in folders
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={fetchFolders}
-              variant="outline"
-              size="sm"
-              disabled={loading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button onClick={() => setShowAddFolder(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Folder
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="border relative rounded-2xl bg-secondary/20 p-4">
-            <div className="absolute right-2 top-2 p-2 bg-accent rounded-xl">
-              <FolderClosed className="h-5 w-5" />
-            </div>
-            <div className="text-3xl font-bold">{folders.length}</div>
-            <div className="text-sm text-muted-foreground">Total Folders</div>
-          </div>
-          <div className="border relative rounded-2xl bg-secondary/20 p-4">
-            <div className="absolute right-2 top-2 p-2 bg-accent rounded-xl">
-              <Bookmark className="h-5 w-5" />
-            </div>
-            <div className="text-3xl font-bold">
-              {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
-            </div>
-            <div className="text-sm text-muted-foreground">Total Bookmarks</div>
-          </div>
-        </div>
-
-        {/* Folders Grid */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Loading your bookmarks...</p>
-          </div>
-        ) : (
-          folders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mb-4">
-                <Plus className="h-8 w-8 text-muted-foreground" />
+        <div id="features" className="grid md:grid-cols-3 gap-6 mt-16">
+          <Card className="text-center">
+            <CardHeader>
+              <div className="flex justify-center mb-4">
+                <FolderClosed className="h-12 w-12 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No folders yet</h3>
-              <p className="text-muted-foreground mb-6 max-w-md">
-                Get started by creating your first folder to organize your bookmarks.
-              </p>
-              <Button onClick={() => setShowAddFolder(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Folder
-              </Button>
-            </div>
-          ) : (
+              <CardTitle>Organized Folders</CardTitle>
+              <CardDescription>
+                Create colorful folders to categorize your bookmarks by topic, project, or any way you prefer.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {folders.map((folder) => (
-                <FolderCard
-                  key={folder._id}
-                  folder={folder}
-                  onUpdate={fetchFolders}
-                />
-              ))}
-            </div>
-          )
-        )}
-      </section>
+          <Card className="text-center">
+            <CardHeader>
+              <div className="flex justify-center mb-4">
+                <Bookmark className="h-12 w-12 text-primary" />
+              </div>
+              <CardTitle>Smart Bookmarks</CardTitle>
+              <CardDescription>
+                Automatic favicon detection and URL validation ensure your bookmarks are always accessible.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-      <AddFolderDialog
-        open={showAddFolder}
-        onOpenChange={setShowAddFolder}
-        onSuccess={fetchFolders}
-      />
-    </>
+          <Card className="text-center">
+            <CardHeader>
+              <div className="flex justify-center mb-4">
+                <Plus className="h-12 w-12 text-primary" />
+              </div>
+              <CardTitle>Easy Management</CardTitle>
+              <CardDescription>
+                Add, edit, and organize your bookmarks with an intuitive and beautiful interface.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+    </section>
   );
 };
 

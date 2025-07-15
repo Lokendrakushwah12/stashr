@@ -1,11 +1,36 @@
+"use client";
+
+import { Loader } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Hero from "./_components/Hero";
 
-const HomePage = () => {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-start pt-24 text-foreground">
-      <Hero />
-    </main>
-  );
-};
+export default function LandingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-export default HomePage;
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/folder");
+    }
+  }, [session, status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+      </div>
+    );
+  }
+
+  if (status === "authenticated") {
+    return null;
+  }
+
+  return (
+    <div className="relative">
+      <Hero />
+    </div>
+  );
+}

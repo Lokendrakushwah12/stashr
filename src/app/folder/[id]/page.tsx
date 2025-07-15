@@ -5,12 +5,18 @@ import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Bookmark, Folder } from '@/types';
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 const FolderDetailPage = () => {
   const params = useParams();
@@ -23,8 +29,6 @@ const FolderDetailPage = () => {
   const [showAddBookmark, setShowAddBookmark] = useState(false);
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
-  const [showActions, setShowActions] = useState<string | null>(null);
-  const actionsRef = useRef<HTMLDivElement>(null);
 
   const fetchFolder = async () => {
     try {
@@ -51,20 +55,6 @@ const FolderDetailPage = () => {
       void fetchFolder();
     }
   }, [folderId]);
-
-  // Close actions menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
-        setShowActions(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     if (!confirm('Are you sure you want to delete this bookmark?')) {
@@ -239,44 +229,33 @@ const FolderDetailPage = () => {
                         </div>
                       </div>
                     </Link>
-                    <div className="flex items-center gap-2 relative" ref={actionsRef}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className='size-9'
-                        onClick={() => setShowActions(showActions === bookmark._id ? null : bookmark._id!)}
-                      >
-                        <DotsVerticalIcon />
-                      </Button>
-                      {showActions === bookmark._id && (
-                        <div className="absolute right-0 top-full mt-1 bg-secondary/20 backdrop-blur-2xl border rounded-2xl shadow-lg p-1 z-10 min-w-[120px]">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start"
-                            onClick={() => {
-                              setEditingBookmark(bookmark);
-                              setShowActions(null);
-                            }}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start text-destructive hover:text-destructive"
-                            onClick={() => {
-                              void handleDeleteBookmark(bookmark._id!);
-                              setShowActions(null);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className='size-9'
+                        >
+                          <DotsVerticalIcon />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-32 rounded-2xl">
+                        <DropdownMenuItem
+                          onClick={() => setEditingBookmark(bookmark)}
+                          className="cursor-pointer rounded-xl"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => void handleDeleteBookmark(bookmark._id!)}
+                          className="text-destructive focus:text-destructive cursor-pointer rounded-xl"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardContent>
               </Card>
@@ -293,20 +272,17 @@ const FolderDetailPage = () => {
         onSuccess={fetchFolder}
       />
 
-
-      {
-        editingBookmark && (
-          <EditBookmarkDialog
-            open={!!editingBookmark}
-            onOpenChange={(open) => !open && setEditingBookmark(null)}
-            bookmark={editingBookmark}
-            onSuccess={() => {
-              void fetchFolder();
-              setEditingBookmark(null);
-            }}
-          />
-        )
-      }
+      {editingBookmark && (
+        <EditBookmarkDialog
+          open={!!editingBookmark}
+          onOpenChange={(open) => !open && setEditingBookmark(null)}
+          bookmark={editingBookmark}
+          onSuccess={() => {
+            void fetchFolder();
+            setEditingBookmark(null);
+          }}
+        />
+      )}
 
       <EditFolderDialog
         open={showEditFolder}
@@ -314,7 +290,7 @@ const FolderDetailPage = () => {
         folder={folder}
         onSuccess={fetchFolder}
       />
-    </div >
+    </div>
   );
 };
 

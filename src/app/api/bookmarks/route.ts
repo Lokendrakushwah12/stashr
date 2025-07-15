@@ -4,10 +4,21 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import type { CreateBookmarkRequest } from '@/types';
 import { registerModels } from '@/lib/models';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-// POST /api/bookmarks - Create a new bookmark and add it to a folder
+// POST /api/bookmarks - Create a new bookmark and add it to a folder for the authenticated user
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     const { Bookmark, Folder } = await registerModels();
     
@@ -46,8 +57,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
     
-    // Check if folder exists
-    const folder = await Folder.findById(folderId).exec();
+    // Check if folder exists and belongs to the user
+    const folder = await Folder.findOne({
+      _id: folderId,
+      userId: session.user.id
+    }).exec();
+    
     if (!folder) {
       return NextResponse.json(
         { error: 'Folder not found' },
@@ -64,40 +79,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Invalid URL will be caught by mongoose validation
     }
     
-    // Create bookmark
-    const bookmarkData = {
+    // Create new bookmark
+    const bookmark = new Bookmark({
       title: title.trim(),
       url: url.trim(),
-      description: description?.trim() ?? '',
+      description: description?.trim() || '',
       favicon,
-    };
+      userId: session.user.id,
+      folderId,
+    });
     
-    const bookmark = new Bookmark(bookmarkData);
     await bookmark.save();
-
-    // Add bookmark to folder, ensuring correct ObjectId type
-    const bookmarkId = bookmark._id?.toString();
-    if (bookmarkId && mongoose.Types.ObjectId.isValid(bookmarkId)) {
-      folder.bookmarks.push(new mongoose.Types.ObjectId(bookmarkId));
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid bookmark ID' },
-        { status: 500 }
-      );
-    }
+    
+    // Add bookmark to folder
+    folder.bookmarks.push(bookmark._id);
     await folder.save();
-
-    return NextResponse.json({ bookmark }, { status: 201 });
+    
+    // Populate folder reference and return
+    await bookmark.populate('folderId');
+    
+    return NextResponse.json(
+      { bookmark: bookmark.toObject() },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating bookmark:', error);
-    
-    if (error instanceof mongoose.Error.ValidationError) {
-      const validationErrors = Object.values(error.errors).map(err => err.message);
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationErrors },
-        { status: 400 }
-      );
-    }
     
     if (error instanceof Error) {
       return NextResponse.json(

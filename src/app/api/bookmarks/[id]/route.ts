@@ -1,51 +1,46 @@
 import { registerModels } from '@/lib/models';
 import connectDB from '@/lib/mongodb';
-import Folder from '@/models/Folder';
 import mongoose from 'mongoose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-// PUT /api/bookmarks/[id] - Update a bookmark
+// PUT /api/bookmarks/[id] - Update a bookmark for the authenticated user
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const resolvedParams = await params;
     await connectDB();
     const { Bookmark } = await registerModels();
 
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json(
-        { error: "Invalid bookmark ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid bookmark ID" }, { status: 400 });
     }
 
     const body = await request.json() as { title?: string; url?: string; description?: string };
     const { title, url, description } = body;
 
-    // Build update data
-    const updateData: Record<string, unknown> = {};
-    if (title !== undefined) {
-      if (!title.trim()) {
-        return NextResponse.json(
-          { error: "Bookmark title cannot be empty" },
-          { status: 400 },
-        );
-      }
-      updateData.title = title.trim();
+    // Validate input
+    if (title && !title.trim()) {
+      return NextResponse.json(
+        { error: "Bookmark title cannot be empty" },
+        { status: 400 },
+      );
     }
 
-    if (url !== undefined) {
-      if (!url.trim()) {
-        return NextResponse.json(
-          { error: "Bookmark URL cannot be empty" },
-          { status: 400 },
-        );
-      }
-
-      // Validate URL format
+    if (url) {
       try {
         new URL(url.trim());
       } catch {
@@ -54,10 +49,16 @@ export async function PUT(
           { status: 400 },
         );
       }
+    }
 
-      updateData.url = url.trim();
+    // Build update data
+    const updateData: any = {};
+    if (title) updateData.title = title.trim();
+    if (url) updateData.url = url.trim();
+    if (description !== undefined) updateData.description = description?.trim() || '';
 
-      // Update favicon if URL changed
+    // Try to get favicon from URL if updated
+    if (url) {
       try {
         const urlObj = new URL(url.trim());
         updateData.favicon = `${urlObj.protocol}//${urlObj.hostname}/favicon.ico`;
@@ -66,20 +67,19 @@ export async function PUT(
       }
     }
 
-    if (description !== undefined) {
-      updateData.description = description?.trim() ?? "";
-    }
-
-    const bookmark = await Bookmark.findByIdAndUpdate(resolvedParams.id, updateData, {
-      new: true,
-      runValidators: true,
-    }).exec();
+    const bookmark = await Bookmark.findOneAndUpdate(
+      { _id: resolvedParams.id, userId: session.user.id },
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+      .populate('folderId')
+      .exec();
 
     if (!bookmark) {
-      return NextResponse.json(
-        { error: "Bookmark not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
     }
 
     return NextResponse.json({ bookmark }, { status: 200 });
@@ -110,35 +110,42 @@ export async function PUT(
   }
 }
 
-// DELETE /api/bookmarks/[id] - Delete a bookmark
+// DELETE /api/bookmarks/[id] - Delete a bookmark for the authenticated user
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const resolvedParams = await params;
     await connectDB();
-    const { Bookmark } = await registerModels();
+    const { Bookmark, Folder } = await registerModels();
 
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json(
-        { error: "Invalid bookmark ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid bookmark ID" }, { status: 400 });
     }
 
-    const bookmark = await Bookmark.findById(resolvedParams.id).exec();
+    const bookmark = await Bookmark.findOne({
+      _id: resolvedParams.id,
+      userId: session.user.id
+    }).exec();
+    
     if (!bookmark) {
-      return NextResponse.json(
-        { error: "Bookmark not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
     }
 
-    // Remove bookmark from all folders
-    await Folder.updateMany(
-      { bookmarks: resolvedParams.id },
-      { $pull: { bookmarks: resolvedParams.id } },
+    // Remove bookmark from folder
+    await Folder.findByIdAndUpdate(
+      bookmark.folderId,
+      { $pull: { bookmarks: bookmark._id } }
     ).exec();
 
     // Delete the bookmark
