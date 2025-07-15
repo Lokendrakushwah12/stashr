@@ -4,22 +4,17 @@ import Folder from '@/models/Folder';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
 // PUT /api/bookmarks/[id] - Update a bookmark
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const resolvedParams = await params;
     await connectDB();
     const { Bookmark } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json(
         { error: "Invalid bookmark ID" },
         { status: 400 },
@@ -74,7 +69,7 @@ export async function PUT(
       updateData.description = description?.trim() || "";
     }
 
-    const bookmark = await Bookmark.findByIdAndUpdate(params.id, updateData, {
+    const bookmark = await Bookmark.findByIdAndUpdate(resolvedParams.id, updateData, {
       new: true,
       runValidators: true,
     }).exec();
@@ -117,20 +112,21 @@ export async function PUT(
 // DELETE /api/bookmarks/[id] - Delete a bookmark
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
+    const resolvedParams = await params;
     await connectDB();
     const { Bookmark } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json(
         { error: "Invalid bookmark ID" },
         { status: 400 },
       );
     }
 
-    const bookmark = await Bookmark.findById(params.id).exec();
+    const bookmark = await Bookmark.findById(resolvedParams.id).exec();
     if (!bookmark) {
       return NextResponse.json(
         { error: "Bookmark not found" },
@@ -140,12 +136,12 @@ export async function DELETE(
 
     // Remove bookmark from all folders
     await Folder.updateMany(
-      { bookmarks: params.id },
-      { $pull: { bookmarks: params.id } },
+      { bookmarks: resolvedParams.id },
+      { $pull: { bookmarks: resolvedParams.id } },
     ).exec();
 
     // Delete the bookmark
-    await Bookmark.findByIdAndDelete(params.id).exec();
+    await Bookmark.findByIdAndDelete(resolvedParams.id).exec();
 
     return NextResponse.json(
       { message: "Bookmark deleted successfully" },
