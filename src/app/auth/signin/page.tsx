@@ -14,7 +14,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (session) {
-      router.push("/");
+      void router.push("/");
     }
   }, [session, router]);
 

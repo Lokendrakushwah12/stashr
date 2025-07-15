@@ -83,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const bookmark = new Bookmark({
       title: title.trim(),
       url: url.trim(),
-      description: description?.trim() || '',
+      description: description?.trim() ?? '',
       favicon,
       userId: session.user.id,
       folderId,

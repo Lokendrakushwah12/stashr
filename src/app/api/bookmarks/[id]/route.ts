@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import type { BookmarkDocument } from '@/models/Bookmark';
 
 // PUT /api/bookmarks/[id] - Update a bookmark for the authenticated user
 export async function PUT(
@@ -52,7 +53,7 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Partial<Pick<BookmarkDocument, 'title' | 'url' | 'description' | 'favicon'>> = {};
     if (title) updateData.title = title.trim();
     if (url) updateData.url = url.trim();
     if (description !== undefined) updateData.description = description?.trim() || '';

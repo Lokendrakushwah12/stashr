@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut, useSession } from "next-auth/react";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 export default function UserMenu() {
   const { data: session } = useSession();
@@ -21,7 +21,7 @@ export default function UserMenu() {
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/auth/signin" });
+    void signOut({ callbackUrl: "/auth/signin" });
   };
 
   return (
@@ -29,9 +29,9 @@ export default function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
+            <AvatarImage src={session.user.image ?? ""} alt={session.user.name ?? ""} />
             <AvatarFallback>
-              {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
+              {session.user.name?.charAt(0) ?? session.user.email?.charAt(0) ?? "U"}
             </AvatarFallback>
           </Avatar>
         </Button>

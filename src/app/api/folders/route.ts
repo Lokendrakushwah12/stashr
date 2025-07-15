@@ -1,22 +1,18 @@
+import { authOptions } from "@/lib/auth";
 import { registerModels } from "@/lib/models";
 import connectDB from "@/lib/mongodb";
 import type { CreateFolderRequest } from "@/types";
-import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 
 // GET /api/folders - Get all folders with their bookmarks for the authenticated user
 export async function GET(): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
@@ -50,67 +46,61 @@ export async function GET(): Promise<NextResponse> {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
     const { Folder } = await registerModels();
 
-    const body = await request.json() as CreateFolderRequest;
+    const body = (await request.json()) as CreateFolderRequest;
     const { name, description, color } = body;
 
     // Validate required fields
     if (!name?.trim()) {
       return NextResponse.json(
         { error: "Folder name is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check if folder with same name already exists for this user
     const existingFolder = await Folder.findOne({
       userId: session.user.id,
-      name: name.trim()
+      name: name.trim(),
     }).exec();
 
     if (existingFolder) {
       return NextResponse.json(
         { error: "A folder with this name already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     const folder = new Folder({
       name: name.trim(),
-      description: description?.trim() || "",
-      color: color || "#3B82F6",
+      description: description?.trim() ?? "",
+      color: color ?? "#3B82F6",
       userId: session.user.id,
     });
 
     await folder.save();
 
-    return NextResponse.json(
-      { folder: folder.toObject() },
-      { status: 201 }
-    );
+    return NextResponse.json({ folder: folder.toObject() }, { status: 201 });
   } catch (error) {
     console.error("Error creating folder:", error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to create folder: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to create folder" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
