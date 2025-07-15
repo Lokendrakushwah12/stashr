@@ -4,16 +4,10 @@ import Folder from '@/models/Folder';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
 // PUT /api/bookmarks/[id] - Update a bookmark
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: { id: string } },
 ): Promise<NextResponse> {
   try {
     await connectDB();
@@ -117,7 +111,7 @@ export async function PUT(
 // DELETE /api/bookmarks/[id] - Delete a bookmark
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: { params: { id: string } },
 ): Promise<NextResponse> {
   try {
     await connectDB();
