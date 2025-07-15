@@ -141,12 +141,12 @@ const FolderDetailPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-                  <Button
-          onClick={() => void fetchFolder()}
-          variant="outline"
-          size="sm"
-          disabled={loading}
-        >
+          <Button
+            onClick={() => void fetchFolder()}
+            variant="outline"
+            size="sm"
+            disabled={loading}
+          >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -174,20 +174,6 @@ const FolderDetailPage = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="border rounded-2xl bg-secondary/20 p-4">
-          <div className="text-2xl font-bold">{folder.bookmarks.length}</div>
-          <div className="text-sm text-muted-foreground">Total Bookmarks</div>
-        </div>
-        <div className="border rounded-2xl bg-secondary/20 p-4">
-          <div className="text-2xl font-bold">
-            {folder.bookmarks.filter(bookmark => bookmark.favicon).length}
-          </div>
-          <div className="text-sm text-muted-foreground">With Favicons</div>
-        </div>
-      </div>
-
       {/* Bookmarks List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -210,13 +196,13 @@ const FolderDetailPage = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {folder.bookmarks.map((bookmark) => (
               <Card key={bookmark._id} className="border rounded-2xl mb-2 bg-secondary/20">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex w-full items-center justify-between">
                     <Link href={bookmark.url} target="_blank" key={bookmark._id}>
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="flex items-center gap-4">
                         <img
                           src={bookmark.favicon ?? `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
                           alt="Favicon"
@@ -225,7 +211,7 @@ const FolderDetailPage = () => {
                             e.currentTarget.src = `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`;
                           }}
                         />
-                        <div className="flex-1 min-w-0">
+                        <div className="max-w-xs">
                           <h3 className="font-semibold truncate">{bookmark.title}</h3>
                           <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
                           {bookmark.description && (
