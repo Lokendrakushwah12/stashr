@@ -6,7 +6,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Stashr - Modern Bookmark Management",
+  title: "Stashr - Organize Your Bookmarks",
   description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management built with Next.js.",
   keywords: ["bookmarks", "organizer", "web", "folders", "management", "nextjs", "typescript"],
   authors: [{ name: "Lokendra" }],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://stashr.vercel.app",
-    title: "Stashr - Modern Bookmark Management",
+    title: "Stashr - Organize Your Bookmarks",
     description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
     siteName: "Stashr",
     images: [
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Stashr - Modern Bookmark Management",
+        alt: "Stashr - Organize Your Bookmarks",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stashr - Modern Bookmark Management",
+    title: "Stashr - Organize Your Bookmarks",
     description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
     images: ["/og.png"],
     creator: "@lokendratwt",
