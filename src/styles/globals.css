@@ -87,6 +87,14 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Force desktop view in iframe previews */
+  .iframe-preview {
+    min-width: 1440px !important;
+    min-height: 700px !important;
+    transform: scale(0.3);
+    transform-origin: top left;
+  }
 }
 
 html {

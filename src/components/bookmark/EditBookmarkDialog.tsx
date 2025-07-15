@@ -30,6 +30,20 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
     }
   }, [open, bookmark]);
 
+  // Cleanup effect to ensure dialog elements are properly removed
+  useEffect(() => {
+    return () => {
+      // Cleanup any remaining dialog overlays when component unmounts
+      const overlays = document.querySelectorAll('[data-radix-dialog-overlay]');
+      overlays.forEach(overlay => {
+        if (overlay instanceof HTMLElement) {
+          overlay.style.display = 'none';
+          overlay.style.pointerEvents = 'none';
+        }
+      });
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -72,8 +86,27 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && !loading) {
+      // Ensure proper cleanup and focus restoration
+      setError('');
+      onOpenChange(false);
+      
+      // Force cleanup of any remaining dialog elements
+      setTimeout(() => {
+        const overlays = document.querySelectorAll('[data-radix-dialog-overlay]');
+        overlays.forEach(overlay => {
+          if (overlay instanceof HTMLElement) {
+            overlay.style.display = 'none';
+            overlay.style.pointerEvents = 'none';
+          }
+        });
+      }, 100);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Bookmark</DialogTitle>

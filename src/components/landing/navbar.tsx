@@ -12,7 +12,7 @@ const Navbar = () => {
   const { data: session, status } = useSession();
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full mx-auto">
       <header
         className={cn(
           "fixed inset-x-0 top-0 z-[50] h-16 transform border-b bg-background/90 backdrop-blur-lg",
@@ -33,7 +33,7 @@ const Navbar = () => {
           <div className="flex items-center justify-center space-x-4 py-4">
             <ThemeToggle />
             {status === "loading" ? (
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              <div className="h-8 w-8 animate-pulse rounded-full bg-secondary"></div>
             ) : session ? (
               <UserMenu />
             ) : (

@@ -1,20 +1,12 @@
 "use client";
 
 import AddBookmarkDialog from '@/components/bookmark/AddBookmarkDialog';
+import BookmarkCard from '@/components/bookmark/BookmarkCard';
 import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { Bookmark, Folder } from '@/types';
-import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -57,10 +49,6 @@ const FolderDetailPage = () => {
   }, [folderId]);
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
-    if (!confirm('Are you sure you want to delete this bookmark?')) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
         method: 'DELETE',
@@ -205,60 +193,12 @@ const FolderDetailPage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {folder.bookmarks.map((bookmark) => (
-              <Card key={bookmark._id} className="rounded-2xl mb-2 bg-secondary/20">
-                <CardContent className="p-2 sm:p-4 w-full">
-                  <div className="flex w-full items-center">
-                    <Link href={bookmark.url} target="_blank" key={bookmark._id} className='w-full -mr-8'>
-                      <div className="flex items-center gap-2 sm:gap-4 w-full">
-                        <img
-                          src={bookmark.favicon ?? `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
-                          alt="Favicon"
-                          className="w-9 h-9 rounded-lg"
-                          onError={(e) => {
-                            e.currentTarget.src = `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`;
-                          }}
-                        />
-                        <div className="w-full overflow-hidden">
-                          <h3 className="font-semibold truncate">{bookmark.title}</h3>
-                          <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
-                          {bookmark.description && (
-                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                              {bookmark.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className='size-9'
-                        >
-                          <DotsVerticalIcon />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-32 rounded-2xl">
-                        <DropdownMenuItem
-                          onClick={() => setEditingBookmark(bookmark)}
-                          className="cursor-pointer rounded-xl"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => void handleDeleteBookmark(bookmark._id!)}
-                          className="text-destructive focus:text-destructive cursor-pointer rounded-xl"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardContent>
-              </Card>
+              <BookmarkCard
+                key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? 'editing' : 'normal'}`}
+                bookmark={bookmark}
+                onEdit={setEditingBookmark}
+                onDelete={handleDeleteBookmark}
+              />
             ))}
           </div>
         )

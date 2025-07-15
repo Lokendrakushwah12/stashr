@@ -92,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await bookmark.save();
     
     // Add bookmark to folder
-    folder.bookmarks.push(bookmark._id);
+    folder.bookmarks.push(bookmark._id as mongoose.Types.ObjectId);
     await folder.save();
     
     // Populate folder reference and return
