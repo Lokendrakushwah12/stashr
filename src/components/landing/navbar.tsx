@@ -3,14 +3,14 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ThemeToggle } from "../layouts/theme-toggle";
-import X from "../ui/x";
+import { StashrLogo } from "../ui/icons";
 
 const Navbar = () => {
   return (
     <div className="relative h-full w-full">
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-[100] h-16 transform border-b bg-background/90 backdrop-blur-lg",
+          "fixed inset-x-0 top-0 z-[50] h-16 transform border-b bg-background/90 backdrop-blur-lg",
         )}
       >
         <div className="container flex h-16 w-full items-center justify-center">
@@ -20,8 +20,8 @@ const Navbar = () => {
                 href="/"
                 className="flex items-center gap-2 text-lg font-semibold text-foreground"
               >
-                <X />
-                <span className="text-base font-medium">Twitter Receipt</span>
+                <StashrLogo width={20} />
+                <span className="text-sm font-medium">Stashr</span>
               </Link>
             </div>
           </div>

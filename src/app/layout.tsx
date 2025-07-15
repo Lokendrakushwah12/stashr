@@ -5,8 +5,8 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Twitter-receipt",
-  description: "Create a beautiful Twitter receipt for your X account.",
+  title: "Stashr",
+  description: "Stash/save all my Bookmarks in organized way",
   icons: [{ rel: "icon", url: "/favicon.svg" }],
 };
 
