@@ -17,8 +17,8 @@ interface CachedConnection {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-// eslint-disable-next-line no-var
 declare global {
+  // eslint-disable-next-line no-var
   var mongooseGlobal: CachedConnection | undefined;
 }
 
