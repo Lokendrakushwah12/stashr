@@ -97,15 +97,6 @@ const Hero = () => {
             </div>
             <div className="text-sm text-muted-foreground">Total Bookmarks</div>
           </div>
-          <div className="border relative rounded-2xl bg-secondary/20 p-4">
-            <div className="absolute right-2 top-2 p-2 bg-accent rounded-xl">
-              <FolderOpen className="h-5 w-5" />
-            </div>
-            <div className="text-3xl font-bold">
-              {folders.filter(folder => folder.bookmarks.length > 0).length}
-            </div>
-            <div className="text-sm text-muted-foreground">Active Folders</div>
-          </div>
         </div>
 
         {/* Folders Grid */}
