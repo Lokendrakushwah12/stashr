@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
@@ -78,7 +79,9 @@ export default function RootLayout({
         )}
       >
         <AuthSessionProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </QueryProvider>
         </AuthSessionProvider>
       </body>
     </html>

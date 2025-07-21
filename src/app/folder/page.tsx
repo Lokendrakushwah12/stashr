@@ -3,51 +3,30 @@
 import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import { Button } from "@/components/ui/button";
-import { folderApi } from '@/lib/api';
-import type { Folder } from '@/types';
+import { useFolders } from '@/lib/hooks/use-bookmarks';
 import { Bookmark, FolderClosed, Loader, Plus, RefreshCw } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function FolderPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showAddFolder, setShowAddFolder] = useState(false);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-    }
-  }, [status, router]);
+  // Use React Query for data fetching
+  const { 
+    data: folders = [], 
+    isLoading, 
+    error, 
+    refetch 
+  } = useFolders();
 
-  const fetchFolders = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await folderApi.getAll();
-
-      if (response.data) {
-        setFolders(response.data.folders);
-      } else {
-        setError(response.error ?? 'Failed to fetch folders');
-      }
-    } catch {
-      setError('An error occurred while fetching folders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      void fetchFolders();
-    }
-  }, [status]);
+  // Redirect if not authenticated
+  if (status === "unauthenticated") {
+    router.push("/auth/signin");
+    return null;
+  }
 
   if (status === "loading") {
     return (
@@ -57,16 +36,12 @@ export default function FolderPage() {
     );
   }
 
-  if (status === "unauthenticated") {
-    return <>LOLLLLLLLLLLL</>; // Will redirect
-  }
-
   if (error) {
     return (
       <section className="container flex flex-col items-center justify-center min-h-[60vh] text-center">
         <div className="max-w-md">
-          <p className="text-destructive mb-4">{error}</p>
-          <Button onClick={fetchFolders} variant="outline">
+          <p className="text-destructive mb-4">{error.message}</p>
+          <Button onClick={() => refetch()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry
           </Button>
@@ -88,12 +63,12 @@ export default function FolderPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={fetchFolders}
+              onClick={() => refetch()}
               variant="outline"
               size="sm"
-              disabled={loading}
+              disabled={isLoading}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
             <Button onClick={() => setShowAddFolder(true)}>
@@ -124,7 +99,7 @@ export default function FolderPage() {
         </div>
 
         {/* Folders Grid */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
             <p className="text-muted-foreground">Loading your bookmarks...</p>
@@ -150,7 +125,7 @@ export default function FolderPage() {
                 <FolderCard
                   key={folder._id}
                   folder={folder}
-                  onUpdate={fetchFolders}
+                  onUpdate={() => refetch()}
                 />
               ))}
             </div>
@@ -161,7 +136,10 @@ export default function FolderPage() {
       <AddFolderDialog
         open={showAddFolder}
         onOpenChange={setShowAddFolder}
-        onSuccess={fetchFolders}
+        onSuccess={() => {
+          setShowAddFolder(false);
+          // React Query will automatically refetch after mutation
+        }}
       />
     </>
   );

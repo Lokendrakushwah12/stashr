@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,11 +8,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { bookmarkApi } from '@/lib/api';
-import { useState } from 'react';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateBookmark } from '@/lib/hooks/use-bookmarks';
+import { useState } from "react";
 
 interface AddBookmarkDialogProps {
   open: boolean;
@@ -25,14 +26,13 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  // Use React Query mutation
+  const createBookmarkMutation = useCreateBookmark();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
+    
     try {
       const bookmarkData = {
         title: title.trim(),
@@ -41,30 +41,27 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
         folderId,
       };
 
-      const response = await bookmarkApi.create(bookmarkData);
-
-      if (response.data) {
-        onSuccess();
-        onOpenChange(false);
-        setTitle('');
-        setUrl('');
-        setDescription('');
-      } else {
-        setError(response.error ?? 'Failed to create bookmark');
-      }
-    } catch {
-      setError('An error occurred while creating bookmark');
-    } finally {
-      setLoading(false);
+      await createBookmarkMutation.mutateAsync(bookmarkData);
+      
+      // Reset form
+      setTitle('');
+      setUrl('');
+      setDescription('');
+      
+      // Close dialog and call success callback
+      onOpenChange(false);
+      onSuccess();
+    } catch (error) {
+      // Error is handled by React Query
+      console.error('Failed to create bookmark:', error);
     }
   };
 
   const handleClose = () => {
-    if (!loading) {
+    if (!createBookmarkMutation.isPending) {
       setTitle('');
       setUrl('');
       setDescription('');
-      setError('');
       onOpenChange(false);
     }
   };
@@ -72,7 +69,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
   // Auto-fetch page title when URL is entered
   const handleUrlChange = async (newUrl: string) => {
     setUrl(newUrl);
-
+    
     if (newUrl.trim() && !title.trim()) {
       try {
         // Try to extract title from URL for better UX
@@ -91,64 +88,64 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
         <DialogHeader>
           <DialogTitle>Add New Bookmark</DialogTitle>
           <DialogDescription>
-            Add a new bookmark to this folder.
+            Add a new bookmark to your folder. Enter the title, URL, and optional description.
           </DialogDescription>
         </DialogHeader>
-
-        <form className='p-3 pt-0 bg-background rounded-xl' onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            {error && (
-              <div className="text-sm text-destructive">{error}</div>
-            )}
-
-            <div className="grid gap-2">
-              <Label htmlFor="bookmark-url">URL *</Label>
-              <Input
-                id="bookmark-url"
-                type="url"
-                value={url}
-                onChange={(e) => handleUrlChange(e.target.value)}
-                placeholder="https://example.com"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="bookmark-title">Title *</Label>
-              <Input
-                id="bookmark-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter bookmark title"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="bookmark-description">Description</Label>
-              <Input
-                id="bookmark-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description"
-                disabled={loading}
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter bookmark title"
+              disabled={createBookmarkMutation.isPending}
+              required
+            />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="url">URL *</Label>
+            <Input
+              id="url"
+              type="url"
+              value={url}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              placeholder="https://example.com"
+              disabled={createBookmarkMutation.isPending}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter bookmark description (optional)"
+              disabled={createBookmarkMutation.isPending}
+              rows={3}
+            />
+          </div>
+
+          {createBookmarkMutation.error && (
+            <p className="text-sm text-destructive">
+              {createBookmarkMutation.error.message || 'Failed to create bookmark'}
+            </p>
+          )}
 
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              disabled={loading}
+              disabled={createBookmarkMutation.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !title.trim() || !url.trim()}>
-              {loading ? 'Adding...' : 'Add Bookmark'}
+            <Button type="submit" disabled={createBookmarkMutation.isPending || !title.trim() || !url.trim()}>
+              {createBookmarkMutation.isPending ? 'Creating...' : 'Create Bookmark'}
             </Button>
           </DialogFooter>
         </form>

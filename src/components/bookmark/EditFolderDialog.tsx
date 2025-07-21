@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { folderApi } from '@/lib/api';
+import { Textarea } from "@/components/ui/textarea";
+import { useUpdateFolder } from '@/lib/hooks/use-bookmarks';
 import type { Folder } from '@/types';
 import { useEffect, useState } from "react";
 
@@ -36,23 +38,21 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('#3B82F6');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  // Use React Query mutation
+  const updateFolderMutation = useUpdateFolder();
 
   useEffect(() => {
     if (open && folder) {
       setName(folder.name);
       setDescription(folder.description ?? '');
       setColor(folder.color ?? '#3B82F6');
-      setError('');
     }
   }, [open, folder]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
+    
     try {
       const folderData = {
         name: name.trim(),
@@ -60,24 +60,19 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
         color,
       };
 
-      const response = await folderApi.update(folder._id!, folderData);
-
-      if (response.data) {
-        onSuccess();
-        onOpenChange(false);
-      } else {
-        setError(response.error ?? 'Failed to update folder');
-      }
-    } catch {
-      setError('An error occurred while updating folder');
-    } finally {
-      setLoading(false);
+      await updateFolderMutation.mutateAsync({ id: folder._id!, data: folderData });
+      
+      // Close dialog and call success callback
+      onOpenChange(false);
+      onSuccess();
+    } catch (error) {
+      // Error is handled by React Query
+      console.error('Failed to update folder:', error);
     }
   };
 
   const handleClose = () => {
-    if (!loading) {
-      setError('');
+    if (!updateFolderMutation.isPending) {
       onOpenChange(false);
     }
   };
@@ -87,67 +82,70 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Folder</DialogTitle>
-          {/* DialogDescription is removed as per new_code */}
+          <DialogDescription>
+            Update your folder's name, description, and color.
+          </DialogDescription>
         </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name *</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter folder name"
+              disabled={updateFolderMutation.isPending}
+              required
+            />
+          </div>
 
-        <form className='p-3 pt-0 bg-background rounded-xl' onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            {error && (
-              <div className="text-sm text-destructive">{error}</div>
-            )}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter folder description (optional)"
+              disabled={updateFolderMutation.isPending}
+              rows={3}
+            />
+          </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="edit-name">Folder Name *</Label>
-              <Input
-                id="edit-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter folder name"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Input
-                id="edit-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label>Color</Label>
-              <div className="flex gap-2 flex-wrap">
-                {predefinedColors.map((colorOption) => (
-                  <button
-                    key={colorOption}
-                    type="button"
-                    className={`w-8 h-8 rounded-xl border-2 ${color === colorOption ? 'border-foreground/50' : 'border-transparent'
-                      }`}
-                    style={{ backgroundColor: colorOption }}
-                    onClick={() => setColor(colorOption)}
-                    disabled={loading}
-                  />
-                ))}
-              </div>
+          <div className="space-y-2">
+            <Label>Color</Label>
+            <div className="flex gap-2 flex-wrap">
+              {predefinedColors.map((colorOption) => (
+                <button
+                  key={colorOption}
+                  type="button"
+                  className={`w-8 h-8 rounded-full border-2 ${
+                    color === colorOption ? 'border-foreground' : 'border-transparent'
+                  }`}
+                  style={{ backgroundColor: colorOption }}
+                  onClick={() => setColor(colorOption)}
+                  disabled={updateFolderMutation.isPending}
+                />
+              ))}
             </div>
           </div>
+
+          {updateFolderMutation.error && (
+            <p className="text-sm text-destructive">
+              {updateFolderMutation.error.message || 'Failed to update folder'}
+            </p>
+          )}
 
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              disabled={loading}
+              disabled={updateFolderMutation.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !name.trim()}>
-              {loading ? 'Updating...' : 'Update Folder'}
+            <Button type="submit" disabled={updateFolderMutation.isPending || !name.trim()}>
+              {updateFolderMutation.isPending ? 'Updating...' : 'Update Folder'}
             </Button>
           </DialogFooter>
         </form>

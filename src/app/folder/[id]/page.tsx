@@ -5,58 +5,36 @@ import BookmarkCard from '@/components/bookmark/BookmarkCard';
 import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
-import { bookmarkApi, folderApi } from '@/lib/api';
-import type { Bookmark, Folder } from '@/types';
+import { useFolder, useDeleteBookmark, useDeleteFolder } from '@/lib/hooks/use-bookmarks';
+import type { Bookmark } from '@/types';
 import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const FolderDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const folderId = params.id as string;
 
-  const [folder, setFolder] = useState<Folder | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [showAddBookmark, setShowAddBookmark] = useState(false);
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
 
-  const fetchFolder = async () => {
-    try {
-      setLoading(true);
-      setError('');
+  // Use React Query for data fetching
+  const { 
+    data: folder, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useFolder(folderId);
 
-      const response = await folderApi.getById(folderId);
-
-      if (response.data) {
-        setFolder(response.data.folder);
-      } else {
-        setError(response.error ?? 'Failed to fetch folder');
-      }
-    } catch {
-      setError('An error occurred while fetching folder');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (folderId) {
-      void fetchFolder();
-    }
-  }, [folderId]);
+  // Use React Query mutations
+  const deleteBookmarkMutation = useDeleteBookmark();
+  const deleteFolderMutation = useDeleteFolder();
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     try {
-      const response = await bookmarkApi.delete(bookmarkId);
-
-      if (response.data) {
-        void fetchFolder();
-      } else {
-        console.error('Failed to delete bookmark:', response.error);
-      }
+      await deleteBookmarkMutation.mutateAsync(bookmarkId);
     } catch (error) {
       console.error('Error deleting bookmark:', error);
     }
@@ -68,13 +46,8 @@ const FolderDetailPage = () => {
     }
 
     try {
-      const response = await folderApi.delete(folderId);
-
-      if (response.data) {
-        router.push('/');
-      } else {
-        console.error('Failed to delete folder:', response.error);
-      }
+      await deleteFolderMutation.mutateAsync(folderId);
+      router.push('/');
     } catch (error) {
       console.error('Error deleting folder:', error);
     }
@@ -84,7 +57,7 @@ const FolderDetailPage = () => {
     return (
       <div className="container flex flex-col items-center justify-center min-h-[90vh] text-center">
         <div className="max-w-md">
-          <p className="text-destructive mb-4">{error || 'Folder not found'}</p>
+          <p className="text-destructive mb-4">{error.message || 'Folder not found'}</p>
           <Button onClick={() => router.push('/')} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
@@ -133,12 +106,12 @@ const FolderDetailPage = () => {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            onClick={() => void fetchFolder()}
+            onClick={() => refetch()}
             variant="outline"
             size="sm"
-            disabled={loading}
+            disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button
@@ -154,9 +127,10 @@ const FolderDetailPage = () => {
             variant="outline"
             size="sm"
             className="text-destructive hover:text-destructive"
+            disabled={deleteFolderMutation.isPending}
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            Delete Folder
+            {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
           </Button>
           <Button onClick={() => setShowAddBookmark(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -166,7 +140,7 @@ const FolderDetailPage = () => {
       </div>
 
       {/* Bookmarks List */}
-      {loading ? (
+      {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
           <p className="text-muted-foreground">Loading your bookmarks...</p>
@@ -205,7 +179,10 @@ const FolderDetailPage = () => {
         open={showAddBookmark}
         onOpenChange={setShowAddBookmark}
         folderId={folderId}
-        onSuccess={fetchFolder}
+        onSuccess={() => {
+          setShowAddBookmark(false);
+          // React Query will automatically refetch after mutation
+        }}
       />
 
       {editingBookmark && (
@@ -214,8 +191,8 @@ const FolderDetailPage = () => {
           onOpenChange={(open) => !open && setEditingBookmark(null)}
           bookmark={editingBookmark}
           onSuccess={() => {
-            void fetchFolder();
             setEditingBookmark(null);
+            // React Query will automatically refetch after mutation
           }}
         />
       )}
@@ -224,7 +201,10 @@ const FolderDetailPage = () => {
         open={showEditFolder}
         onOpenChange={setShowEditFolder}
         folder={folder}
-        onSuccess={fetchFolder}
+        onSuccess={() => {
+          setShowEditFolder(false);
+          // React Query will automatically refetch after mutation
+        }}
       />
     </div>
   );
