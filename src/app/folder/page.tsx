@@ -3,6 +3,7 @@
 import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import { Button } from "@/components/ui/button";
+import { folderApi } from '@/lib/api';
 import type { Folder } from '@/types';
 import { Bookmark, FolderClosed, Loader, Plus, RefreshCw } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -28,13 +29,12 @@ export default function FolderPage() {
       setLoading(true);
       setError('');
 
-      const response = await fetch('/api/folders');
-      const data = await response.json() as { folders?: Folder[]; error?: string };
+      const response = await folderApi.getAll();
 
-      if (response.ok) {
-        setFolders(data.folders ?? []);
+      if (response.data) {
+        setFolders(response.data.folders);
       } else {
-        setError(data.error ?? 'Failed to fetch folders');
+        setError(response.error ?? 'Failed to fetch folders');
       }
     } catch {
       setError('An error occurred while fetching folders');

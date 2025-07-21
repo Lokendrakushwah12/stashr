@@ -103,10 +103,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
 
                 {/* Preview iframe */}
                 <div className="mt-4 border rounded-xl overflow-hidden bg-background">
-                    <div className="flex items-center justify-between p-2 bg-muted/50 border-b">
-                        <span className="text-sm font-medium">Preview</span>
-                    </div>
-                    <div className="relative w-full h-44 overflow-hidden">
+                    <div className="relative w-full h-48 overflow-hidden">
                         <iframe
                          width="100%" height="100% "
                             src={bookmark.url}

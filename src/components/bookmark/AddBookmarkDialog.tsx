@@ -12,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { bookmarkApi } from '@/lib/api';
 
 interface AddBookmarkDialogProps {
   open: boolean;
@@ -40,24 +42,16 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
         folderId,
       };
 
-      const response = await fetch('/api/bookmarks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookmarkData),
-      });
+      const response = await bookmarkApi.create(bookmarkData);
 
-      const data = await response.json() as { bookmark?: unknown; error?: string };
-
-      if (response.ok) {
+      if (response.data) {
         onSuccess();
         onOpenChange(false);
         setTitle('');
         setUrl('');
         setDescription('');
       } else {
-        setError(data.error ?? 'Failed to create bookmark');
+        setError(response.error ?? 'Failed to create bookmark');
       }
     } catch {
       setError('An error occurred while creating bookmark');

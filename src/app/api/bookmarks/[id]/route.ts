@@ -1,11 +1,11 @@
-import { registerModels } from '@/lib/models';
+import { registerModels } from '@/models';
 import connectDB from '@/lib/mongodb';
 import mongoose from 'mongoose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import type { BookmarkDocument } from '@/models/Bookmark';
+import type { BookmarkDocument } from '@/types/database';
 
 // PUT /api/bookmarks/[id] - Update a bookmark for the authenticated user
 export async function PUT(

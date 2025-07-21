@@ -1,11 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { folderApi } from '@/lib/api';
 import type { Folder } from '@/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface EditFolderDialogProps {
   open: boolean;
@@ -53,21 +62,13 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
         color,
       };
 
-      const response = await fetch(`/api/folders/${folder._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(folderData),
-      });
+      const response = await folderApi.update(folder._id!, folderData);
 
-      const data = await response.json() as { folder?: unknown; error?: string };
-
-      if (response.ok) {
+      if (response.data) {
         onSuccess();
         onOpenChange(false);
       } else {
-        setError(data.error ?? 'Failed to update folder');
+        setError(response.error ?? 'Failed to update folder');
       }
     } catch {
       setError('An error occurred while updating folder');

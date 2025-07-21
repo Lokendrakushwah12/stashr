@@ -1,5 +1,4 @@
-import type { BookmarkDocument } from '@/models/Bookmark';
-import type { FolderDocument } from '@/models/Folder';
+import type { BookmarkDocument, FolderDocument } from '@/types/database';
 import type { Model } from 'mongoose';
 import mongoose from 'mongoose';
 

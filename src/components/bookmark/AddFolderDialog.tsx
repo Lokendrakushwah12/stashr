@@ -12,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { folderApi } from '@/lib/api';
 
 interface AddFolderDialogProps {
   open: boolean;
@@ -48,24 +50,16 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
         description: description.trim(),
         color,
       };
-      const response = await fetch('/api/folders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(folderData),
-      });
+      const response = await folderApi.create(folderData);
 
-      const data = await response.json() as { folder?: unknown; error?: string };
-
-      if (response.ok) {
+      if (response.data) {
         onSuccess();
         onOpenChange(false);
         setName('');
         setDescription('');
         setColor('#3B82F6');
       } else {
-        setError(data.error ?? 'Failed to create folder');
+        setError(response.error ?? 'Failed to create folder');
       }
     } catch {
       setError('An error occurred while creating folder');

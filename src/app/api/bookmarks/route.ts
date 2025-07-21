@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import type { CreateBookmarkRequest } from '@/types';
-import { registerModels } from '@/lib/models';
+import { registerModels } from '@/models';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 

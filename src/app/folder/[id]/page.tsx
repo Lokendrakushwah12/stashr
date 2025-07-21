@@ -5,6 +5,7 @@ import BookmarkCard from '@/components/bookmark/BookmarkCard';
 import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
+import { bookmarkApi, folderApi } from '@/lib/api';
 import type { Bookmark, Folder } from '@/types';
 import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -27,13 +28,12 @@ const FolderDetailPage = () => {
       setLoading(true);
       setError('');
 
-      const response = await fetch(`/api/folders/${folderId}`);
-      const data = await response.json() as { folder?: Folder; error?: string };
+      const response = await folderApi.getById(folderId);
 
-      if (response.ok) {
-        setFolder(data.folder ?? null);
+      if (response.data) {
+        setFolder(response.data.folder);
       } else {
-        setError(data.error ?? 'Failed to fetch folder');
+        setError(response.error ?? 'Failed to fetch folder');
       }
     } catch {
       setError('An error occurred while fetching folder');
@@ -50,14 +50,12 @@ const FolderDetailPage = () => {
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     try {
-      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
-        method: 'DELETE',
-      });
+      const response = await bookmarkApi.delete(bookmarkId);
 
-      if (response.ok) {
+      if (response.data) {
         void fetchFolder();
       } else {
-        console.error('Failed to delete bookmark');
+        console.error('Failed to delete bookmark:', response.error);
       }
     } catch (error) {
       console.error('Error deleting bookmark:', error);
@@ -70,14 +68,12 @@ const FolderDetailPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/folders/${folderId}`, {
-        method: 'DELETE',
-      });
+      const response = await folderApi.delete(folderId);
 
-      if (response.ok) {
+      if (response.data) {
         router.push('/');
       } else {
-        console.error('Failed to delete folder');
+        console.error('Failed to delete folder:', response.error);
       }
     } catch (error) {
       console.error('Error deleting folder:', error);

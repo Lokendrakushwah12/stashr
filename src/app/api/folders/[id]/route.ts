@@ -1,7 +1,6 @@
-import { registerModels } from '@/lib/models';
+import { registerModels } from '@/models';
 import connectDB from '@/lib/mongodb';
-import Bookmark from '@/models/Bookmark';
-import type { FolderDocument } from '@/models/Folder';
+import type { FolderDocument } from '@/types/database';
 import mongoose from 'mongoose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';

@@ -1,16 +1,5 @@
-import type { Document, Model } from 'mongoose';
+import type { BookmarkDocument, BookmarkModel } from '@/types/database';
 import mongoose from 'mongoose';
-
-export interface BookmarkDocument extends Document {
-  title: string;
-  url: string;
-  description: string;
-  favicon: string;
-  userId: string;
-  folderId: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
   {
@@ -72,7 +61,5 @@ bookmarkSchema.pre('save', function(next) {
   }
   next();
 });
-
-export type BookmarkModel = Model<BookmarkDocument>;
 
 export default mongoose.models.Bookmark as BookmarkModel ?? mongoose.model<BookmarkDocument>('Bookmark', bookmarkSchema); 

@@ -1,6 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { bookmarkApi } from '@/lib/api';
 import type { Bookmark } from '@/types';
 import { Edit, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -21,14 +28,12 @@ const BookmarkItem = ({ bookmark, onUpdate }: BookmarkItemProps) => {
     }
 
     try {
-      const response = await fetch(`/api/bookmarks/${bookmark._id}`, {
-        method: 'DELETE',
-      });
+      const response = await bookmarkApi.delete(bookmark._id!);
 
-      if (response.ok) {
+      if (response.data) {
         onUpdate();
       } else {
-        console.error('Failed to delete bookmark');
+        console.error('Failed to delete bookmark:', response.error);
       }
     } catch (error) {
       console.error('Error deleting bookmark:', error);

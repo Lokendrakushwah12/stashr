@@ -1,15 +1,5 @@
-import type { Document, Model } from 'mongoose';
+import type { FolderDocument, FolderModel } from '@/types/database';
 import mongoose from 'mongoose';
-
-export interface FolderDocument extends Document {
-  name: string;
-  description: string;
-  color: string;
-  userId: string;
-  bookmarks: mongoose.Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const folderSchema = new mongoose.Schema<FolderDocument>(
   {
@@ -50,7 +40,5 @@ const folderSchema = new mongoose.Schema<FolderDocument>(
 
 // Compound index to ensure unique folder names per user
 folderSchema.index({ userId: 1, name: 1 }, { unique: true });
-
-export type FolderModel = Model<FolderDocument>;
 
 export default mongoose.models.Folder as FolderModel ?? mongoose.model<FolderDocument>('Folder', folderSchema); 

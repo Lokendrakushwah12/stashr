@@ -1,5 +1,5 @@
 import { authOptions } from "@/lib/auth";
-import { registerModels } from "@/lib/models";
+import { registerModels } from "@/models";
 import connectDB from "@/lib/mongodb";
 import type { CreateFolderRequest } from "@/types";
 import { getServerSession } from "next-auth";

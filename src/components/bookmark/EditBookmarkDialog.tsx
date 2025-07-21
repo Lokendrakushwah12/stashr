@@ -2,9 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { bookmarkApi } from '@/lib/api';
 import type { Bookmark } from '@/types';
 
 interface EditBookmarkDialogProps {
@@ -56,21 +65,13 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
         description: description.trim(),
       };
 
-      const response = await fetch(`/api/bookmarks/${bookmark._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookmarkData),
-      });
+      const response = await bookmarkApi.update(bookmark._id!, bookmarkData);
 
-      const data = await response.json() as { bookmark?: unknown; error?: string };
-
-      if (response.ok) {
+      if (response.data) {
         onSuccess();
         onOpenChange(false);
       } else {
-        setError(data.error ?? 'Failed to update bookmark');
+        setError(response.error ?? 'Failed to update bookmark');
       }
     } catch {
       setError('An error occurred while updating bookmark');
