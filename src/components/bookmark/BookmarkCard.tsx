@@ -12,7 +12,6 @@ import type { Bookmark } from '@/types';
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import { Edit, ExternalLink, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 
 interface BookmarkCardProps {
     bookmark: Bookmark;
@@ -21,7 +20,6 @@ interface BookmarkCardProps {
 }
 
 const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
-    const [showPreview, setShowPreview] = useState(false);
 
     const handleDelete = () => {
         if (confirm('Are you sure you want to delete this bookmark?')) {
@@ -105,7 +103,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                 <div className="mt-4 border rounded-xl overflow-hidden bg-background">
                     <div className="relative w-full h-48 overflow-hidden">
                         <iframe
-                         width="100%" height="100% "
+                            width="100%" height="100% "
                             src={bookmark.url}
                             className="w-full h-full border-0 pointer-events-none select-none iframe-preview"
                             title={`Preview of ${bookmark.title}`}

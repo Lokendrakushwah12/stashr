@@ -27,16 +27,17 @@ async function apiRequest<T>(
       ...options,
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as unknown;
 
     if (!response.ok) {
+      const errorData = data as { error?: string; details?: string[] };
       return {
-        error: data.error || 'An error occurred',
-        details: data.details,
+        error: errorData.error ?? 'An error occurred',
+        details: errorData.details,
       };
     }
 
-    return { data };
+    return { data: data as T };
   } catch (error) {
     console.error('API request failed:', error);
     return {

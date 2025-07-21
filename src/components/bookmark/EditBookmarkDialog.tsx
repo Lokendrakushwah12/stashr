@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { bookmarkApi } from '@/lib/api';
 import type { Bookmark } from '@/types';
+import { useEffect, useState } from 'react';
 
 interface EditBookmarkDialogProps {
   open: boolean;
@@ -92,7 +91,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
       // Ensure proper cleanup and focus restoration
       setError('');
       onOpenChange(false);
-      
+
       // Force cleanup of any remaining dialog elements
       setTimeout(() => {
         const overlays = document.querySelectorAll('[data-radix-dialog-overlay]');
@@ -115,13 +114,13 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
             Update your bookmark details.
           </DialogDescription>
         </DialogHeader>
-        
+
         <form className='p-3 pt-0 bg-background rounded-xl' onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {error && (
               <div className="text-sm text-destructive">{error}</div>
             )}
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-bookmark-url">URL *</Label>
               <Input
@@ -134,7 +133,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
                 disabled={loading}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-bookmark-title">Title *</Label>
               <Input
@@ -146,7 +145,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
                 disabled={loading}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-bookmark-description">Description</Label>
               <Input
@@ -158,11 +157,11 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
               />
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleClose}
               disabled={loading}
             >

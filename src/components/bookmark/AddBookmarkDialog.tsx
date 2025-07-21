@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -12,8 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { bookmarkApi } from '@/lib/api';
+import { useState } from 'react';
 
 interface AddBookmarkDialogProps {
   open: boolean;
@@ -73,7 +72,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
   // Auto-fetch page title when URL is entered
   const handleUrlChange = async (newUrl: string) => {
     setUrl(newUrl);
-    
+
     if (newUrl.trim() && !title.trim()) {
       try {
         // Try to extract title from URL for better UX
@@ -95,13 +94,13 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
             Add a new bookmark to this folder.
           </DialogDescription>
         </DialogHeader>
-        
+
         <form className='p-3 pt-0 bg-background rounded-xl' onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {error && (
               <div className="text-sm text-destructive">{error}</div>
             )}
-            
+
             <div className="grid gap-2">
               <Label htmlFor="bookmark-url">URL *</Label>
               <Input
@@ -114,7 +113,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
                 disabled={loading}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="bookmark-title">Title *</Label>
               <Input
@@ -126,7 +125,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
                 disabled={loading}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="bookmark-description">Description</Label>
               <Input
@@ -138,11 +137,11 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
               />
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleClose}
               disabled={loading}
             >

@@ -1,12 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { bookmarkApi } from '@/lib/api';
 import type { Bookmark } from '@/types';
 import { Edit, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react';

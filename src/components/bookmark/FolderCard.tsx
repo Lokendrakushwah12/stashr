@@ -3,14 +3,13 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Folder } from '@/types';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 interface FolderCardProps {
     folder: Folder;
     onUpdate: () => void;
 }
 
-const FolderCard = ({ folder, onUpdate }: FolderCardProps) => {
+const FolderCard = ({ folder }: FolderCardProps) => {
     const router = useRouter();
 
     const handleCardClick = () => {

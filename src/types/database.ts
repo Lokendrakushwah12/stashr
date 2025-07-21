@@ -1,5 +1,5 @@
 import type { Document, Model } from 'mongoose';
-import mongoose from 'mongoose';
+import type mongoose from 'mongoose';
 
 // Database Document Types - These extend Mongoose Document
 export interface BookmarkDocument extends Document {
