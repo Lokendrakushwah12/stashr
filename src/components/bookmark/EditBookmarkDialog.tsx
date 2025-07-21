@@ -86,7 +86,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
         <DialogHeader>
           <DialogTitle>Edit Bookmark</DialogTitle>
           <DialogDescription>
-            Update your bookmark's title, URL, and description.
+            Update your bookmark&apos;s title, URL, and description.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

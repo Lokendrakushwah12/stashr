@@ -83,7 +83,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
         <DialogHeader>
           <DialogTitle>Edit Folder</DialogTitle>
           <DialogDescription>
-            Update your folder's name, description, and color.
+            Update your folder&apos;s name, description, and color.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

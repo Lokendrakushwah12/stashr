@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bookmarkApi, folderApi } from '@/lib/api';
-import type { CreateBookmarkRequest, UpdateBookmarkRequest } from '@/types';
+import type { UpdateBookmarkRequest, UpdateFolderRequest } from '@/types';
 
 // Query keys
 export const bookmarkKeys = {
@@ -14,6 +14,7 @@ export const bookmarkKeys = {
 export const folderKeys = {
   all: ['folders'] as const,
   lists: () => [...folderKeys.all, 'list'] as const,
+  list: (filters: string) => [...folderKeys.lists(), { filters }] as const,
   details: () => [...folderKeys.all, 'detail'] as const,
   detail: (id: string) => [...folderKeys.details(), id] as const,
 };
@@ -22,65 +23,47 @@ export const folderKeys = {
 export function useFolders() {
   return useQuery({
     queryKey: folderKeys.lists(),
-    queryFn: async () => {
-      const response = await folderApi.getAll();
-      if (!response.data) {
-        throw new Error(response.error || 'Failed to fetch folders');
-      }
-      return response.data.folders;
-    },
+    queryFn: () => folderApi.getAll(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
 export function useFolder(id: string) {
   return useQuery({
     queryKey: folderKeys.detail(id),
-    queryFn: async () => {
-      const response = await folderApi.getById(id);
-      if (!response.data) {
-        throw new Error(response.error || 'Failed to fetch folder');
-      }
-      return response.data.folder;
-    },
-    enabled: !!id,
+    queryFn: () => folderApi.getById(id),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
 // Folder mutations
 export function useCreateFolder() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: folderApi.create,
+    mutationFn: (data: Parameters<typeof folderApi.create>[0]) => folderApi.create(data),
     onSuccess: () => {
-      // Invalidate and refetch folders list
-      queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
     },
   });
 }
 
 export function useUpdateFolder() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => folderApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateFolderRequest }) => folderApi.update(id, data),
     onSuccess: (data, variables) => {
-      // Update the specific folder in cache
-      queryClient.setQueryData(folderKeys.detail(variables.id), data.data?.folder);
-      // Invalidate folders list
-      queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      void queryClient.setQueryData(folderKeys.detail(variables.id), data.data?.folder);
+      void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
     },
   });
 }
 
 export function useDeleteFolder() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: folderApi.delete,
+    mutationFn: (id: string) => folderApi.delete(id),
     onSuccess: () => {
-      // Invalidate folders list
-      queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
     },
   });
 }
@@ -88,39 +71,32 @@ export function useDeleteFolder() {
 // Bookmark mutations
 export function useCreateBookmark() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: bookmarkApi.create,
+    mutationFn: (data: Parameters<typeof bookmarkApi.create>[0]) => bookmarkApi.create(data),
     onSuccess: (data, variables) => {
-      // Invalidate the specific folder
-      queryClient.invalidateQueries({ queryKey: folderKeys.detail(variables.folderId) });
-      // Invalidate folders list to update bookmark counts
-      queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: folderKeys.detail(variables.folderId) });
+      void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
     },
   });
 }
 
 export function useUpdateBookmark() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateBookmarkRequest }) => 
-      bookmarkApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateBookmarkRequest }) => bookmarkApi.update(id, data),
     onSuccess: (data, variables) => {
-      // Invalidate all folders since bookmark could be in any folder
-      queryClient.invalidateQueries({ queryKey: folderKeys.all });
+      void queryClient.setQueryData(bookmarkKeys.detail(variables.id), data.data?.bookmark);
+      void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
     },
   });
 }
 
 export function useDeleteBookmark() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: bookmarkApi.delete,
+    mutationFn: (id: string) => bookmarkApi.delete(id),
     onSuccess: () => {
-      // Invalidate all folders since bookmark could be in any folder
-      queryClient.invalidateQueries({ queryKey: folderKeys.all });
+      void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
     },
   });
 } 

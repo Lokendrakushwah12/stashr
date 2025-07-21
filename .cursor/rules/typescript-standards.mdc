@@ -1,0 +1,136 @@
+# TypeScript & ESLint Standards for Stashr Project
+
+## Type Safety Rules
+
+### 1. Type Definitions
+- NEVER use `any` type - always provide proper TypeScript types
+- Use proper type imports: `import type { TypeName } from '@/types'`
+- Avoid unnecessary type assertions (`as`) - only use when absolutely necessary
+- Use nullish coalescing (`??`) instead of logical OR (`||`) for null/undefined checks
+- Always type function parameters and return types explicitly
+
+### 2. React Query Patterns
+- Always extract data from API responses: `const data = response?.data?.property ?? defaultValue`
+- Use proper query keys with `as const` assertions
+- Avoid unbound method references - use arrow functions instead:
+  ```typescript
+  // ❌ Wrong
+  mutationFn: apiMethod
+  
+  // ✅ Correct
+  mutationFn: (params) => apiMethod(params)
+  ```
+- Use `void` operator for promise-returning functions in callbacks
+
+### 3. API Response Handling
+- API responses follow this structure: `ApiResponse<T>`
+- Always access data through: `response?.data?.property`
+- Provide fallback values: `response?.data?.property ?? defaultValue`
+- Never assume response structure - always use optional chaining
+
+### 4. MongoDB & Database
+- Use proper ObjectId conversion: `new ObjectId(stringId)`
+- Create interfaces for aggregation results
+- Type MongoDB collection operations properly
+- Use proper error handling for database operations
+
+### 5. React Components
+- Use `'use client'` directive for client components
+- Properly type component props with interfaces
+- Use proper event handlers with TypeScript
+- Avoid inline type assertions in JSX
+
+### 6. Import/Export Standards
+- Use named imports for types: `import type { TypeName } from '@/path'`
+- Use default imports for components: `import ComponentName from '@/path'`
+- Group imports: React, external libraries, internal modules, types
+- Remove unused imports immediately
+
+### 7. Error Handling
+- Use try-catch blocks for async operations
+- Provide meaningful error messages
+- Use proper error types and interfaces
+- Handle loading and error states in components
+
+### 8. Code Organization
+- Keep functions small and focused
+- Use descriptive variable names
+- Add JSDoc comments for complex functions
+- Follow consistent naming conventions
+
+### 9. ESLint Compliance
+- No unused variables (prefix with `_` if intentionally unused)
+- No unsafe type assignments or member access
+- No unnecessary type assertions
+- No unbound method references
+- Proper promise handling with `void` operator
+
+### 10. File Structure
+- Place types in `src/types/` directory
+- Use barrel exports: `export * from './file'`
+- Follow Next.js App Router conventions
+- Keep API routes in `src/app/api/`
+
+## Common Patterns
+
+### API Hook Pattern
+```typescript
+export function useData() {
+  return useQuery({
+    queryKey: dataKeys.lists(),
+    queryFn: () => apiMethod(),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+```
+
+### Mutation Pattern
+```typescript
+export function useMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params) => apiMethod(params),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dataKeys.lists() });
+    },
+  });
+}
+```
+
+### Component Data Access
+```typescript
+const { data: response } = useHook();
+const data = response?.data?.property ?? defaultValue;
+```
+
+### Type Definitions
+```typescript
+interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  details?: string[];
+}
+```
+
+## What NOT to Do
+- ❌ Don't use `any` type
+- ❌ Don't use unnecessary type assertions
+- ❌ Don't reference unbound methods
+- ❌ Don't assume API response structure
+- ❌ Don't use logical OR for null checks
+- ❌ Don't leave unused imports or variables
+- ❌ Don't use unsafe type assignments
+
+## What TO Do
+- ✅ Use proper TypeScript types
+- ✅ Use nullish coalescing (`??`)
+- ✅ Use arrow functions for method calls
+- ✅ Extract data from API responses properly
+- ✅ Handle loading and error states
+- ✅ Use proper error handling
+- ✅ Follow consistent naming conventions
+- ✅ Keep code clean and maintainable
+description:
+globs:
+alwaysApply: false
+---

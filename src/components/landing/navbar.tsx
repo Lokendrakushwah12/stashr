@@ -1,6 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useAdminCheck } from "@/lib/hooks/use-admin";
+import type { AdminCheckResponse } from "@/types";
+import { Shield } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import UserMenu from "../auth/user-menu";
@@ -10,6 +13,7 @@ import { StashrLogo } from "../ui/icons";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
+  const { data: adminCheck } = useAdminCheck();
 
   return (
     <div className="relative h-full w-full mx-auto">
@@ -31,6 +35,15 @@ const Navbar = () => {
             </div>
           </div>
           <div className="flex items-center justify-center space-x-4 py-4">
+            {/* Admin Link - Only show for admin user */}
+            {adminCheck?.isAdmin && (
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Link>
+              </Button>
+            )}
             <ThemeToggle />
             {status === "loading" ? (
               <div className="h-8 w-8 animate-pulse rounded-full bg-secondary"></div>

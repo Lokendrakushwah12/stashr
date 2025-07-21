@@ -1,8 +1,8 @@
+import { env } from "@/env";
+import clientPromise from "@/lib/mongodb-adapter";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { env } from "@/env";
-import clientPromise from "@/lib/mongodb-adapter";
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -17,6 +17,9 @@ export const authOptions: NextAuthOptions = {
       // Persist the user id to the token right after signin
       if (account && user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
       }
       return token;
     },
@@ -27,6 +30,9 @@ export const authOptions: NextAuthOptions = {
         user: {
           ...session.user,
           id: token.id,
+          name: token.name,
+          email: token.email,
+          image: token.image,
         },
       };
     },
@@ -38,4 +44,4 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   debug: process.env.NODE_ENV === "development",
-}; 
+};

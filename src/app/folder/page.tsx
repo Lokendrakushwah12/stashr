@@ -16,11 +16,13 @@ export default function FolderPage() {
 
   // Use React Query for data fetching
   const { 
-    data: folders = [], 
+    data: foldersResponse, 
     isLoading, 
     error, 
     refetch 
   } = useFolders();
+
+  const folders = foldersResponse?.data?.folders ?? [];
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {

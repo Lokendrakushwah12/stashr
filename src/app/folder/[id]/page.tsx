@@ -22,11 +22,13 @@ const FolderDetailPage = () => {
 
   // Use React Query for data fetching
   const { 
-    data: folder, 
+    data: folderResponse, 
     isLoading, 
     error, 
     refetch 
   } = useFolder(folderId);
+
+  const folder = folderResponse?.data?.folder;
 
   // Use React Query mutations
   const deleteBookmarkMutation = useDeleteBookmark();
