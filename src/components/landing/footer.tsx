@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ThemeToggle } from "../layouts/theme-toggle";
 const Footer = () => {
   return (
-    <footer className="w-full bg-background space-y-4">
+    <footer className="w-full bg-background space-y-4 container mt-8 py-4">
       <hr className="w-full" />
       <div className="relative flex items-center w-full justify-between">
         <p className="text-sm font-[400] text-muted-foreground">

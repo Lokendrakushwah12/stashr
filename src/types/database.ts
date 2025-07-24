@@ -7,6 +7,7 @@ export interface BookmarkDocument extends Document {
   url: string;
   description: string;
   favicon: string;
+  metaImage?: string; // Add meta image field
   userId: string;
   folderId: mongoose.Types.ObjectId;
   createdAt: Date;

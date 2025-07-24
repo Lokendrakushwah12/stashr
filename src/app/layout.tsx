@@ -18,14 +18,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://stashr.vercel.app"),
+  metadataBase: new URL("https://stashr.in"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://stashr.vercel.app",
+    url: "https://stashr.in",
     title: "Stashr - Organize Your Bookmarks",
     description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
     siteName: "Stashr",

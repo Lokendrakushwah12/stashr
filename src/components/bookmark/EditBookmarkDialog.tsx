@@ -82,26 +82,15 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Bookmark</DialogTitle>
           <DialogDescription>
             Update your bookmark&apos;s title, URL, and description.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter bookmark title"
-              disabled={updateBookmarkMutation.isPending}
-              required
-            />
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="url">URL *</Label>
             <Input
@@ -114,6 +103,17 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
               required
             />
           </div>
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter bookmark title"
+              disabled={updateBookmarkMutation.isPending}
+              required
+            />
+          </div>
+
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>

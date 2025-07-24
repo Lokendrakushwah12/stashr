@@ -1,5 +1,3 @@
-// API Client for Stashr - Centralized API calling functions
-
 import type { 
   ApiResponse, 
   CreateBookmarkRequest, 

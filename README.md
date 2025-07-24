@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://stashr.vercel.app/favicon.svg" alt="Stashr Logo" width="80" height="80">
+  <img src="https://stashr.in/favicon.svg" alt="Stashr Logo" width="80" height="80">
   <h1>Stashr</h1>
   <p><strong>Organize Your Bookmarks</strong></p>
   
@@ -9,14 +9,14 @@
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
   
-  [![Live Demo](https://img.shields.io/badge/Live_Demo-View_Online-blue?style=for-the-badge&logo=vercel)](https://stashr.vercel.app)
+  [![Live Demo](https://img.shields.io/badge/Live_Demo-View_Online-blue?style=for-the-badge&logo=vercel)](https://stashr.in)
   [![Twitter Follow](https://img.shields.io/badge/Twitter-Follow-blue?style=for-the-badge&logo=twitter)](https://twitter.com/lokendratwt)
 </div>
 
 <br>
 
 <div align="center">
-  <img src="https://stashr.vercel.app/og.png" alt="Stashr Preview" width="800" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+  <img src="https://stashr.in/og.png" alt="Stashr Preview" width="800" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
 </div>
 
 <br>
@@ -25,7 +25,7 @@
 
 ## 🚀 Live Demo
 
-**[Try Stashr Now →](https://stashr.vercel.app)**
+**[Try Stashr Now →](https://stashr.in)**
 
 ## ✨ Key Features
 
@@ -79,7 +79,7 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/stashr.git
+   git clone https://github.com/Lokendrakushwah12/stashr.git
    cd stashr
    ```
 
@@ -258,16 +258,6 @@ GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-### Other Platforms
-
-The app can be deployed to any platform that supports Next.js:
-
-- **[Netlify](https://netlify.com/)** - Git-based deployments
-- **[Railway](https://railway.app/)** - Full-stack deployments
-- **[DigitalOcean App Platform](https://www.digitalocean.com/products/app-platform)** - Managed app hosting
-- **[AWS Amplify](https://aws.amazon.com/amplify/)** - AWS managed hosting
-- **[Render](https://render.com/)** - Cloud application platform
-
 ## 🤝 Contributing
 
 We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
@@ -292,7 +282,7 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
 
 ### Issues
 
-If you find a bug or have a feature request, please [open an issue](https://github.com/yourusername/stashr/issues) and we'll get back to you as soon as possible.
+If you find a bug or have a feature request, please [open an issue](https://github.com/Lokendrakushwah12/stashr/issues) and we'll get back to you as soon as possible.
 
 ## 📄 License
 
@@ -313,10 +303,10 @@ This project wouldn't be possible without these amazing open-source projects:
 ## 📊 Project Stats
 
 <div align="center">
-  <img src="https://img.shields.io/github/stars/yourusername/stashr?style=social" alt="GitHub Stars">
-  <img src="https://img.shields.io/github/forks/yourusername/stashr?style=social" alt="GitHub Forks">
-  <img src="https://img.shields.io/github/issues/yourusername/stashr" alt="GitHub Issues">
-  <img src="https://img.shields.io/github/license/yourusername/stashr" alt="License">
+  <img src="https://img.shields.io/github/stars/Lokendrakushwah12/stashr?style=social" alt="GitHub Stars">
+  <img src="https://img.shields.io/github/forks/Lokendrakushwah12/stashr?style=social" alt="GitHub Forks">
+  <img src="https://img.shields.io/github/issues/Lokendrakushwah12/stashr" alt="GitHub Issues">
+  <img src="https://img.shields.io/github/license/Lokendrakushwah12/stashr" alt="License">
 </div>
 
 ---
@@ -324,8 +314,7 @@ This project wouldn't be possible without these amazing open-source projects:
 <div align="center">
   <p>Made with ❤️ by <a href="https://x.com/lokendratwt">Lokendra</a></p>
   <p>
-    <a href="https://stashr.vercel.app">🌐 Live Demo</a> • 
-    <a href="https://twitter.com/lokendratwt">🐦 Twitter</a> • 
-    <a href="https://github.com/yourusername/stashr">📦 GitHub</a>
+    <a href="https://stashr.in">🌐 Live Demo</a> • 
+    <a href="https://twitter.com/lokendratwt">🐦 Twitter</a>
   </p>
 </div>

@@ -6,6 +6,7 @@ import type { CreateBookmarkRequest } from '@/types';
 import { registerModels } from '@/models';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { extractImageUrl } from '@/lib/meta-image-extractor';
 
 // POST /api/bookmarks - Create a new bookmark and add it to a folder for the authenticated user
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -79,12 +80,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Invalid URL will be caught by mongoose validation
     }
     
+    // Extract meta image using metascraper
+    let metaImage = '';
+    try {
+      console.log(`🔍 Creating bookmark: Extracting meta image for ${url.trim()}`);
+      metaImage = await extractImageUrl(url.trim());
+      console.log(`✅ Bookmark creation: Meta image extracted: ${metaImage}`);
+    } catch (error) {
+      console.error('❌ Bookmark creation: Error extracting meta image:', error);
+    }
+    
     // Create new bookmark
     const bookmark = new Bookmark({
       title: title.trim(),
       url: url.trim(),
       description: description?.trim() ?? '',
       favicon,
+      metaImage,
       userId: session.user.id,
       folderId,
     });

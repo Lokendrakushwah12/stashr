@@ -5,10 +5,11 @@ export interface Bookmark {
   url: string;
   description?: string;
   favicon?: string;
-  userId?: string;
-  folderId?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  metaImage?: string; // Add meta image field for Open Graph/Twitter card images
+  userId: string;
+  folderId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Folder {

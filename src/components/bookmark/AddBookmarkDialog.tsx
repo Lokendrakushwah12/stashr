@@ -32,7 +32,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const bookmarkData = {
         title: title.trim(),
@@ -42,12 +42,12 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
       };
 
       await createBookmarkMutation.mutateAsync(bookmarkData);
-      
+
       // Reset form
       setTitle('');
       setUrl('');
       setDescription('');
-      
+
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
@@ -69,7 +69,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
   // Auto-fetch page title when URL is entered
   const handleUrlChange = async (newUrl: string) => {
     setUrl(newUrl);
-    
+
     if (newUrl.trim() && !title.trim()) {
       try {
         // Try to extract title from URL for better UX
@@ -84,15 +84,27 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add New Bookmark</DialogTitle>
           <DialogDescription>
             Add a new bookmark to your folder. Enter the title, URL, and optional description.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
           <div className="space-y-2">
+            <div className="space-y-2">
+              <Label htmlFor="url">URL *</Label>
+              <Input
+                id="url"
+                type="url"
+                value={url}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                placeholder="https://example.com"
+                disabled={createBookmarkMutation.isPending}
+                required
+              />
+            </div>
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
@@ -104,18 +116,6 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="url">URL *</Label>
-            <Input
-              id="url"
-              type="url"
-              value={url}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://example.com"
-              disabled={createBookmarkMutation.isPending}
-              required
-            />
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>

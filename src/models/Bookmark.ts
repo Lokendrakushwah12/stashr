@@ -33,6 +33,10 @@ const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
       type: String,
       default: '',
     },
+    metaImage: {
+      type: String,
+      default: '',
+    },
     userId: {
       type: String,
       required: [true, 'User ID is required'],

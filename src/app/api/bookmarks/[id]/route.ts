@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import type { BookmarkDocument } from '@/types/database';
+import { extractImageUrl } from '@/lib/meta-image-extractor';
 
 // PUT /api/bookmarks/[id] - Update a bookmark for the authenticated user
 export async function PUT(
@@ -53,60 +54,61 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: Partial<Pick<BookmarkDocument, 'title' | 'url' | 'description' | 'favicon'>> = {};
+    const updateData: Partial<Pick<BookmarkDocument, 'title' | 'url' | 'description' | 'favicon' | 'metaImage'>> = {};
     if (title) updateData.title = title.trim();
     if (url) updateData.url = url.trim();
     if (description !== undefined) updateData.description = description?.trim() || '';
 
-    // Try to get favicon from URL if updated
+    // Try to get favicon and meta image from URL if updated
     if (url) {
       try {
         const urlObj = new URL(url.trim());
         updateData.favicon = `${urlObj.protocol}//${urlObj.hostname}/favicon.ico`;
-      } catch {
-        // Invalid URL will be caught by mongoose validation
+        
+        // Extract meta image for the new URL using metascraper
+        console.log(`🔍 Updating bookmark: Extracting meta image for ${url.trim()}`);
+        const metaImage = await extractImageUrl(url.trim());
+        updateData.metaImage = metaImage;
+        console.log(`✅ Bookmark update: Meta image extracted: ${metaImage}`);
+      } catch (error) {
+        console.error('❌ Bookmark update: Error extracting meta image:', error);
       }
     }
 
+    // Find and update the bookmark
     const bookmark = await Bookmark.findOneAndUpdate(
-      { _id: resolvedParams.id, userId: session.user.id },
-      updateData,
       {
-        new: true,
-        runValidators: true,
-      }
-    )
-      .populate('folderId')
-      .exec();
+        _id: resolvedParams.id,
+        userId: session.user.id,
+      },
+      updateData,
+      { new: true, runValidators: true }
+    ).exec();
 
     if (!bookmark) {
-      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Bookmark not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ bookmark }, { status: 200 });
+    return NextResponse.json(
+      { bookmark: bookmark.toObject() },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error updating bookmark:", error);
-
-    if (error instanceof mongoose.Error.ValidationError) {
-      const validationErrors = Object.values(error.errors).map(
-        (err) => err.message,
-      );
-      return NextResponse.json(
-        { error: "Validation failed", details: validationErrors },
-        { status: 400 },
-      );
-    }
 
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to update bookmark: ${error.message}` },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
       { error: "Failed to update bookmark" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
