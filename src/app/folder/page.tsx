@@ -15,11 +15,11 @@ export default function FolderPage() {
   const [showAddFolder, setShowAddFolder] = useState(false);
 
   // Use React Query for data fetching
-  const { 
-    data: foldersResponse, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: foldersResponse,
+    isLoading,
+    error,
+    refetch
   } = useFolders();
 
   const folders = foldersResponse?.data?.folders ?? [];
@@ -54,7 +54,7 @@ export default function FolderPage() {
 
   return (
     <>
-      <section className="container space-y-8 pt-24 min-h-screen">
+      <section className="container space-y-8 pt-24 pb-8 min-h-screen">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -82,21 +82,25 @@ export default function FolderPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="border relative rounded-2xl bg-secondary/20 p-4">
-            <div className="absolute right-2 top-2 p-2 bg-accent rounded-xl">
-              <FolderClosed className="h-5 w-5" />
+          <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
+            <div className="flex flex-col w-full justify-center items-start p-4">
+              <div className="text-3xl font-bold">{folders.length}</div>
+              <div className="text-sm text-muted-foreground">Total Folders</div>
             </div>
-            <div className="text-3xl font-bold">{folders.length}</div>
-            <div className="text-sm text-muted-foreground">Total Folders</div>
+            <div className="flex justify-center items-center px-9 h-full bg-accent dark:bg-accent/50 bg-lines-diag">
+              <FolderClosed strokeWidth={1} className="size-8 text-muted-foreground" />
+            </div>
           </div>
-          <div className="border relative rounded-2xl bg-secondary/20 p-4">
-            <div className="absolute right-2 top-2 p-2 bg-accent rounded-xl">
-              <Bookmark className="h-5 w-5" />
+          <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
+            <div className="flex flex-col w-full justify-center items-start p-4">
+              <div className="text-3xl font-bold">
+                {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Bookmarks</div>
             </div>
-            <div className="text-3xl font-bold">
-              {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
+            <div className="flex justify-center items-center px-9 h-full bg-accent dark:bg-accent/50 bg-lines-diag">
+              <Bookmark strokeWidth={1} className="size-8 text-muted-foreground" />
             </div>
-            <div className="text-sm text-muted-foreground">Total Bookmarks</div>
           </div>
         </div>
 

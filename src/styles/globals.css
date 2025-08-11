@@ -107,3 +107,16 @@ html {
 ::selection {
   background: hsl(var(--secondary-foreground) / 0.1);
 }
+
+/* Single diagonal (↙︎) */
+.bg-lines-diag {
+  --line-angle: -45deg;
+  --line-size: 8px;
+  --line-weight: 1px;
+  --line-color: hsl(var(--border));
+  background-image: repeating-linear-gradient(
+    var(--line-angle),
+    var(--line-color) 0 var(--line-weight),
+    transparent var(--line-weight) var(--line-size)
+  );
+}
