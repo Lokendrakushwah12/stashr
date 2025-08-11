@@ -1,6 +1,9 @@
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { GitHubLogoIcon, TwitterLogoIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { ThemeToggle } from "../layouts/theme-toggle";
+import { Button } from "../ui/button";
+import { XIcon } from "../ui/icons";
+
 const Footer = () => {
   return (
     <footer className="w-full bg-background space-y-4 container mt-8 py-4">
@@ -17,22 +20,40 @@ const Footer = () => {
             Lokendra.
           </Link>
         </p>
-        <div className="flex items-center gap-4">
-          <Link
-            target="_blank"
-            rel="noreferrer"
-            href="https://github.com/lokendrakushwah12"
-            className="p-1"
+        <div className="flex items-center">
+          <Button
+            data-slot="button"
+            className="size-9 p-0"
+            variant="ghost"
+            aria-label="Twitter"
+            title="Twitter"
+            asChild
           >
-            <GitHubLogoIcon className="h-5 w-5 text-muted-foreground hover:text-secondary-foreground" />
-          </Link>
-          <ThemeToggle />
-          {/* <Link href="#" className="p-1">
-              <TwitterLogoIcon className="h-5 w-5 text-muted-foreground hover:text-secondary-foreground" />
+            <Link
+              target="_blank"
+              rel="noreferrer"
+              href="https://x.com/lokendratwt"
+            >
+              <XIcon className="h-5 w-5 text-foreground" />
             </Link>
-            <Link href="#" className="p-1">
-              <DiscordLogoIcon className="h-5 w-5 text-muted-foreground hover:text-secondary-foreground" />
-            </Link> */}
+          </Button>
+          <Button
+            data-slot="button"
+            className="size-9 p-0"
+            variant="ghost"
+            aria-label="Github"
+            title="Github"
+            asChild
+          >
+            <Link
+              target="_blank"
+              rel="noreferrer"
+              href="https://github.com/lokendrakushwah12"
+            >
+              <GitHubLogoIcon className="h-5 w-5 text-foreground" />
+            </Link>
+          </Button>
+          <ThemeToggle />
         </div>
       </div>
     </footer>

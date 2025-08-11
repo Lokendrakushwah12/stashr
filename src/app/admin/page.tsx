@@ -1,7 +1,5 @@
 "use client";
 
-import Footer from "@/components/landing/footer";
-import Navbar from "@/components/landing/navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,9 +63,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto py-8 w-full space-y-8 mt-12 min-h-screen">
-            <Navbar />
-            {/* Header */}
+        <section className="container space-y-8 pt-24 min-h-screen">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -115,8 +111,7 @@ export default function AdminPage() {
             {activeTab === 'overview' && <OverviewTab />}
             {activeTab === 'users' && <UsersTab />}
             {activeTab === 'analytics' && <AnalyticsTab />}
-            <Footer />
-        </div>
+        </section>
     );
 }
 

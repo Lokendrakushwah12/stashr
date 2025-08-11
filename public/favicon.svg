@@ -1,14 +1,15 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="24" height="24" rx="6" fill="url(#paint0_linear_2440_1442)"/>
-    <path d="M6.00098 9.96402V16.0408C6.00098 16.3339 6.15901 16.6149 6.44032 16.8221C6.72162 17.0293 7.10315 17.1457 7.50098 17.1457H16.501C16.8988 17.1457 17.2803 17.0293 17.5616 16.8221C17.8429 16.6149 18.001 16.3339 18.001 16.0408V9.96402" fill="#B3B3B3"/>
-    <path d="M6.00098 9.96402V16.0408C6.00098 16.3339 6.15901 16.6149 6.44032 16.8221C6.72162 17.0293 7.10315 17.1457 7.50098 17.1457H16.501C16.8988 17.1457 17.2803 17.0293 17.5616 16.8221C17.8429 16.6149 18.001 16.3339 18.001 16.0408V9.96402" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M18.751 6.85425H5.25098C4.83676 6.85425 4.50098 7.12394 4.50098 7.45661V9.26371C4.50098 9.59638 4.83676 9.86607 5.25098 9.86607H18.751C19.1652 9.86607 19.501 9.59638 19.501 9.26371V7.45661C19.501 7.12394 19.1652 6.85425 18.751 6.85425Z" fill="white" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M10.501 13.1115H13.501" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <defs>
-    <linearGradient id="paint0_linear_2440_1442" x1="12" y1="0" x2="12" y2="24" gradientUnits="userSpaceOnUse">
-    <stop stop-color="white"/>
-    <stop offset="1" stop-color="#F6F6F6"/>
-    </linearGradient>
-    </defs>
-    </svg>
-    
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="24" height="24" rx="6" fill="url(#paint0_linear_2440_1442)"></rect>
+<path d="M6.00098 9.96402V16.0408C6.00098 16.3339 6.15901 16.6149 6.44032 16.8221C6.72162 17.0293 7.10315 17.1457 7.50098 17.1457H16.501C16.8988 17.1457 17.2803 17.0293 17.5616 16.8221C17.8429 16.6149 18.001 16.3339 18.001 16.0408V9.96402" fill="#B3B3B3"></path>
+<path d="M6.00098 9.96402V16.0408C6.00098 16.3339 6.15901 16.6149 6.44032 16.8221C6.72162 17.0293 7.10315 17.1457 7.50098 17.1457H16.501C16.8988 17.1457 17.2803 17.0293 17.5616 16.8221C17.8429 16.6149 18.001 16.3339 18.001 16.0408V9.96402" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M18.751 6.85425H5.25098C4.83676 6.85425 4.50098 7.12394 4.50098 7.45661V9.26371C4.50098 9.59638 4.83676 9.86607 5.25098 9.86607H18.751C19.1652 9.86607 19.501 9.59638 19.501 9.26371V7.45661C19.501 7.12394 19.1652 6.85425 18.751 6.85425Z" fill="white" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M10.501 13.1115H13.501" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></path>
+<defs>
+<linearGradient id="SvgjsLinearGradient1001" x1="12" y1="0" x2="12" y2="24" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"></stop>
+<stop offset="1" stop-color="#F6F6F6"></stop>
+</linearGradient>
+</defs>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>

@@ -11,7 +11,7 @@ export function ThemeToggle() {
     <Button
       data-slot="button"
       onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-      className="relative size-8 p-0"
+      className="relative size-9 p-0"
       variant="ghost"
       aria-label="Toggle theme"
       title="Toggle theme"
