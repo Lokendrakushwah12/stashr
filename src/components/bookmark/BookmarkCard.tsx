@@ -10,11 +10,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Bookmark } from '@/types';
+import { LinkIcon, PencilSimpleLineIcon, TrashIcon } from "@phosphor-icons/react";
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
-import { Edit, ExternalLink, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
 // Type for the meta image extraction API response
 interface ExtractionResult {
     success: boolean;
@@ -141,21 +140,21 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                                 onClick={handleEdit}
                                 className="cursor-pointer rounded-xl"
                             >
-                                <Edit className="h-4 w-4 mr-2" />
+                                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4 mr-2" />
                                 Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => window.open(bookmark.url, '_blank')}
                                 className="cursor-pointer rounded-xl"
                             >
-                                <ExternalLink className="h-4 w-4 mr-2" />
+                                <LinkIcon weight="duotone" className="h-4 w-4 mr-2" />
                                 Open Link
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={handleDelete}
                                 className="text-destructive focus:text-destructive cursor-pointer rounded-xl"
                             >
-                                <Trash2 className="h-4 w-4 mr-2" />
+                                <TrashIcon weight="duotone" className="h-4 w-4 mr-2" />
                                 Delete
                             </DropdownMenuItem>
                         </DropdownMenuContent>

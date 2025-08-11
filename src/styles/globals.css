@@ -120,3 +120,7 @@ html {
     transparent var(--line-weight) var(--line-size)
   );
 }
+
+.thin-stroke {
+  stroke-width: 0.5;
+}

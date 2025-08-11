@@ -118,7 +118,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
                 <button
                   key={colorOption}
                   type="button"
-                  className={`w-8 h-8 rounded-full border-2 ${
+                  className={`w-8 h-8 rounded-xl border-2 ${
                     color === colorOption ? 'border-foreground' : 'border-transparent'
                   }`}
                   style={{ backgroundColor: colorOption }}

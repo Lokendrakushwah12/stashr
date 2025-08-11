@@ -1,8 +1,8 @@
-import { GitHubLogoIcon, TwitterLogoIcon } from "@radix-ui/react-icons";
+import { XLogoIcon } from "@phosphor-icons/react/dist/ssr";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { ThemeToggle } from "../layouts/theme-toggle";
 import { Button } from "../ui/button";
-import { XIcon } from "../ui/icons";
 
 const Footer = () => {
   return (
@@ -34,7 +34,7 @@ const Footer = () => {
               rel="noreferrer"
               href="https://x.com/lokendratwt"
             >
-              <XIcon className="h-5 w-5 text-foreground" />
+              <XLogoIcon weight="duotone" className="h-5 w-5 text-foreground" />
             </Link>
           </Button>
           <Button

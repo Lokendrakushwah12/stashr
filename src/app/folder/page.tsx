@@ -4,7 +4,8 @@ import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import { Button } from "@/components/ui/button";
 import { useFolders } from '@/lib/hooks/use-bookmarks';
-import { Bookmark, FolderClosed, Loader, Plus, RefreshCw } from 'lucide-react';
+import { ArrowsClockwiseIcon, BookmarksIcon, FoldersIcon } from '@phosphor-icons/react';
+import { Loader, Plus, RefreshCw } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -70,7 +71,7 @@ export default function FolderPage() {
               size="sm"
               disabled={isLoading}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
             <Button onClick={() => setShowAddFolder(true)}>
@@ -88,7 +89,7 @@ export default function FolderPage() {
               <div className="text-sm text-muted-foreground">Total Folders</div>
             </div>
             <div className="flex justify-center items-center px-9 h-full bg-accent dark:bg-accent/50 bg-lines-diag">
-              <FolderClosed strokeWidth={1} className="size-8 text-muted-foreground" />
+              <FoldersIcon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
             </div>
           </div>
           <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
@@ -99,7 +100,7 @@ export default function FolderPage() {
               <div className="text-sm text-muted-foreground">Total Bookmarks</div>
             </div>
             <div className="flex justify-center items-center px-9 h-full bg-accent dark:bg-accent/50 bg-lines-diag">
-              <Bookmark strokeWidth={1} className="size-8 text-muted-foreground" />
+              <BookmarksIcon weight="duotone" strokeWidth={1} className="size-10 thin-stroke text-muted-foreground" />
             </div>
           </div>
         </div>

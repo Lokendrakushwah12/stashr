@@ -5,9 +5,16 @@ import BookmarkCard from '@/components/bookmark/BookmarkCard';
 import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
 import { Button } from "@/components/ui/button";
-import { useFolder, useDeleteBookmark, useDeleteFolder } from '@/lib/hooks/use-bookmarks';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useDeleteBookmark, useDeleteFolder, useFolder } from '@/lib/hooks/use-bookmarks';
 import type { Bookmark } from '@/types';
-import { ArrowLeft, Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowsClockwiseIcon, PencilSimpleLineIcon, ShareFatIcon, TrashIcon } from "@phosphor-icons/react";
+import { ArrowLeft, MoreVertical, Plus, RefreshCw } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -21,11 +28,11 @@ const FolderDetailPage = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
 
   // Use React Query for data fetching
-  const { 
-    data: folderResponse, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: folderResponse,
+    isLoading,
+    error,
+    refetch
   } = useFolder(folderId);
 
   const folder = folderResponse?.data?.folder;
@@ -113,31 +120,49 @@ const FolderDetailPage = () => {
             size="sm"
             disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button
-            onClick={() => setShowEditFolder(true)}
-            variant="outline"
-            size="sm"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Folder
-          </Button>
-          <Button
-            onClick={handleDeleteFolder}
-            variant="outline"
-            size="sm"
-            className="text-destructive hover:text-destructive"
-            disabled={deleteFolderMutation.isPending}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
-          </Button>
+
           <Button onClick={() => setShowAddBookmark(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Bookmark
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="px-2">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-xl w-48">
+              <DropdownMenuItem
+                onClick={() => {
+                  const url = `${window.location.origin}/public/folder/${folderId}`;
+                  navigator.clipboard?.writeText(url).catch(() => { });
+                  window.open(url, "_blank");
+                }}
+                className="cursor-pointer rounded-lg"
+              >
+                <ShareFatIcon weight="duotone" className="h-4 w-4 mr-2" />
+                Share Public Link
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowEditFolder(true)}
+                className="cursor-pointer rounded-lg"
+              >
+                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4 mr-2" />
+                Edit Folder
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDeleteFolder}
+                className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
+              >
+                <TrashIcon weight="duotone" className="h-4 w-4 mr-2" />
+                {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
