@@ -79,14 +79,14 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Folder</DialogTitle>
           <DialogDescription>
             Update your folder&apos;s name, description, and color.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
