@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,9 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SignOutIcon } from "@phosphor-icons/react";
 import { signOut, useSession } from "next-auth/react";
-import { LogOut } from "lucide-react";
 
 export default function UserMenu() {
   const { data: session } = useSession();
@@ -47,7 +47,7 @@ export default function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer rounded-xl" onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <SignOutIcon weight="duotone" className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

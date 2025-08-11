@@ -139,7 +139,7 @@ const FolderDetailPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   const url = `${window.location.origin}/public/folder/${folderId}`;
-                  navigator.clipboard?.writeText(url).catch(() => { });
+                  navigator.clipboard?.writeText(url).catch(() => { void 0; });
                   window.open(url, "_blank");
                 }}
                 className="cursor-pointer rounded-lg"
