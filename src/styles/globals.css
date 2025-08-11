@@ -113,7 +113,7 @@ html {
   --line-angle: -45deg;
   --line-size: 8px;
   --line-weight: 1px;
-  --line-color: hsl(var(--border));
+  --line-color: hsl(var(--border)/0.6);
   background-image: repeating-linear-gradient(
     var(--line-angle),
     var(--line-color) 0 var(--line-weight),
