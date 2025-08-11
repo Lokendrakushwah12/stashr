@@ -10,6 +10,7 @@ import UserMenu from "../auth/user-menu";
 import { ThemeToggle } from "../layouts/theme-toggle";
 import { Button } from "../ui/button";
 import { StashrLogo } from "../ui/icons";
+import Logo from "@/assets/svgs/assets/svgs/Logo";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
@@ -29,8 +30,8 @@ const Navbar = () => {
                 href={session ? "/folder" : "/"}
                 className="flex items-center gap-2 text-lg font-semibold text-foreground"
               >
-                <StashrLogo width={20} />
-                <span className="text-sm font-medium">Stashr</span>
+                <Logo width={28} />
+                <span className="text-base font-medium">Stashr</span>
               </Link>
             </div>
           </div>
