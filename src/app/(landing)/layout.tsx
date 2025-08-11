@@ -10,7 +10,7 @@ const LandingLayout = ({ children }: Props) => {
   return (
     <>
       <Navbar />
-      <main className="relative z-40 mx-auto w-full">{children}</main>
+      <main className="relative z-40 mx-auto w-full bg-[#f6f6f6] dark:bg-[#101010]">{children}</main>
       <Footer />
     </>
   );

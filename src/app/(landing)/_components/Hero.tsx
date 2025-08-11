@@ -6,13 +6,13 @@ import Link from "next/link";
 
 const Hero = () => {
   return (
-    <section className="container flex flex-col items-center mt-28 justify-center min-h-[60vh] text-center">
+    <section className="container flex flex-col items-center pt-28 pb-8 justify-center min-h-[60vh] text-center">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-center mb-8">
           <StashrLogo width={80} />
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-semibold mb-6">
+        <h1 className="text-4xl md:text-6xl font-medium tracking-tighter mb-6">
           Organize Your Bookmarks
         </h1>
 
@@ -31,8 +31,8 @@ const Hero = () => {
 
         {/* dashboard image */}
         <div className="relative max-w-7xl mx-auto">
-          <div className="absolute bottom-0 z-30 w-full h-60 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-          <div className="relative rounded-t-2xl bg-[#09090b] overflow-hidden border border-border/50 border-b-0">
+          <div className="absolute bottom-0 z-30 w-full h-60 bg-gradient-to-t from-[#101010] to-transparent pointer-events-none" />
+          <div className="relative rounded-t-2xl select-none bg-[#09090b] overflow-hidden border border-border/50 border-b-0">
             <img
               src="/og.png"
               alt="Stashr Dashboard Preview"
