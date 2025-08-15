@@ -28,6 +28,7 @@ const FolderDetailPage = () => {
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Use React Query for data fetching
   const {
@@ -52,6 +53,7 @@ const FolderDetailPage = () => {
   };
 
   const handleDeleteFolder = () => {
+    setDropdownOpen(false);
     setShowDeleteFolderConfirm(true);
   };
 
@@ -131,7 +133,7 @@ const FolderDetailPage = () => {
             Add Bookmark
           </Button>
 
-          <DropdownMenu>
+          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="px-2">
                 <MoreVertical className="h-4 w-4" />
@@ -150,7 +152,10 @@ const FolderDetailPage = () => {
                 Share Public Link
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setShowEditFolder(true)}
+                onClick={() => {
+                  setDropdownOpen(false);
+                  setShowEditFolder(true);
+                }}
                 className="cursor-pointer rounded-lg"
               >
                 <PencilSimpleLineIcon weight="duotone" className="h-4 w-4 mr-2" />

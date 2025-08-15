@@ -38,6 +38,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
     const [metaImageUrl, setMetaImageUrl] = useState<string>('');
     const [isExtracting, setIsExtracting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     // Initialize with stored meta image or fallback, then try to extract if needed
     useEffect(() => {
@@ -93,6 +94,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
     }, [bookmark.metaImage, bookmark.url]);
 
     const handleDelete = () => {
+        setDropdownOpen(false);
         setShowDeleteConfirm(true);
     };
 
@@ -102,6 +104,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
     };
 
     const handleEdit = () => {
+        setDropdownOpen(false);
         onEdit(bookmark);
     };
 
@@ -131,7 +134,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                             </div>
                         </div>
                     </Link>
-                    <DropdownMenu>
+                    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="secondary"
