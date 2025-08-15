@@ -45,7 +45,7 @@ export default function PublicFolderPage() {
     }, [folderId]);
 
     return (
-        <div className="container py-8 space-y-8 mt-12 min-h-screen">
+        <div className="max-w-[86rem] px-5 mx-auto py-8 space-y-8 mt-12 min-hscreen h-[70vh]">
             {error && (
                 <div className="max-w-md">
                     <p className="text-destructive mb-4">{error}</p>
@@ -65,7 +65,7 @@ export default function PublicFolderPage() {
 
             {folder && (
                 <>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
                                 <div
@@ -92,7 +92,18 @@ export default function PublicFolderPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-muted-foreground">No bookmarks</div>
+                        <div className="w-full h-full flex flex-col justify-center items-center">
+                            <div className='relative h-32 w-full sm:w-[25rem]'>
+                                <div className='absolute bottom-0 w-full h-16 bg-gradient-to-t from-background to-transparent z-[99]' />
+                                <div className="border border-[#ddd] dark:border-white/10 w-full h-[60%] bg-white/60 dark:bg-muted/60 z-20 p-2 backdrop-blur-2xl rounded-t-2xl absolute bottom-0" >
+                                    <div className="w-[50%] h-[50%] bg-black/5 dark:bg-white/10 rounded-lg mb-2" />
+                                    <div className="w-full h-[50%] bg-black/5 dark:bg-white/10 rounded-lg" />
+                                </div>
+                                <div className="border border-[#ddd] group-hover:-rotate-2 transition-all dark:border-white/10 w-[95%] h-[60%] scale-95 bg-white/50 dark:bg-muted/50 z-10 backdrop-blur-2xl p-2 rounded-t-2xl absolute bottom-4 left-1/2 -translate-x-1/2" />
+                                <div className="border border-[#ddd] group-hover:rotate-2 transition-all dark:border-white/10 w-[85%] h-[60%] scale-90 bg-white/40 dark:bg-muted/40 z-0 p-2 rounded-t-2xl absolute bottom-8 left-1/2 -translate-x-1/2" />
+                            </div>
+                            <h3 className="text-2xl font-medium mb-2">No bookmarks</h3>
+                        </div>
                     )}
                 </>
             )}

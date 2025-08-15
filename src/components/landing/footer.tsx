@@ -6,9 +6,9 @@ import { Button } from "../ui/button";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-background space-y-4 container pb-4">
-      <hr className="w-full" />
-      <div className="relative flex items-center w-full justify-between">
+    <footer className="w-full bg-background mx-auto space-y-4 py-4 border-t border-dashed">
+      {/* <hr className="w-full" /> */}
+      <div className="relative flex items-center w-full justify-between max-w-[86rem] px-5 mx-auto">
         <p className="text-sm font-[400] text-muted-foreground">
           Built by&nbsp;
           <Link

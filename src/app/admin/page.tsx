@@ -63,7 +63,7 @@ export default function AdminPage() {
     }
 
     return (
-        <section className="container space-y-8 pt-24 min-h-screen">
+        <section className="max-w-[86rem] px-5 mx-auto space-y-8 pt-24 min-h-screen">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">

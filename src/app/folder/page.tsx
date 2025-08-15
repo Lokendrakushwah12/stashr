@@ -41,7 +41,7 @@ export default function FolderPage() {
 
   if (error) {
     return (
-      <section className="container flex flex-col items-center justify-center min-h-[60vh] text-center">
+      <section className="max-w-[86rem] px-5 mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center">
         <div className="max-w-md">
           <p className="text-destructive mb-4">{error.message}</p>
           <Button onClick={() => refetch()} variant="outline">
@@ -55,7 +55,7 @@ export default function FolderPage() {
 
   return (
     <>
-      <section className="container space-y-8 pt-24 pb-8 min-h-screen">
+      <section className="space-y-8 pt-24 pb-8 min-h-screen">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -117,7 +117,7 @@ export default function FolderPage() {
               <div className="flex items-center justify-center mb-4">
                 <FolderOpenIcon weight="duotone" className="h-16 w-16 text-muted-foreground" />
               </div>
-              <h3 className="text-2xl font-medium mb-2">You don't have any folders yet</h3>
+              <h3 className="text-2xl font-medium mb-2">You don&apos;t have any folders yet</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
                 Get started by creating your first folder to organize your bookmarks.
               </p>

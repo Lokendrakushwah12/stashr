@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const Hero = () => {
   return (
-    <section className="container flex flex-col items-center pt-28 pb-8 justify-center min-h-[60vh] text-center">
+    <section className="max-w-[86rem] px-5 mx-auto flex flex-col items-center pt-28 pb-8 justify-center min-h-[60vh] text-center">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-center mb-8">
           <StashrLogo width={80} />

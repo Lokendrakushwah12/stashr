@@ -18,10 +18,10 @@ const Navbar = () => {
     <div className="relative h-full w-full mx-auto">
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-[50] h-16 transform border-b bg-background/90 backdrop-blur-lg",
+          "fixed inset-x-0 top-0 z-[50] h-16 transform border-b border-dashed bg-background/90 backdrop-blur-lg",
         )}
       >
-        <div className="container flex h-16 w-full items-center justify-center">
+        <div className="max-w-[86rem] px-5 mx-auto flex h-16 w-full items-center justify-center">
           <div className="sticky inset-x-0 flex w-full items-center justify-between">
             <div className="flex items-center gap-6 lg:flex-none">
               <Link

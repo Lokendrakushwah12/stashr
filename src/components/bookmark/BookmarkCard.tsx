@@ -9,6 +9,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import type { Bookmark } from '@/types';
 import { LinkIcon, PencilSimpleLineIcon, TrashIcon } from "@phosphor-icons/react";
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
@@ -36,6 +37,7 @@ interface BookmarkCardProps {
 const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
     const [metaImageUrl, setMetaImageUrl] = useState<string>('');
     const [isExtracting, setIsExtracting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Initialize with stored meta image or fallback, then try to extract if needed
     useEffect(() => {
@@ -91,9 +93,12 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
     }, [bookmark.metaImage, bookmark.url]);
 
     const handleDelete = () => {
-        if (confirm('Are you sure you want to delete this bookmark?')) {
-            onDelete(bookmark._id!);
-        }
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        onDelete(bookmark._id!);
+        setShowDeleteConfirm(false);
     };
 
     const handleEdit = () => {
@@ -101,7 +106,8 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
     };
 
     return (
-        <Card className="rounded-2xl mb-2 bg-secondary/20 relative z-10 overflow-hidden hover:bg-accent/50 transition-all group">
+        <>
+            <Card className="rounded-2xl mb-2 bg-secondary/20 relative z-10 overflow-hidden hover:bg-accent/50 transition-all group">
             <CardContent className="p-1 w-full">
                 <div className="flex w-full items-center p-1 pb-0 sm:p-2 sm:pb-0">
                     <Link href={bookmark.url} target="_blank" className='w-full -mr-8'>
@@ -207,7 +213,20 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                 </div>
             </CardContent>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmationDialog
+            open={showDeleteConfirm}
+            onOpenChange={setShowDeleteConfirm}
+            title="Delete Bookmark"
+            description="Are you sure you want to delete this bookmark? This action cannot be undone."
+            confirmText="Delete"
+            cancelText="Cancel"
+            variant="destructive"
+            onConfirm={confirmDelete}
+        />
+        </>
     );
-};
+}
 
 export default BookmarkCard; 
