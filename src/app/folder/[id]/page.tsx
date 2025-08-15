@@ -175,14 +175,20 @@ const FolderDetailPage = () => {
       ) : (
         folder.bookmarks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mb-4">
-              <Plus className="h-8 w-8 text-muted-foreground" />
+            <div className='relative h-32 w-[25rem]'>
+              <div className='absolute bottom-0 w-full h-16 bg-gradient-to-t from-background to-transparent z-[99]' />
+              <div className="border border-[#ddd] dark:border-white/10 w-full h-[60%] bg-white/60 dark:bg-white/10 z-20 p-2 backdrop-blur-2xl rounded-t-2xl absolute bottom-0" >
+                <div className="w-[50%] h-[50%] bg-black/5 dark:bg-white/10 rounded-lg mb-2" />
+                <div className="w-full h-[50%] bg-black/5 dark:bg-white/10 rounded-lg" />
+              </div>
+              <div className="border border-[#ddd] group-hover:-rotate-2 transition-all dark:border-white/10 w-[95%] h-[60%] scale-95 bg-white/50 dark:bg-white/10 z-10 backdrop-blur-2xl p-2 rounded-t-2xl absolute bottom-4 left-1/2 -translate-x-1/2" />
+              <div className="border border-[#ddd] group-hover:rotate-2 transition-all dark:border-white/10 w-[85%] h-[60%] scale-90 bg-white/40 dark:bg-white/10 z-0 p-2 rounded-t-2xl absolute bottom-8 left-1/2 -translate-x-1/2" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
+            <h3 className="text-2xl font-medium mb-2">You don't have any bookmarks yet</h3>
             <p className="text-muted-foreground mb-6 max-w-md">
               Get started by adding your first bookmark to this folder.
             </p>
-            <Button onClick={() => setShowAddBookmark(true)}>
+            <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Your First Bookmark
             </Button>

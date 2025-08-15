@@ -4,7 +4,7 @@ import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import { Button } from "@/components/ui/button";
 import { useFolders } from '@/lib/hooks/use-bookmarks';
-import { ArrowsClockwiseIcon, BookmarksIcon, FoldersIcon } from '@phosphor-icons/react';
+import { ArrowsClockwiseIcon, BookmarksIcon, FolderOpenIcon, FoldersIcon } from '@phosphor-icons/react';
 import { Loader, Plus, RefreshCw } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -114,14 +114,14 @@ export default function FolderPage() {
         ) : (
           folders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mb-4">
-                <Plus className="h-8 w-8 text-muted-foreground" />
+              <div className="flex items-center justify-center mb-4">
+                <FolderOpenIcon weight="duotone" className="h-16 w-16 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No folders yet</h3>
+              <h3 className="text-2xl font-medium mb-2">You don't have any folders yet</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
                 Get started by creating your first folder to organize your bookmarks.
               </p>
-              <Button onClick={() => setShowAddFolder(true)}>
+              <Button variant="outline" onClick={() => setShowAddFolder(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Folder
               </Button>
