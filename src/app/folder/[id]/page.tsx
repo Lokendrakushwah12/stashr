@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDeleteBookmark, useDeleteFolder, useFolder } from '@/lib/hooks/use-bookmarks';
 import type { Bookmark } from '@/types';
-import { ArrowsClockwiseIcon, PencilSimpleLineIcon, ShareFatIcon, TrashIcon } from "@phosphor-icons/react";
+import { ArrowsClockwiseIcon, PencilSimpleLineIcon, PlusIcon, ShareFatIcon, TrashIcon } from "@phosphor-icons/react";
 import { ArrowLeft, MoreVertical, Plus, RefreshCw } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -72,7 +72,7 @@ const FolderDetailPage = () => {
         <div className="max-w-md">
           <p className="text-destructive mb-4">{error.message || 'Folder not found'}</p>
           <Button onClick={() => router.push('/')} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
         </div>
@@ -92,14 +92,14 @@ const FolderDetailPage = () => {
   }
 
   return (
-    <div className="py-8 space-y-8 mt-12 min-h-screen">
+    <div className="py-4 space-y-8 min-h-screen">
       {/* Header */}
       <Button
         onClick={() => router.push('/')}
         variant="outline"
         size="sm"
       >
-        <ArrowLeft className="h-4 w-4 mr-2" />
+        <ArrowLeft className="h-4 w-4" />
         Back
       </Button>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -124,12 +124,12 @@ const FolderDetailPage = () => {
             size="sm"
             disabled={isLoading}
           >
-            <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
 
           <Button onClick={() => setShowAddBookmark(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <PlusIcon weight="duotone" className="h-4 w-4" />
             Add Bookmark
           </Button>
 
@@ -148,7 +148,7 @@ const FolderDetailPage = () => {
                 }}
                 className="cursor-pointer rounded-lg"
               >
-                <ShareFatIcon weight="duotone" className="h-4 w-4 mr-2" />
+                <ShareFatIcon weight="duotone" className="h-4 w-4" />
                 Share Public Link
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -158,14 +158,14 @@ const FolderDetailPage = () => {
                 }}
                 className="cursor-pointer rounded-lg"
               >
-                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4 mr-2" />
+                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
                 Edit Folder
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleDeleteFolder}
                 className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
               >
-                <TrashIcon weight="duotone" className="h-4 w-4 mr-2" />
+                <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
                 {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -196,7 +196,7 @@ const FolderDetailPage = () => {
               Get started by adding your first bookmark to this folder.
             </p>
             <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Add Your First Bookmark
             </Button>
           </div>

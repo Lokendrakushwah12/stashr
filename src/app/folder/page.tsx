@@ -2,10 +2,11 @@
 
 import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
+import ImportExportDialog from '@/components/bookmark/ImportExportDialog';
 import { Button } from "@/components/ui/button";
 import { useFolders } from '@/lib/hooks/use-bookmarks';
-import { ArrowsClockwiseIcon, BookmarksIcon, FolderOpenIcon, FoldersIcon } from '@phosphor-icons/react';
-import { Loader, Plus, RefreshCw } from 'lucide-react';
+import { ArrowsClockwiseIcon, BookmarksIcon, FolderOpenIcon, FoldersIcon, PlusIcon } from '@phosphor-icons/react';
+import { Loader, Plus, RefreshCw, Upload } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -14,6 +15,7 @@ export default function FolderPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [showAddFolder, setShowAddFolder] = useState(false);
+  const [showImportExport, setShowImportExport] = useState(false);
 
   // Use React Query for data fetching
   const {
@@ -45,7 +47,7 @@ export default function FolderPage() {
         <div className="max-w-md">
           <p className="text-destructive mb-4">{error.message}</p>
           <Button onClick={() => refetch()} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4" />
             Retry
           </Button>
         </div>
@@ -55,7 +57,7 @@ export default function FolderPage() {
 
   return (
     <>
-      <section className="space-y-8 pt-24 pb-8 min-h-screen">
+      <section className="space-y-8 py-8 min-h-screen">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -71,11 +73,19 @@ export default function FolderPage() {
               size="sm"
               disabled={isLoading}
             >
-              <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
+            {/* <Button
+              onClick={() => setShowImportExport(true)}
+              variant="outline"
+              size="sm"
+            >
+              <Upload className="h-4 w-4" />
+              Import/Export
+            </Button> */}
             <Button onClick={() => setShowAddFolder(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <PlusIcon weight='duotone' className="h-4 w-4" />
               Add Folder
             </Button>
           </div>
@@ -88,7 +98,7 @@ export default function FolderPage() {
               <div className="text-3xl font-bold">{folders.length}</div>
               <div className="text-sm text-muted-foreground">Total Folders</div>
             </div>
-            <div className="flex justify-center items-center px-9 h-full bg-accent dark:bg-accent/50 bg-lines-diag">
+            <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
               <FoldersIcon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
             </div>
           </div>
@@ -99,7 +109,7 @@ export default function FolderPage() {
               </div>
               <div className="text-sm text-muted-foreground">Total Bookmarks</div>
             </div>
-            <div className="flex justify-center items-center px-9 h-full bg-accent dark:bg-accent/50 bg-lines-diag">
+            <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
               <BookmarksIcon weight="duotone" strokeWidth={1} className="size-10 thin-stroke text-muted-foreground" />
             </div>
           </div>
@@ -122,7 +132,7 @@ export default function FolderPage() {
                 Get started by creating your first folder to organize your bookmarks.
               </p>
               <Button variant="outline" onClick={() => setShowAddFolder(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4" />
                 Create Your First Folder
               </Button>
             </div>
@@ -147,6 +157,11 @@ export default function FolderPage() {
           setShowAddFolder(false);
           // React Query will automatically refetch after mutation
         }}
+      />
+
+      <ImportExportDialog
+        open={showImportExport}
+        onOpenChange={setShowImportExport}
       />
     </>
   );

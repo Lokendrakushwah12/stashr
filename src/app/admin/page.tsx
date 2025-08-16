@@ -86,7 +86,7 @@ export default function AdminPage() {
                     size="sm"
                     onClick={() => setActiveTab('overview')}
                 >
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Eye className="h-4 w-4" />
                     Overview
                 </Button>
                 <Button
@@ -94,7 +94,7 @@ export default function AdminPage() {
                     size="sm"
                     onClick={() => setActiveTab('users')}
                 >
-                    <Users className="h-4 w-4 mr-2" />
+                    <Users className="h-4 w-4" />
                     Users
                 </Button>
                 <Button
@@ -102,7 +102,7 @@ export default function AdminPage() {
                     size="sm"
                     onClick={() => setActiveTab('analytics')}
                 >
-                    <BarChart3 className="h-4 w-4 mr-2" />
+                    <BarChart3 className="h-4 w-4" />
                     Analytics
                 </Button>
             </div>
@@ -133,7 +133,7 @@ function OverviewTab() {
                 <AlertTriangle className="h-12 w-12 mx-auto text-destructive mb-4" />
                 <p className="text-destructive mb-4">Failed to load statistics</p>
                 <Button onClick={() => refetch()} variant="outline">
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-4 w-4" />
                     Retry
                 </Button>
             </div>
@@ -229,7 +229,7 @@ function UsersTab() {
                 <AlertTriangle className="h-12 w-12 mx-auto text-destructive mb-4" />
                 <p className="text-destructive mb-4">Failed to load users</p>
                 <Button onClick={() => refetch()} variant="outline">
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-4 w-4" />
                     Retry
                 </Button>
             </div>
@@ -315,7 +315,7 @@ function AnalyticsTab() {
                 <AlertTriangle className="h-12 w-12 mx-auto text-destructive mb-4" />
                 <p className="text-destructive mb-4">Failed to load analytics</p>
                 <Button onClick={() => refetch()} variant="outline">
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-4 w-4" />
                     Retry
                 </Button>
             </div>
@@ -452,7 +452,7 @@ function AdminStats() {
     if (isLoading) {
         return (
             <Button variant="outline" size="sm" disabled>
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
+                <Loader className="h-4 w-4 animate-spin" />
                 Loading...
             </Button>
         );
@@ -461,7 +461,7 @@ function AdminStats() {
     if (error) {
         return (
             <Button variant="outline" size="sm" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-4 w-4" />
                 Retry
             </Button>
         );
@@ -469,7 +469,7 @@ function AdminStats() {
 
     return (
         <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4" />
             Refresh
         </Button>
     );

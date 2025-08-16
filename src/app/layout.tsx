@@ -1,9 +1,8 @@
 import { ThemeProvider } from "@/components/layouts/theme-provider";
-import AuthSessionProvider from "@/components/providers/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
-import { cn } from "@/lib/utils";
+import AuthSessionProvider from "@/components/providers/session-provider";
+import { geistMono, inter } from "@/lib/fonts";
 import "@/styles/globals.css";
-import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -74,14 +73,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable}`}
       suppressHydrationWarning
     >
       <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          GeistSans.variable,
-        )}
+        className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <AuthSessionProvider>
           <QueryProvider>

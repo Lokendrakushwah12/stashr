@@ -45,12 +45,12 @@ export default function PublicFolderPage() {
     }, [folderId]);
 
     return (
-        <div className="max-w-[86rem] px-5 mx-auto py-8 space-y-8 mt-12 min-hscreen h-[70vh]">
+        <div className="max-w-[86rem] px-5 mx-auto py-8 space-y-8 min-hscreen h-[70vh]">
             {error && (
                 <div className="max-w-md">
                     <p className="text-destructive mb-4">{error}</p>
                     <Button onClick={fetchFolder} variant="outline" size="sm">
-                        <RefreshCw className="h-4 w-4 mr-2" />
+                        <RefreshCw className="h-4 w-4" />
                         Retry
                     </Button>
                 </div>

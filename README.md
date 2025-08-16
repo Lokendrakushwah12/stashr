@@ -2,15 +2,6 @@
   <img src="https://stashr.in/favicon.svg" alt="Stashr Logo" width="80" height="80">
   <h1>Stashr</h1>
   <p><strong>Organize Your Bookmarks</strong></p>
-  
-  [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-  [![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-  
-  [![Live Demo](https://img.shields.io/badge/Live_Demo-View_Online-blue?style=for-the-badge&logo=vercel)](https://stashr.in)
-  [![Twitter Follow](https://img.shields.io/badge/Twitter-Follow-blue?style=for-the-badge&logo=twitter)](https://twitter.com/lokendratwt)
 </div>
 
 <br>
@@ -26,8 +17,6 @@
 ## 🚀 Live Demo
 
 **[Try Stashr Now →](https://stashr.in)**
-
-## ✨ Key Features
 
 ## ✨ Features
 
@@ -132,37 +121,6 @@
 openssl rand -base64 32
 ```
 
-## 🔧 Development
-
-### Available Scripts
-
-```bash
-# Development
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-
-# Code Quality
-npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint errors
-npm run typecheck    # Run TypeScript type checking
-npm run format       # Format code with Prettier
-
-# Database
-npm run db:seed      # Seed database with sample data
-npm run db:reset     # Reset database
-```
-
-### Development Workflow
-
-1. **Fork and clone** the repository
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** and test locally
-4. **Run linting** (`npm run lint`) and fix any issues
-5. **Commit your changes** (`git commit -m 'Add amazing feature'`)
-6. **Push to your branch** (`git push origin feature/amazing-feature`)
-7. **Open a Pull Request**
-
 ## 📁 Project Structure
 
 ```
@@ -189,73 +147,6 @@ stashr/
 │   └── types/                # TypeScript type definitions
 ├── public/                   # Static assets
 └── middleware.ts            # NextAuth middleware
-```
-
-## 🔐 Authentication
-
-Stashr uses NextAuth.js with Google OAuth for secure user authentication. Each user's bookmarks and folders are completely isolated and protected.
-
-### Features:
-- **Google OAuth**: One-click sign-in with Google
-- **Session Management**: Secure session handling with JWT
-- **Route Protection**: Middleware protects all bookmark management routes
-- **User Isolation**: Each user can only access their own data
-
-## 🗄️ Database Schema
-
-### User (Managed by NextAuth.js)
-- `id`: Unique user identifier
-- `name`: User's display name
-- `email`: User's email address
-- `image`: User's profile picture
-
-### Folder
-- `name`: Folder name (unique per user)
-- `description`: Optional folder description
-- `color`: Hex color code for folder styling
-- `userId`: Reference to the user who owns the folder
-- `bookmarks`: Array of bookmark IDs
-- `createdAt`, `updatedAt`: Timestamps
-
-### Bookmark
-- `title`: Bookmark title
-- `url`: Bookmark URL
-- `description`: Optional bookmark description
-- `favicon`: Automatic favicon URL
-- `userId`: Reference to the user who owns the bookmark
-- `folderId`: Reference to the folder containing the bookmark
-- `createdAt`, `updatedAt`: Timestamps
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   ```
-
-2. **Deploy to Vercel**
-   - Connect your GitHub repository to [Vercel](https://vercel.com)
-   - Add environment variables in Vercel dashboard
-   - Deploy automatically on push
-
-3. **Update Google OAuth**
-   - Add your production domain to Google OAuth redirect URIs
-   - Update `NEXTAUTH_URL` in environment variables
-
-### Environment Variables for Production
-
-Make sure to set these in your deployment platform:
-
-```env
-MONGODB_URI=your-production-mongodb-uri
-NEXTAUTH_URL=https://your-domain.com
-NEXTAUTH_SECRET=your-production-secret
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
 ## 🤝 Contributing
@@ -299,15 +190,6 @@ This project wouldn't be possible without these amazing open-source projects:
 - **[MongoDB](https://www.mongodb.com/)** - The database for modern applications
 - **[Radix UI](https://www.radix-ui.com/)** - Unstyled, accessible UI primitives
 - **[Vercel](https://vercel.com/)** - The platform for frontend developers
-
-## 📊 Project Stats
-
-<div align="center">
-  <img src="https://img.shields.io/github/stars/Lokendrakushwah12/stashr?style=social" alt="GitHub Stars">
-  <img src="https://img.shields.io/github/forks/Lokendrakushwah12/stashr?style=social" alt="GitHub Forks">
-  <img src="https://img.shields.io/github/issues/Lokendrakushwah12/stashr" alt="GitHub Issues">
-  <img src="https://img.shields.io/github/license/Lokendrakushwah12/stashr" alt="License">
-</div>
 
 ---
 

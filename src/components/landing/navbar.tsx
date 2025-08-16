@@ -15,48 +15,41 @@ const Navbar = () => {
   const { data: adminCheck } = useAdminCheck();
 
   return (
-    <div className="relative h-full w-full mx-auto">
-      <header
-        className={cn(
-          "fixed inset-x-0 top-0 z-[50] h-16 transform border-b border-dashed bg-background/90 backdrop-blur-lg",
-        )}
-      >
-        <div className="max-w-[86rem] px-5 mx-auto flex h-16 w-full items-center justify-center">
-          <div className="sticky inset-x-0 flex w-full items-center justify-between">
-            <div className="flex items-center gap-6 lg:flex-none">
-              <Link
-                href={session ? "/folder" : "/"}
-                className="flex items-center gap-2 text-lg font-semibold text-foreground"
-              >
-                <Logo width={28} />
-                <span className="text-base font-medium">Stashr</span>
+    <header
+      className={cn(
+        "sticky inset-x-0 top-0 z-[50] h-16 transform border-b border-dashed bg-background/90 backdrop-blur-lg",
+      )}
+    >
+      <div className="max-w-[86rem] px-5 mx-auto flex h-16 w-full items-center justify-between">
+        <Link
+          href={session ? "/folder" : "/"}
+          className="flex items-center gap-2 text-lg font-semibold text-foreground"
+        >
+          <Logo width={28} />
+          <span className="text-base font-medium">Stashr</span>
+        </Link>
+        <div className="flex items-center justify-center space-x-2">
+          <ThemeToggle />
+          {adminCheck?.isAdmin && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Admin
               </Link>
-            </div>
-          </div>
-          <div className="flex items-center justify-center space-x-2 py-4">
-            <ThemeToggle />
-            {/* Admin Link - Only show for admin user */}
-            {adminCheck?.isAdmin && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/admin" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Admin
-                </Link>
-              </Button>
-            )}
-            {status === "loading" ? (
-              <div className="h-8 w-8 animate-pulse rounded-full bg-secondary"></div>
-            ) : session ? (
-              <UserMenu />
-            ) : (
-              <Button asChild size="sm">
-                <Link href="/auth/signin">Sign In</Link>
-              </Button>
-            )}
-          </div>
+            </Button>
+          )}
+          {status === "loading" ? (
+            <div className="h-8 w-8 animate-pulse rounded-full bg-secondary"></div>
+          ) : session ? (
+            <UserMenu />
+          ) : (
+            <Button asChild size="sm">
+              <Link href="/auth/signin">Sign In</Link>
+            </Button>
+          )}
         </div>
-      </header>
-    </div>
+      </div>
+    </header>
   );
 };
 

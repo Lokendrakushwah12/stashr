@@ -144,26 +144,26 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                                 <DotsVerticalIcon />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 rounded-2xl z-50">
+                        <DropdownMenuContent align="end" className="w-40 rounded-xl z-50">
                             <DropdownMenuItem
                                 onClick={handleEdit}
-                                className="cursor-pointer rounded-xl"
+                                className="cursor-pointer rounded-lg"
                             >
-                                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4 mr-2" />
+                                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
                                 Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => window.open(bookmark.url, '_blank')}
-                                className="cursor-pointer rounded-xl"
+                                className="cursor-pointer rounded-lg"
                             >
-                                <LinkIcon weight="duotone" className="h-4 w-4 mr-2" />
+                                <LinkIcon weight="duotone" className="h-4 w-4" />
                                 Open Link
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={handleDelete}
-                                className="text-destructive focus:text-destructive cursor-pointer rounded-xl"
+                                className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                             >
-                                <TrashIcon weight="duotone" className="h-4 w-4 mr-2" />
+                                <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
                                 Delete
                             </DropdownMenuItem>
                         </DropdownMenuContent>
