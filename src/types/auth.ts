@@ -4,6 +4,7 @@ export interface User {
   name?: string | null;
   email?: string | null;
   image?: string | null;
+  userType?: 'admin' | 'user' | null;
 }
 
 // NextAuth type extensions
@@ -14,6 +15,7 @@ declare module "next-auth" {
 
   interface User {
     id: string;
+    userType?: 'admin' | 'user' | null;
   }
 }
 
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    userType?: 'admin' | 'user' | null;
   }
 }

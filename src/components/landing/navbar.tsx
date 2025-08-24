@@ -1,7 +1,7 @@
 "use client";
 
 import Logo from "@/assets/svgs/assets/svgs/Logo";
-import { useAdminCheck } from "@/lib/hooks/use-admin";
+import { useAdminStatus } from "@/lib/hooks/use-admin";
 import { cn } from "@/lib/utils";
 import { Shield } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
-  const { data: adminCheck } = useAdminCheck();
+  const { isAdmin } = useAdminStatus();
 
   return (
     <header
@@ -30,7 +30,7 @@ const Navbar = () => {
         </Link>
         <div className="flex items-center justify-center space-x-2">
           <ThemeToggle />
-          {adminCheck?.isAdmin && (
+          {isAdmin && (
             <Button variant="outline" size="sm" asChild>
               <Link href="/admin" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />

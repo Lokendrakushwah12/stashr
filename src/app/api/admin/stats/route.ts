@@ -15,8 +15,11 @@ export async function GET(): Promise<NextResponse> {
     }
 
     // Check if user is admin
-    if (session.user.email !== "lokendrakushwah8051@gmail.com") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (session.user.userType !== "admin") {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 },
+      );
     }
 
     await connectDB();

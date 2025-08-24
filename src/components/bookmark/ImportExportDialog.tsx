@@ -115,7 +115,7 @@ const ImportExportDialog = ({ open, onOpenChange, folderId }: ImportExportDialog
                     </DialogDescription>
                 </DialogHeader>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs defaultValue={activeTab} onValueChange={(val) => setActiveTab(val)} className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="import" className="flex items-center gap-2 px-2 sm:px-3">
                             <Upload className="h-4 w-4" />

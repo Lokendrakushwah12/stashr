@@ -3,36 +3,34 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAdminAnalytics, useAdminCheck, useAdminStats, useAdminUsers } from '@/lib/hooks/use-admin';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAdminAnalytics, useAdminStats, useAdminStatus, useAdminUsers } from '@/lib/hooks/use-admin';
+import { ActivityIcon, BookmarkIcon, FolderIcon, UsersIcon, type IconProps } from "@phosphor-icons/react";
 import {
     Activity,
     AlertTriangle,
     BarChart3,
     Bookmark,
-    Eye,
-    FolderClosed,
     Loader,
     RefreshCw,
     Shield,
-    TrendingUp,
     Users
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export default function AdminPage() {
     const { data: session, status } = useSession();
-    const { data: adminCheck, isLoading: adminCheckLoading } = useAdminCheck();
+    const { isAdmin } = useAdminStatus();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics'>('overview');
 
     // Check if user is admin
     useEffect(() => {
-        if (status === "authenticated" && adminCheck && !adminCheck.isAdmin) {
+        if (status === "authenticated" && !isAdmin) {
             router.push('/');
         }
-    }, [session, status, adminCheck, router]);
+    }, [session, status, isAdmin, router]);
 
     // Redirect if not authenticated
     if (status === "unauthenticated") {
@@ -40,8 +38,8 @@ export default function AdminPage() {
         return null;
     }
 
-    // Show loading while checking authentication and admin status
-    if (status === "loading" || adminCheckLoading) {
+    // Show loading while checking authentication
+    if (status === "loading") {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -50,7 +48,7 @@ export default function AdminPage() {
     }
 
     // Check if user is admin
-    if (adminCheck && !adminCheck.isAdmin) {
+    if (!isAdmin) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -63,7 +61,7 @@ export default function AdminPage() {
     }
 
     return (
-        <section className="max-w-[86rem] px-5 mx-auto space-y-8 pt-24 min-h-screen">
+        <section className="max-w-[86rem] mx-auto space-y-8 py-8 min-h-screen">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -80,44 +78,33 @@ export default function AdminPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex space-x-1 bg-muted p-1 rounded-lg w-fit">
-                <Button
-                    variant={activeTab === 'overview' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setActiveTab('overview')}
-                >
-                    <Eye className="h-4 w-4" />
-                    Overview
-                </Button>
-                <Button
-                    variant={activeTab === 'users' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setActiveTab('users')}
-                >
-                    <Users className="h-4 w-4" />
-                    Users
-                </Button>
-                <Button
-                    variant={activeTab === 'analytics' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setActiveTab('analytics')}
-                >
-                    <BarChart3 className="h-4 w-4" />
-                    Analytics
-                </Button>
-            </div>
+            <Tabs defaultValue="analytics" className="w-full">
+                <TabsList className="grid w-fit grid-cols-3 mb-4">
+                    <TabsTrigger value="analytics">
+                        <BarChart3 className="h-4 w-4" />
+                        Analytics
+                    </TabsTrigger>
+                    <TabsTrigger value="users">
+                        <Users className="h-4 w-4" />
+                        Users
+                    </TabsTrigger>
+                </TabsList>
 
-            {/* Content based on active tab */}
-            {activeTab === 'overview' && <OverviewTab />}
-            {activeTab === 'users' && <UsersTab />}
-            {activeTab === 'analytics' && <AnalyticsTab />}
+                <TabsContent value="analytics">
+                    <AnalyticsTab />
+                </TabsContent>
+                <TabsContent value="users">
+                    <UsersTab />
+                </TabsContent>
+            </Tabs>
         </section>
     );
 }
 
 // Overview Tab Component
-function OverviewTab() {
+function AnalyticsTab() {
     const { data: stats, isLoading, error, refetch } = useAdminStats();
+    const { data: analyticsData } = useAdminAnalytics();
 
     if (isLoading) {
         return (
@@ -147,66 +134,110 @@ function OverviewTab() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatsCard
-                    title="Total Users"
                     value={statsData?.totalUsers?.toString() ?? "0"}
-                    icon={Users}
-                    description="Registered users"
-                    trend={statsData?.growth?.users ?? "+0%"}
-                    trendUp={true}
+                    icon={UsersIcon}
+                    description="Total users"
                 />
                 <StatsCard
-                    title="Total Folders"
                     value={statsData?.totalFolders?.toString() ?? "0"}
-                    icon={FolderClosed}
-                    description="Created folders"
-                    trend={statsData?.growth?.folders ?? "+0%"}
-                    trendUp={true}
+                    icon={FolderIcon}
+                    description="Total folders"
                 />
                 <StatsCard
-                    title="Total Bookmarks"
                     value={statsData?.totalBookmarks?.toString() ?? "0"}
-                    icon={Bookmark}
-                    description="Saved bookmarks"
-                    trend={statsData?.growth?.bookmarks ?? "+0%"}
-                    trendUp={true}
+                    icon={BookmarkIcon}
+                    description="Total bookmarks"
                 />
                 <StatsCard
-                    title="Active Users"
                     value={statsData?.activeUsers?.toString() ?? "0"}
-                    icon={Activity}
-                    description="Last 30 days"
-                    trend={statsData?.growth?.activeUsers ?? "+0%"}
-                    trendUp={true}
+                    icon={ActivityIcon}
+                    description="Active users"
                 />
             </div>
 
-            {/* Recent Activity */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5" />
-                        Recent Activity (Last 7 Days)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                            <div>
-                                <p className="font-semibold">New Folders</p>
-                                <p className="text-sm text-muted-foreground">Created in the last 7 days</p>
+            <div className="space-y-6">
+                {/* User Engagement */}
+                <Card className="border relative rounded-2xl bg-secondary/20 overflow-hidden">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Activity className="h-5 w-5" />
+                            User Engagement
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
+                                <p className="font-semibold">7-Day Engagement</p>
+                                <p className="text-2xl font-bold">{analyticsData?.userEngagement?.engagementRate7d?.toFixed(1) ?? 0}%</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {analyticsData?.userEngagement?.activeUsers7d ?? 0} active users
+                                </p>
                             </div>
-                            <div className="text-2xl font-bold">{statsData?.recentActivity?.folders ?? 0}</div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                            <div>
-                                <p className="font-semibold">New Bookmarks</p>
-                                <p className="text-sm text-muted-foreground">Added in the last 7 days</p>
+                            <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
+                                <p className="font-semibold">30-Day Engagement</p>
+                                <p className="text-2xl font-bold">{analyticsData?.userEngagement?.engagementRate30d?.toFixed(1) ?? 0}%</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {analyticsData?.userEngagement?.activeUsers30d ?? 0} active users
+                                </p>
                             </div>
-                            <div className="text-2xl font-bold">{statsData?.recentActivity?.bookmarks ?? 0}</div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+
+                {/* Popular Domains */}
+                <Card className="border relative rounded-2xl bg-secondary/20 overflow-hidden">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Bookmark className="h-5 w-5" />
+                            Popular Domains
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {analyticsData?.popularDomains?.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <Bookmark className="h-12 w-12 mx-auto mb-4" />
+                                <p>No domain data available</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {analyticsData?.popularDomains?.slice(0, 5).map((domain, index) => (
+                                    <div key={domain._id} className="flex items-center justify-between p-2 rounded-lg bg-secondary dark:bg-secondary/50">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm font-mono bg-muted px-2 py-1 rounded-sm">
+                                                {index + 1}
+                                            </span>
+                                            <span className="font-medium">{domain._id}</span>
+                                        </div>
+                                        <span className="text-sm text-muted-foreground">{domain.count} bookmarks</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Summary Stats */}
+                <Card className="border relative rounded-2xl bg-secondary/20 overflow-hidden">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <BarChart3 className="h-5 w-5" />
+                            Platform Summary
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
+                                <p className="font-semibold">Average Folders per User</p>
+                                <p className="text-2xl font-bold">{analyticsData?.summary?.averageFoldersPerUser?.toFixed(1) ?? 0}</p>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
+                                <p className="font-semibold">Average Bookmarks per User</p>
+                                <p className="text-2xl font-bold">{analyticsData?.summary?.averageBookmarksPerUser?.toFixed(1) ?? 0}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
@@ -240,7 +271,7 @@ function UsersTab() {
 
     return (
         <div className="space-y-6">
-            <Card>
+            <Card className="border relative rounded-2xl bg-secondary/20 overflow-hidden">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
@@ -256,9 +287,9 @@ function UsersTab() {
                     ) : (
                         <div className="space-y-4">
                             {users.map((user) => (
-                                <div key={user.userId} className="flex items-center justify-between p-4 border rounded-lg">
+                                <div key={user.userId} className="flex items-center justify-between p-2 px-4 rounded-2xl bg-secondary dark:bg-secondary/50">
                                     <div className="flex items-center gap-4">
-                                        <Avatar className="h-10 w-10">
+                                        <Avatar className="h-10 w-10 rounded-lg">
                                             <AvatarImage src={user.userDetails?.image ?? undefined} alt={user.userDetails?.name ?? 'User'} />
                                             <AvatarFallback>
                                                 {user.userDetails?.name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -273,15 +304,15 @@ function UsersTab() {
                                                 Folders: {user.folderCount} | Bookmarks: {user.totalBookmarks} |
                                                 Activity Score: {user.activityScore}
                                             </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                Last active: {new Date(user.lastActivity).toLocaleDateString()}
-                                            </p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className={`px-2 py-1 rounded text-xs ${user.daysSinceLastActivity <= 7 ? 'bg-green-100 text-green-800' :
-                                            user.daysSinceLastActivity <= 30 ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'
+                                    <div className="text-right space-y-1">
+                                        <p className="text-xs text-muted-foreground">
+                                            Last active: {new Date(user.lastActivity).toLocaleDateString()}
+                                        </p>
+                                        <div className={`px-2 py-1 w-fit font-mono uppercase rounded-sm text-xs ${user.daysSinceLastActivity <= 7 ? 'bg-green-600/10 text-green-600' :
+                                            user.daysSinceLastActivity <= 30 ? 'bg-yellow-600/10 text-yellow-600' :
+                                                'bg-rose-600/10 text-rose-600'
                                             }`}>
                                             {user.daysSinceLastActivity <= 7 ? 'Active' :
                                                 user.daysSinceLastActivity <= 30 ? 'Recent' : 'Inactive'}
@@ -297,148 +328,25 @@ function UsersTab() {
     );
 }
 
-// Analytics Tab Component
-function AnalyticsTab() {
-    const { data: analytics, isLoading, error, refetch } = useAdminAnalytics();
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center py-16">
-                <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="text-center py-16">
-                <AlertTriangle className="h-12 w-12 mx-auto text-destructive mb-4" />
-                <p className="text-destructive mb-4">Failed to load analytics</p>
-                <Button onClick={() => refetch()} variant="outline">
-                    <RefreshCw className="h-4 w-4" />
-                    Retry
-                </Button>
-            </div>
-        );
-    }
-
-    const analyticsData = analytics;
-
-    return (
-        <div className="space-y-6">
-            {/* User Engagement */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5" />
-                        User Engagement
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-muted rounded-lg">
-                            <p className="font-semibold">7-Day Engagement</p>
-                            <p className="text-2xl font-bold">{analyticsData?.userEngagement?.engagementRate7d?.toFixed(1) ?? 0}%</p>
-                            <p className="text-sm text-muted-foreground">
-                                {analyticsData?.userEngagement?.activeUsers7d ?? 0} active users
-                            </p>
-                        </div>
-                        <div className="p-4 bg-muted rounded-lg">
-                            <p className="font-semibold">30-Day Engagement</p>
-                            <p className="text-2xl font-bold">{analyticsData?.userEngagement?.engagementRate30d?.toFixed(1) ?? 0}%</p>
-                            <p className="text-sm text-muted-foreground">
-                                {analyticsData?.userEngagement?.activeUsers30d ?? 0} active users
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Popular Domains */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Bookmark className="h-5 w-5" />
-                        Popular Domains
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {analyticsData?.popularDomains?.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            <Bookmark className="h-12 w-12 mx-auto mb-4" />
-                            <p>No domain data available</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {analyticsData?.popularDomains?.slice(0, 10).map((domain, index) => (
-                                <div key={domain._id} className="flex items-center justify-between p-2 border rounded">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                                            {index + 1}
-                                        </span>
-                                        <span className="font-medium">{domain._id}</span>
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">{domain.count} bookmarks</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Summary Stats */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="h-5 w-5" />
-                        Platform Summary
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-muted rounded-lg">
-                            <p className="font-semibold">Average Folders per User</p>
-                            <p className="text-2xl font-bold">{analyticsData?.summary?.averageFoldersPerUser?.toFixed(1) ?? 0}</p>
-                        </div>
-                        <div className="p-4 bg-muted rounded-lg">
-                            <p className="font-semibold">Average Bookmarks per User</p>
-                            <p className="text-2xl font-bold">{analyticsData?.summary?.averageBookmarksPerUser?.toFixed(1) ?? 0}</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
-
 // Stats Card Component
 function StatsCard({
-    title,
     value,
     icon: Icon,
     description,
-    trend,
-    trendUp
 }: {
-    title: string;
     value: string;
-    icon: React.ComponentType<{ className?: string }>;
+    icon: React.ComponentType<IconProps>;
     description: string;
-    trend: string;
-    trendUp: boolean;
 }) {
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{value}</div>
-                <p className="text-xs text-muted-foreground">{description}</p>
-                <div className={`flex items-center text-xs mt-1 ${trendUp ? 'text-green-600' : 'text-red-600'}`}>
-                    <TrendingUp className={`h-3 w-3 mr-1 ${!trendUp ? 'rotate-180' : ''}`} />
-                    {trend}
+        <Card className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
+            <CardContent className="w-full flex justify-between p-0">
+                <div className="flex flex-col w-full justify-center items-start p-4">
+                    <div className="text-3xl font-bold">{value}</div>
+                    <p className="text-sm text-muted-foreground">{description}</p>
+                </div>
+                <div className="flex flex-col justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
+                    <Icon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
                 </div>
             </CardContent>
         </Card>

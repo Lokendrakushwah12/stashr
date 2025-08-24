@@ -1,14 +1,4 @@
 // Admin response types
-export interface AdminCheckResponse {
-  isAdmin: boolean;
-  user?: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  };
-  error?: string;
-}
-
 export interface AdminStatsResponse {
   totalUsers: number;
   totalFolders: number;

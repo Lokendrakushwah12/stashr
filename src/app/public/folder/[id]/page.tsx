@@ -4,7 +4,7 @@ import BookmarkCard from "@/components/bookmark/BookmarkCard";
 import { Button } from "@/components/ui/button";
 import type { Bookmark } from "@/types";
 import { RefreshCw } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type PublicFolder = {
@@ -17,7 +17,6 @@ type PublicFolder = {
 
 export default function PublicFolderPage() {
     const params = useParams();
-    const router = useRouter();
     const folderId = params.id as string;
 
     const [folder, setFolder] = useState<PublicFolder | null>(null);

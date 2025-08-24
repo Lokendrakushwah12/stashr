@@ -1,6 +1,6 @@
 import { env } from "@/env";
-import clientPromise from "@/lib/mongodb-adapter";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import clientPromise from "@/lib/mongodb-adapter";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -20,6 +20,8 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;
+        // userType will come from the user object in the database
+        token.userType = user.userType ?? 'user';
       }
       return token;
     },
@@ -33,6 +35,7 @@ export const authOptions: NextAuthOptions = {
           name: token.name,
           email: token.email,
           image: token.image,
+          userType: token.userType ?? 'user',
         },
       };
     },

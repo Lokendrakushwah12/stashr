@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import type { 
-  AdminCheckResponse, 
   AdminStatsResponse, 
   AdminUsersResponse, 
   AdminAnalyticsResponse 
@@ -9,30 +9,25 @@ import type {
 // Admin query keys
 export const adminKeys = {
   all: ["admin"] as const,
-  check: () => [...adminKeys.all, "check"] as const,
   stats: () => [...adminKeys.all, "stats"] as const,
   users: () => [...adminKeys.all, "users"] as const,
   analytics: () => [...adminKeys.all, "analytics"] as const,
 };
 
-// Admin check hook
-export function useAdminCheck() {
-  return useQuery({
-    queryKey: adminKeys.check(),
-    queryFn: async (): Promise<AdminCheckResponse> => {
-      const response = await fetch("/api/admin/check");
-      if (!response.ok) {
-        throw new Error("Failed to check admin status");
-      }
-      return response.json() as Promise<AdminCheckResponse>;
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 1,
-  });
+// Admin status hook - checks from session (instant, no API call)
+export function useAdminStatus() {
+  const { data: session } = useSession();
+  return {
+    isAdmin: session?.user?.userType === "admin",
+    isLoading: false,
+    user: session?.user,
+  };
 }
 
-// Admin stats hook
+// Admin stats hook - only called when actually needed
 export function useAdminStats() {
+  const { isAdmin } = useAdminStatus();
+  
   return useQuery({
     queryKey: adminKeys.stats(),
     queryFn: async (): Promise<AdminStatsResponse> => {
@@ -44,11 +39,14 @@ export function useAdminStats() {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
+    enabled: isAdmin, // Only fetch if user is admin
   });
 }
 
-// Admin users hook
+// Admin users hook - only called when actually needed
 export function useAdminUsers() {
+  const { isAdmin } = useAdminStatus();
+  
   return useQuery({
     queryKey: adminKeys.users(),
     queryFn: async (): Promise<AdminUsersResponse> => {
@@ -60,11 +58,14 @@ export function useAdminUsers() {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
+    enabled: isAdmin, // Only fetch if user is admin
   });
 }
 
-// Admin analytics hook
+// Admin analytics hook - only called when actually needed
 export function useAdminAnalytics() {
+  const { isAdmin } = useAdminStatus();
+  
   return useQuery({
     queryKey: adminKeys.analytics(),
     queryFn: async (): Promise<AdminAnalyticsResponse> => {
@@ -76,5 +77,6 @@ export function useAdminAnalytics() {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
+    enabled: isAdmin, // Only fetch if user is admin
   });
 }
