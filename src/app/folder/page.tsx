@@ -61,7 +61,7 @@ export default function FolderPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Your Bookmarks</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">Your Bookmarks</h1>
             <p className="text-muted-foreground mt-2">
               Organize and manage your web bookmarks in folders
             </p>
@@ -95,7 +95,7 @@ export default function FolderPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
             <div className="flex flex-col w-full justify-center items-start p-4">
-              <div className="text-3xl font-bold">{folders.length}</div>
+              <div className="text-3xl font-semibold">{folders.length}</div>
               <div className="text-sm text-muted-foreground">Total Folders</div>
             </div>
             <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
@@ -104,7 +104,7 @@ export default function FolderPage() {
           </div>
           <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
             <div className="flex flex-col w-full justify-center items-start p-4">
-              <div className="text-3xl font-bold">
+              <div className="text-3xl font-semibold">
                 {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
               </div>
               <div className="text-sm text-muted-foreground">Total Bookmarks</div>

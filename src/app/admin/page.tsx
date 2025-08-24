@@ -53,7 +53,7 @@ export default function AdminPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <Shield className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                    <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+                    <h1 className="text-2xl font-semibold mb-2">Access Denied</h1>
                     <p className="text-muted-foreground">You don&apos;t have permission to access this page.</p>
                 </div>
             </div>
@@ -64,7 +64,7 @@ export default function AdminPage() {
         <section className="max-w-[86rem] mx-auto space-y-8 py-8 min-h-screen">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
                         <Shield className="h-8 w-8 text-primary" />
                         Admin Dashboard
                     </h1>
@@ -168,14 +168,14 @@ function AnalyticsTab() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
                                 <p className="font-semibold">7-Day Engagement</p>
-                                <p className="text-2xl font-bold">{analyticsData?.userEngagement?.engagementRate7d?.toFixed(1) ?? 0}%</p>
+                                <p className="text-2xl font-semibold">{analyticsData?.userEngagement?.engagementRate7d?.toFixed(1) ?? 0}%</p>
                                 <p className="text-sm text-muted-foreground">
                                     {analyticsData?.userEngagement?.activeUsers7d ?? 0} active users
                                 </p>
                             </div>
                             <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
                                 <p className="font-semibold">30-Day Engagement</p>
-                                <p className="text-2xl font-bold">{analyticsData?.userEngagement?.engagementRate30d?.toFixed(1) ?? 0}%</p>
+                                <p className="text-2xl font-semibold">{analyticsData?.userEngagement?.engagementRate30d?.toFixed(1) ?? 0}%</p>
                                 <p className="text-sm text-muted-foreground">
                                     {analyticsData?.userEngagement?.activeUsers30d ?? 0} active users
                                 </p>
@@ -228,11 +228,11 @@ function AnalyticsTab() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
                                 <p className="font-semibold">Average Folders per User</p>
-                                <p className="text-2xl font-bold">{analyticsData?.summary?.averageFoldersPerUser?.toFixed(1) ?? 0}</p>
+                                <p className="text-2xl font-semibold">{analyticsData?.summary?.averageFoldersPerUser?.toFixed(1) ?? 0}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-secondary dark:bg-secondary/50">
                                 <p className="font-semibold">Average Bookmarks per User</p>
-                                <p className="text-2xl font-bold">{analyticsData?.summary?.averageBookmarksPerUser?.toFixed(1) ?? 0}</p>
+                                <p className="text-2xl font-semibold">{analyticsData?.summary?.averageBookmarksPerUser?.toFixed(1) ?? 0}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -342,7 +342,7 @@ function StatsCard({
         <Card className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
             <CardContent className="w-full flex justify-between p-0">
                 <div className="flex flex-col w-full justify-center items-start p-4">
-                    <div className="text-3xl font-bold">{value}</div>
+                    <div className="text-3xl font-semibold">{value}</div>
                     <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
                 <div className="flex flex-col justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
