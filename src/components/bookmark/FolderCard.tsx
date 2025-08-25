@@ -23,25 +23,23 @@ const FolderCard = ({ folder }: FolderCardProps) => {
                 style={{ background: `${folder.color}3A`, borderColor: `${folder.color}2A` }}
                 onClick={handleCardClick}
             >
-                <div className="border dark:border-white/10 w-[70%] h-[60%] bg-white/60 dark:bg-white/10 z-20 p-2 backdrop-blur-2xl rounded-tl-2xl absolute -bottom-1 -right-1" >
+                <div className="border group-hover:-rotate-2 transition-all duration-200 dark:border-white/10 w-full translate-x-1/4 h-[60%] bg-white/60 dark:bg-white/10 z-20 p-2 backdrop-blur-2xl rounded-tl-2xl absolute -bottom-1 -right-1" >
                     <div className="w-[50%] h-[50%] bg-black/5 dark:bg-white/10 rounded-lg mb-2" />
                     <div className="w-full h-[50%] bg-black/5 dark:bg-white/10 rounded-lg" />
                 </div>
-                <div className="border group-hover:-rotate-2 transition-all dark:border-white/10 w-[70%] h-[60%] scale-95 bg-white/50 dark:bg-white/10 z-10 backdrop-blur-2xl p-2 rounded-tl-2xl absolute bottom-1.5 -right-2" />
-                <div className="border group-hover:rotate-2 transition-all dark:border-white/10 w-[70%] h-[60%] scale-90 bg-white/40 dark:bg-white/10 z-0 p-2 rounded-tl-2xl absolute bottom-3.5 -right-4" />
-                <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                        <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: folder.color }}
-                        />
+                <div className="border group-hover:rotate-1 transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-95 bg-white/50 dark:bg-white/10 z-10 backdrop-blur-2xl p-2 rounded-tl-2xl absolute bottom-1.5 -right-2" />
+                <div className="border group-hover:rotate-3 transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-90 bg-white/40 dark:bg-white/10 z-0 p-2 rounded-tl-2xl absolute bottom-3.5 -right-4" />
+                <CardHeader className="px-4 py-2 gap-0 space-y-0">
+                    <CardTitle className="flex items-center justify-between gap-2 text-lg">
                         {folder.name}
-                        <span className="text-sm text-muted-foreground font-normal">
-                            ({folder.bookmarks.length})
+                        <span className="text-base font-mono font-normal"
+                            style={{ color: folder.color }}
+                        >
+                            {folder.bookmarks.length}
                         </span>
                     </CardTitle>
                     {folder.description && (
-                        <p className="text-sm text-muted-foreground">{folder.description}</p>
+                        <p className="text-sm text-muted-foreground z-20 text-shadow-xs">{folder.description}</p>
                     )}
                 </CardHeader>
             </Card>

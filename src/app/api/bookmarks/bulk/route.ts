@@ -28,7 +28,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { Bookmark, Folder } = await registerModels();
 
     // Get or create folder for imports
-    const folderNameToUse = folderName?.trim() || "Imported Bookmarks";
+    const folderNameToUse = folderName?.trim() ?? "Imported Bookmarks";
     let defaultFolder = await Folder.findOne({
       userId: session.user.id,
       name: folderNameToUse

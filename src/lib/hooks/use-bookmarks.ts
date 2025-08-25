@@ -158,7 +158,7 @@ export function useDeleteBookmark() {
       if (currentFolder && typeof currentFolder === 'object' && 'bookmarks' in currentFolder) {
         const updatedFolder = {
           ...currentFolder,
-          bookmarks: (currentFolder.bookmarks as any[]).filter(b => b._id !== variables.id)
+          bookmarks: (currentFolder.bookmarks as Array<{ _id: string }>).filter(b => b._id !== variables.id)
         };
         queryClient.setQueryData(folderKeys.detail(variables.folderId), updatedFolder);
       }
