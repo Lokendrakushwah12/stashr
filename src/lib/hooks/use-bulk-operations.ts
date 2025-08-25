@@ -22,6 +22,7 @@ export interface BulkImportData {
     folderId?: string;
   }>;
   source?: string;
+  folderName?: string; // New field for creating a folder during import
 }
 
 export const useBulkImport = () => {
@@ -49,16 +50,17 @@ export const useBulkImport = () => {
       void queryClient.invalidateQueries({ queryKey: ["folders"] });
       void queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
 
-      // Show success message
-      if (data.imported > 0) {
+      // Show appropriate messages based on results
+      if (data.imported > 0 && data.errors === 0) {
+        // All bookmarks imported successfully
         toast.success(`Successfully imported ${data.imported} bookmarks`);
-      }
-
-      // Show warnings for any errors
-      if (data.errors > 0) {
-        toast.warning(
-          `${data.errors} bookmarks failed to import. Check the details.`,
-        );
+      } else if (data.imported > 0 && data.errors > 0) {
+        // Partial success - some imported, some failed
+        toast.success(`Imported ${data.imported} bookmarks successfully`);
+        toast.warning(`${data.errors} bookmarks failed to import (likely duplicates)`);
+      } else if (data.imported === 0 && data.errors > 0) {
+        // All bookmarks failed to import
+        toast.error(`Failed to import any bookmarks. ${data.errors} bookmarks already exist or have errors.`);
       }
     },
     onError: (error: Error) => {

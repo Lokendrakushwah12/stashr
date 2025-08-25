@@ -14,8 +14,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json() as { bookmarks: unknown[]; source?: string };
-    const { bookmarks, source } = body;
+    const body = await request.json() as { bookmarks: unknown[]; source?: string; folderName?: string };
+    const { bookmarks, source, folderName } = body;
 
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
       return NextResponse.json(
@@ -27,16 +27,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await connectDB();
     const { Bookmark, Folder } = await registerModels();
 
-    // Get or create default folder for imports
+    // Get or create folder for imports
+    const folderNameToUse = folderName?.trim() || "Imported Bookmarks";
     let defaultFolder = await Folder.findOne({
       userId: session.user.id,
-      name: "Imported Bookmarks"
+      name: folderNameToUse
     });
 
     if (!defaultFolder) {
       defaultFolder = await Folder.create({
         userId: session.user.id,
-        name: "Imported Bookmarks",
+        name: folderNameToUse,
         description: `Bookmarks imported from ${source ?? 'external source'}`,
         color: "#3B82F6", // Default blue color
         bookmarks: []
@@ -69,10 +70,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Check if bookmark already exists
-        const existingBookmark = await Bookmark.findOne({
+        // Normalize URL by removing trailing slashes
+        const normalizedUrl = data.url.replace(/\/$/, '');
+        
+        // Check for exact match first
+        let existingBookmark = await Bookmark.findOne({
           userId: session.user.id,
-          url: data.url
+          url: normalizedUrl
         });
+
+        // If no exact match, check for variations (with/without trailing slash, different protocols)
+        if (!existingBookmark) {
+          const urlVariations = [
+            normalizedUrl,
+            normalizedUrl + '/',
+            normalizedUrl.replace(/^https?:\/\//, 'http://'),
+            normalizedUrl.replace(/^https?:\/\//, 'https://')
+          ];
+          
+          existingBookmark = await Bookmark.findOne({
+            url: { $in: urlVariations },
+            userId: session.user.id
+          });
+        }
 
         if (existingBookmark) {
           errors.push({
@@ -83,16 +103,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Create new bookmark
-        const bookmark = await Bookmark.create({
-          userId: session.user.id,
-          title: data.title,
-          url: data.url,
-          description: (data.description ?? data.excerpt ?? '') as string,
-          folderId: (data.folderId as string) ?? defaultFolder._id,
-          tags: (data.tags as string[]) ?? [],
-          createdAt: data.createdAt ? new Date(data.createdAt as string) : new Date(),
-          updatedAt: new Date()
-        });
+        let bookmark;
+        try {
+          bookmark = await Bookmark.create({
+            userId: session.user.id,
+            title: data.title,
+            url: normalizedUrl,
+            description: (data.description ?? data.excerpt ?? '') as string,
+            folderId: (data.folderId as string) ?? defaultFolder._id,
+            tags: (data.tags as string[]) ?? [],
+            createdAt: data.createdAt ? new Date(data.createdAt as string) : new Date(),
+            updatedAt: new Date()
+          });
+        } catch (error) {
+          // Check if it's a duplicate key error
+          if (error instanceof Error && error.message.includes('duplicate key')) {
+            errors.push({
+              url: data.url,
+              error: 'Bookmark already exists'
+            });
+            continue;
+          }
+          throw error; // Re-throw other errors
+        }
 
         // Add bookmark to folder
         await Folder.findByIdAndUpdate(
