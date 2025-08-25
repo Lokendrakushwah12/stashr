@@ -42,21 +42,21 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const folderData = {
         name: name.trim(),
         description: description.trim(),
         color,
       };
-      
+
       await createFolderMutation.mutateAsync(folderData);
-      
+
       // Reset form
       setName('');
       setDescription('');
       setColor('#3B82F6');
-      
+
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
@@ -84,7 +84,7 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
             Create a new folder to organize your bookmarks. You can customize the name, description, and color.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -116,9 +116,8 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
                 <button
                   key={colorOption}
                   type="button"
-                  className={`w-8 h-8 rounded-xl border-2 ${
-                    color === colorOption ? 'border-foreground' : 'border-transparent'
-                  }`}
+                  className={`w-8 h-8 rounded-xl border-2 ${color === colorOption ? 'border-foreground' : 'border-transparent'
+                    }`}
                   style={{ backgroundColor: colorOption }}
                   onClick={() => setColor(colorOption)}
                   disabled={createFolderMutation.isPending}

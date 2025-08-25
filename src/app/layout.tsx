@@ -4,6 +4,7 @@ import AuthSessionProvider from "@/components/providers/session-provider";
 import { geistMono, inter } from "@/lib/fonts";
 import "@/styles/globals.css";
 import { type Metadata } from "next";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Stashr - Organize Your Bookmarks",
@@ -80,7 +81,10 @@ export default function RootLayout({
       >
         <AuthSessionProvider>
           <QueryProvider>
-            <ThemeProvider>{children}</ThemeProvider>
+            <ThemeProvider>
+              {children}
+              <Toaster />
+            </ThemeProvider>
           </QueryProvider>
         </AuthSessionProvider>
       </body>

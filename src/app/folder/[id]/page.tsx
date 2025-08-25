@@ -46,7 +46,7 @@ const FolderDetailPage = () => {
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     try {
-      await deleteBookmarkMutation.mutateAsync(bookmarkId);
+      await deleteBookmarkMutation.mutateAsync({ id: bookmarkId, folderId });
     } catch (error) {
       console.error('Error deleting bookmark:', error);
     }
@@ -95,7 +95,9 @@ const FolderDetailPage = () => {
     <div className="py-4 space-y-8 min-h-screen">
       {/* Header */}
       <Button
-        onClick={() => router.push('/')}
+        onClick={() => {
+          router.push('/');
+        }}
         variant="outline"
         size="sm"
       >

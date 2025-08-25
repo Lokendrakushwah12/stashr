@@ -10,6 +10,7 @@ import { Loader, Plus, RefreshCw, Upload } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function FolderPage() {
   const { data: session, status } = useSession();
@@ -22,8 +23,18 @@ export default function FolderPage() {
     data: foldersResponse,
     isLoading,
     error,
-    refetch
+    refetch: originalRefetch
   } = useFolders();
+
+  // Custom refetch with toast notification
+  const handleRefetch = async () => {
+    try {
+      await originalRefetch();
+      toast.success('Bookmarks refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh bookmarks');
+    }
+  };
 
   const folders = foldersResponse?.data?.folders ?? [];
 
@@ -46,8 +57,8 @@ export default function FolderPage() {
       <section className="max-w-[86rem] px-5 mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center">
         <div className="max-w-md">
           <p className="text-destructive mb-4">{error.message}</p>
-          <Button onClick={() => refetch()} variant="outline">
-            <RefreshCw className="h-4 w-4" />
+          <Button onClick={handleRefetch} variant="outline">
+            <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Retry
           </Button>
         </div>
@@ -68,22 +79,13 @@ export default function FolderPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => refetch()}
-              variant="outline"
-              size="sm"
-              disabled={isLoading}
-            >
-              <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            {/* <Button
               onClick={() => setShowImportExport(true)}
               variant="outline"
               size="sm"
             >
               <Upload className="h-4 w-4" />
               Import/Export
-            </Button> */}
+            </Button>
             <Button onClick={() => setShowAddFolder(true)}>
               <PlusIcon weight='duotone' className="h-4 w-4" />
               Add Folder
@@ -142,7 +144,7 @@ export default function FolderPage() {
                 <FolderCard
                   key={folder._id}
                   folder={folder}
-                  onUpdate={() => refetch()}
+                  onUpdate={() => handleRefetch()}
                 />
               ))}
             </div>

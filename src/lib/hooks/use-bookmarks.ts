@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bookmarkApi, folderApi } from '@/lib/api';
 import type { UpdateBookmarkRequest, UpdateFolderRequest } from '@/types';
+import { toast } from 'sonner';
 
 // Query keys
 export const bookmarkKeys = {
@@ -40,9 +41,19 @@ export function useFolder(id: string) {
 export function useCreateFolder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof folderApi.create>[0]) => folderApi.create(data),
-    onSuccess: () => {
+    mutationFn: async (data: Parameters<typeof folderApi.create>[0]) => {
+      const response = await folderApi.create(data);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      toast.success(`Folder "${data.data?.folder.name}" created successfully`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to create folder: ${error.message}`);
     },
   });
 }
@@ -50,10 +61,20 @@ export function useCreateFolder() {
 export function useUpdateFolder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateFolderRequest }) => folderApi.update(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: UpdateFolderRequest }) => {
+      const response = await folderApi.update(id, data);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
     onSuccess: (data, variables) => {
       void queryClient.setQueryData(folderKeys.detail(variables.id), data.data?.folder);
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      toast.success(`Folder "${data.data?.folder.name}" updated successfully`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update folder: ${error.message}`);
     },
   });
 }
@@ -61,9 +82,19 @@ export function useUpdateFolder() {
 export function useDeleteFolder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => folderApi.delete(id),
+    mutationFn: async (id: string) => {
+      const response = await folderApi.delete(id);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      toast.success('Folder deleted successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete folder: ${error.message}`);
     },
   });
 }
@@ -72,10 +103,20 @@ export function useDeleteFolder() {
 export function useCreateBookmark() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof bookmarkApi.create>[0]) => bookmarkApi.create(data),
+    mutationFn: async (data: Parameters<typeof bookmarkApi.create>[0]) => {
+      const response = await bookmarkApi.create(data);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
     onSuccess: (data, variables) => {
       void queryClient.invalidateQueries({ queryKey: folderKeys.detail(variables.folderId) });
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      toast.success(`Bookmark "${data.data?.bookmark.title}" added successfully`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to add bookmark: ${error.message}`);
     },
   });
 }
@@ -83,10 +124,20 @@ export function useCreateBookmark() {
 export function useUpdateBookmark() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateBookmarkRequest }) => bookmarkApi.update(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: UpdateBookmarkRequest }) => {
+      const response = await bookmarkApi.update(id, data);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
     onSuccess: (data, variables) => {
       void queryClient.setQueryData(bookmarkKeys.detail(variables.id), data.data?.bookmark);
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      toast.success(`Bookmark "${data.data?.bookmark.title}" updated successfully`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update bookmark: ${error.message}`);
     },
   });
 }
@@ -94,9 +145,34 @@ export function useUpdateBookmark() {
 export function useDeleteBookmark() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => bookmarkApi.delete(id),
-    onSuccess: () => {
+    mutationFn: async ({ id, folderId }: { id: string; folderId: string }) => {
+      const response = await bookmarkApi.delete(id);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: (_, variables) => {
+      // Update the folder detail cache to remove the deleted bookmark immediately
+      const currentFolder = queryClient.getQueryData(folderKeys.detail(variables.folderId));
+      if (currentFolder && typeof currentFolder === 'object' && 'bookmarks' in currentFolder) {
+        const updatedFolder = {
+          ...currentFolder,
+          bookmarks: (currentFolder.bookmarks as any[]).filter(b => b._id !== variables.id)
+        };
+        queryClient.setQueryData(folderKeys.detail(variables.folderId), updatedFolder);
+      }
+      
+      // Also invalidate the folders list to update bookmark counts
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      
+      // Fallback: invalidate the specific folder detail query to ensure UI updates
+      void queryClient.invalidateQueries({ queryKey: folderKeys.detail(variables.folderId) });
+      
+      toast.success('Bookmark deleted successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete bookmark: ${error.message}`);
     },
   });
 } 

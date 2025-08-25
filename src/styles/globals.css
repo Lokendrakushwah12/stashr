@@ -198,3 +198,10 @@
 .thin-stroke {
   stroke-width: 0.5;
 }
+
+:-webkit-autofill,
+:-webkit-autofill:hover,
+:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-foreground);
+  -webkit-box-shadow: 0 0 0 30px var(--color-accent) inset !important;
+}

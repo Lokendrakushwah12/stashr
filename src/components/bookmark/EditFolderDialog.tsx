@@ -52,7 +52,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const folderData = {
         name: name.trim(),
@@ -61,7 +61,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
       };
 
       await updateFolderMutation.mutateAsync({ id: folder._id!, data: folderData });
-      
+
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
@@ -86,7 +86,7 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
             Update your folder&apos;s name, description, and color.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -118,9 +118,8 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
                 <button
                   key={colorOption}
                   type="button"
-                  className={`w-8 h-8 rounded-xl border-2 ${
-                    color === colorOption ? 'border-foreground' : 'border-transparent'
-                  }`}
+                  className={`w-8 h-8 rounded-xl border-2 ${color === colorOption ? 'border-foreground' : 'border-transparent'
+                    }`}
                   style={{ backgroundColor: colorOption }}
                   onClick={() => setColor(colorOption)}
                   disabled={updateFolderMutation.isPending}

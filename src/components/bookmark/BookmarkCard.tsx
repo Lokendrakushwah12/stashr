@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import type { Bookmark } from '@/types';
-import { LinkIcon, PencilSimpleLineIcon, TrashIcon } from "@phosphor-icons/react";
+import { CopyIcon, PencilSimpleLineIcon, TrashIcon } from "@phosphor-icons/react";
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-// Type for the meta image extraction API response
+import { toast } from 'sonner';
+
 interface ExtractionResult {
     success: boolean;
     imageUrl: string;
@@ -108,6 +109,16 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
         onEdit(bookmark);
     };
 
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(bookmark.url);
+            toast.success('Link copied to clipboard!');
+            setDropdownOpen(false);
+        } catch (error) {
+            toast.error('Failed to copy link to clipboard');
+        }
+    };
+
     return (
         <>
             <Card className="rounded-2xl mb-2 bg-secondary/20 relative z-10 overflow-hidden hover:bg-accent/50 transition-all group">
@@ -153,11 +164,11 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                                 Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => window.open(bookmark.url, '_blank')}
+                                onClick={handleCopyLink}
                                 className="cursor-pointer rounded-lg"
                             >
-                                <LinkIcon weight="duotone" className="h-4 w-4" />
-                                Open Link
+                                <CopyIcon weight="duotone" className="h-4 w-4" />
+                                Copy Link
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={handleDelete}

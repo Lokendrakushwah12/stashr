@@ -91,7 +91,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
             Add a new bookmark to your folder. Enter the title, URL, and optional description.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
           <div className="space-y-2">
             <div className="space-y-2">
               <Label htmlFor="url">URL *</Label>

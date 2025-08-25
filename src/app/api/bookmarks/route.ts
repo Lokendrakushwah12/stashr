@@ -70,11 +70,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 404 }
       );
     }
+
+    // Check if bookmark with same URL already exists for this user
+    // Normalize URL by removing trailing slashes and ensuring consistent protocol
+    const normalizedUrl = url.trim().replace(/\/$/, '');
+    
+    // Check for exact match first
+    let existingBookmark = await Bookmark.findOne({
+      url: normalizedUrl,
+      userId: session.user.id
+    }).exec();
+
+    // If no exact match, check for variations (with/without trailing slash, different protocols)
+    if (!existingBookmark) {
+      const urlVariations = [
+        normalizedUrl,
+        normalizedUrl + '/',
+        normalizedUrl.replace(/^https?:\/\//, 'http://'),
+        normalizedUrl.replace(/^https?:\/\//, 'https://')
+      ];
+      
+      existingBookmark = await Bookmark.findOne({
+        url: { $in: urlVariations },
+        userId: session.user.id
+      }).exec();
+    }
+
+    if (existingBookmark) {
+      return NextResponse.json(
+        { error: 'A bookmark with this URL already exists' },
+        { status: 409 }
+      );
+    }
     
     // Try to get favicon from URL
     let favicon = '';
     try {
-      const urlObj = new URL(url.trim());
+      const urlObj = new URL(normalizedUrl);
       favicon = `${urlObj.protocol}//${urlObj.hostname}/favicon.ico`;
     } catch {
       // Invalid URL will be caught by mongoose validation
@@ -83,8 +115,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Extract meta image using metascraper
     let metaImage = '';
     try {
-      console.log(`🔍 Creating bookmark: Extracting meta image for ${url.trim()}`);
-      metaImage = await extractImageUrl(url.trim());
+      console.log(`🔍 Creating bookmark: Extracting meta image for ${normalizedUrl}`);
+      metaImage = await extractImageUrl(normalizedUrl);
       console.log(`✅ Bookmark creation: Meta image extracted: ${metaImage}`);
     } catch (error) {
       console.error('❌ Bookmark creation: Error extracting meta image:', error);
@@ -93,7 +125,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create new bookmark
     const bookmark = new Bookmark({
       title: title.trim(),
-      url: url.trim(),
+      url: normalizedUrl,
       description: description?.trim() ?? '',
       favicon,
       metaImage,
@@ -101,7 +133,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       folderId,
     });
     
-    await bookmark.save();
+    try {
+      await bookmark.save();
+    } catch (error) {
+      // Check if it's a duplicate key error
+      if (error instanceof Error && error.message.includes('duplicate key')) {
+        return NextResponse.json(
+          { error: 'A bookmark with this URL already exists' },
+          { status: 409 }
+        );
+      }
+      throw error; // Re-throw other errors
+    }
     
     // Add bookmark to folder
     folder.bookmarks.push(bookmark._id as mongoose.Types.ObjectId);

@@ -55,7 +55,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const bookmarkData = {
         title: title.trim(),
@@ -64,7 +64,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
       };
 
       await updateBookmarkMutation.mutateAsync({ id: bookmark._id!, data: bookmarkData });
-      
+
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
@@ -89,20 +89,20 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
             Update your bookmark&apos;s title, URL, and description.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-black p-4 rounded-xl">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
           <div className="space-y-2">
-          <div className="space-y-2">
-            <Label htmlFor="url">URL *</Label>
-            <Input
-              id="url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com"
-              disabled={updateBookmarkMutation.isPending}
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="url">URL *</Label>
+              <Input
+                id="url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com"
+                disabled={updateBookmarkMutation.isPending}
+                required
+              />
+            </div>
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"

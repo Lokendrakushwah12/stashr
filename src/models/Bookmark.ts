@@ -66,4 +66,7 @@ bookmarkSchema.pre('save', function(next) {
   next();
 });
 
+// Compound index to ensure unique URLs per user
+bookmarkSchema.index({ userId: 1, url: 1 }, { unique: true });
+
 export default mongoose.models.Bookmark as BookmarkModel ?? mongoose.model<BookmarkDocument>('Bookmark', bookmarkSchema); 
