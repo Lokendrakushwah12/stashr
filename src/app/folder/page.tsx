@@ -101,7 +101,7 @@ export default function FolderPage() {
               {isLoading ? (
                 <Skeleton className="h-9 w-16 mb-1" />
               ) : (
-                <div className="text-3xl font-semibold">{folders.length}</div>
+                <div className="text-3xl font-mono font-semibold">{folders.length}</div>
               )}
               <div className="text-sm text-muted-foreground">Total Folders</div>
             </div>
@@ -114,8 +114,8 @@ export default function FolderPage() {
               {isLoading ? (
                 <Skeleton className="h-9 w-16 mb-1" />
               ) : (
-                <div className="text-3xl font-semibold">
-                  {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
+                <div className="text-3xl font-mono font-semibold">
+                  0123{folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
                 </div>
               )}
               <div className="text-sm text-muted-foreground">Total Bookmarks</div>

@@ -39,7 +39,7 @@ const FolderCard = ({ folder }: FolderCardProps) => {
                         </span>
                     </CardTitle>
                     {folder.description && (
-                        <p className="text-sm text-muted-foreground z-20 text-shadow-xs">{folder.description}</p>
+                        <p className="text-sm text-muted-foreground z-20 text-shadow-xs line-clamp-2">{folder.description}</p>
                     )}
                 </CardHeader>
             </Card>
