@@ -4,6 +4,7 @@ import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import ImportExportDialog from '@/components/bookmark/ImportExportDialog';
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useFolders } from '@/lib/hooks/use-bookmarks';
 import { ArrowsClockwiseIcon, BookmarksIcon, FolderOpenIcon, FoldersIcon, PlusIcon } from '@phosphor-icons/react';
 import { Loader, Plus, RefreshCw, Upload } from 'lucide-react';
@@ -97,7 +98,11 @@ export default function FolderPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
             <div className="flex flex-col w-full justify-center items-start p-4">
-              <div className="text-3xl font-semibold">{folders.length}</div>
+              {isLoading ? (
+                <Skeleton className="h-9 w-16 mb-1" />
+              ) : (
+                <div className="text-3xl font-semibold">{folders.length}</div>
+              )}
               <div className="text-sm text-muted-foreground">Total Folders</div>
             </div>
             <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
@@ -106,9 +111,13 @@ export default function FolderPage() {
           </div>
           <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
             <div className="flex flex-col w-full justify-center items-start p-4">
-              <div className="text-3xl font-semibold">
-                {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
-              </div>
+              {isLoading ? (
+                <Skeleton className="h-9 w-16 mb-1" />
+              ) : (
+                <div className="text-3xl font-semibold">
+                  {folders.reduce((acc, folder) => acc + folder.bookmarks.length, 0)}
+                </div>
+              )}
               <div className="text-sm text-muted-foreground">Total Bookmarks</div>
             </div>
             <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
