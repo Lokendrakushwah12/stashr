@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-geist);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -120,6 +120,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -144,24 +145,31 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   ::selection {
     @apply bg-selection;
   }
+
   html {
     @apply scroll-smooth;
   }
+
   body {
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    font-feature-settings: 'ss01' on, 'ss03' on, 'ss04' on, 'ss06' on, 'ss08' on, 'ss09' on !important;
+
   }
-  
+
   /* Custom scrollbar styling. Thanks @pranathiperii. */
   ::-webkit-scrollbar {
     width: 5px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: var(--muted);
     border-radius: 5px;
@@ -188,11 +196,9 @@
   --line-size: 7px;
   --line-weight: 1px;
   --line-color: var(--color-accent);
-  background-image: repeating-linear-gradient(
-    var(--line-angle),
-    var(--line-color) 0 var(--line-weight),
-    transparent var(--line-weight) var(--line-size)
-  );
+  background-image: repeating-linear-gradient(var(--line-angle),
+      var(--line-color) 0 var(--line-weight),
+      transparent var(--line-weight) var(--line-size));
 }
 
 .thin-stroke {

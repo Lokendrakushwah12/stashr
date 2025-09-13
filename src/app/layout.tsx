@@ -1,7 +1,8 @@
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
-import { geistMono, inter } from "@/lib/fonts";
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Toaster } from "sonner";
@@ -77,7 +78,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
       >
         <AuthSessionProvider>
           <QueryProvider>
