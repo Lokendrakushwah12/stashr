@@ -18,7 +18,8 @@ export interface Folder {
   description?: string;
   color?: string;
   userId?: string;
-  bookmarks: Bookmark[];
+  bookmarks?: Bookmark[];
+  bookmarkCount?: number;
   createdAt?: string;
   updatedAt?: string;
 } 

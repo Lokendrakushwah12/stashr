@@ -35,7 +35,7 @@ const FolderCard = ({ folder }: FolderCardProps) => {
                         <span className="text-base font-mono font-normal"
                             style={{ color: folder.color }}
                         >
-                            {folder.bookmarks.length}
+                            {folder.bookmarkCount || 0}
                         </span>
                     </CardTitle>
                     {folder.description && (

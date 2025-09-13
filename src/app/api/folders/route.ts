@@ -19,12 +19,24 @@ export async function GET(): Promise<NextResponse> {
     const { Folder } = await registerModels();
 
     const folders = await Folder.find({ userId: session.user.id })
-      .populate("bookmarks")
+      .select("_id name description color userId bookmarks createdAt updatedAt")
       .sort({ createdAt: -1 })
       .lean()
       .exec();
 
-    return NextResponse.json({ folders }, { status: 200 });
+    // Transform folders to include bookmark count instead of full bookmark data
+    const foldersWithCount = folders.map(folder => ({
+      _id: folder._id,
+      name: folder.name,
+      description: folder.description,
+      color: folder.color,
+      userId: folder.userId,
+      bookmarkCount: folder.bookmarks?.length || 0,
+      createdAt: folder.createdAt,
+      updatedAt: folder.updatedAt,
+    }));
+
+    return NextResponse.json({ folders: foldersWithCount }, { status: 200 });
   } catch (error) {
     console.error("Error fetching folders:", error);
 

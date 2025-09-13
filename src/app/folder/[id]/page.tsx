@@ -92,33 +92,19 @@ const FolderDetailPage = () => {
   }
 
   return (
-    <div className="py-4 space-y-8 min-h-screen">
+    <div className="py-4 space-y-4 min-h-screen">
       {/* Header */}
-      <Button
-        onClick={() => {
-          router.push('/');
-        }}
-        variant="outline"
-        size="sm"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: folder.color }}
-              />
-              {folder.name}
-            </h1>
-            {folder.description && (
-              <p className="text-muted-foreground mt-2">{folder.description}</p>
-            )}
-          </div>
-        </div>
+        <Button
+          onClick={() => {
+            router.push('/');
+          }}
+          variant="outline"
+          size="sm"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={() => refetch()}
@@ -174,6 +160,21 @@ const FolderDetailPage = () => {
           </DropdownMenu>
         </div>
       </div>
+      
+      <div className="flex items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
+            <div
+              className="w-4 h-4 rounded-full"
+              style={{ backgroundColor: folder.color }}
+            />
+            {folder.name}
+          </h1>
+          {folder.description && (
+            <p className="text-muted-foreground mt-2">{folder.description}</p>
+          )}
+        </div>
+      </div>
 
       {/* Bookmarks List */}
       {isLoading ? (
@@ -182,7 +183,7 @@ const FolderDetailPage = () => {
           <p className="text-muted-foreground">Loading your bookmarks...</p>
         </div>
       ) : (
-        folder.bookmarks.length === 0 ? (
+        folder.bookmarks?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className='relative h-32 w-full sm:w-[25rem]'>
               <div className='absolute bottom-0 w-full h-16 bg-gradient-to-t from-background to-transparent z-[99]' />
@@ -204,7 +205,7 @@ const FolderDetailPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {folder.bookmarks.map((bookmark) => (
+            {folder.bookmarks?.map((bookmark) => (
               <BookmarkCard
                 key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? 'editing' : 'normal'}`}
                 bookmark={bookmark}
