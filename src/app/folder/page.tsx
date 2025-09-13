@@ -115,7 +115,7 @@ export default function FolderPage() {
                 <Skeleton className="h-9 w-16 mb-1" />
               ) : (
                 <div className="text-3xl font-mono font-semibold">
-                  {folders.reduce((acc, folder) => acc + (folder.bookmarkCount || 0), 0)}
+                  {folders.reduce((acc, folder) => acc + (folder.bookmarkCount ?? 0), 0)}
                 </div>
               )}
               <div className="text-sm text-muted-foreground">Total Bookmarks</div>
