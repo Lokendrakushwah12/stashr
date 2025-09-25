@@ -43,11 +43,10 @@ export async function GET(
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // Get all collaborators for this folder
+    // Get all collaborators for this folder (including pending)
     const collaborators = await FolderCollaboration.find({
-      folderId: id,
-      status: 'accepted'
-    }).select('userId email role invitedBy createdAt').lean().exec();
+      folderId: id
+    }).select('userId email role invitedBy status createdAt').lean().exec();
 
     return NextResponse.json({ collaborators }, { status: 200 });
   } catch (error) {

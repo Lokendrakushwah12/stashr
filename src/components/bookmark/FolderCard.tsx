@@ -2,14 +2,16 @@
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Folder } from '@/types';
+import { Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface FolderCardProps {
     folder: Folder;
     onUpdate: () => void;
+    collaboratorCount?: number;
 }
 
-const FolderCard = ({ folder }: FolderCardProps) => {
+const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
     const router = useRouter();
 
     const handleCardClick = () => {
@@ -31,8 +33,16 @@ const FolderCard = ({ folder }: FolderCardProps) => {
                 <div className="border group-hover:rotate-3 transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-90 bg-white/40 dark:bg-white/10 z-0 p-2 rounded-tl-2xl absolute bottom-3.5 -right-4" />
                 <CardHeader className="px-4 py-2 gap-0 space-y-0">
                     <CardTitle className="flex items-center justify-between gap-2 text-lg">
-                        {folder.name}
-                        <span className="text-base font-mono font-normal"
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="truncate">{folder.name}</span>
+                            {collaboratorCount > 0 && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Users className="h-3 w-3" />
+                                    <span>{collaboratorCount}</span>
+                                </div>
+                            )}
+                        </div>
+                        <span className="text-base font-mono font-normal flex-shrink-0"
                             style={{ color: folder.color }}
                         >
                             {folder.bookmarkCount ?? 0}

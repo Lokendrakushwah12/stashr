@@ -4,6 +4,7 @@ import AddBookmarkDialog from '@/components/bookmark/AddBookmarkDialog';
 import BookmarkCard from '@/components/bookmark/BookmarkCard';
 import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
 import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
+import CollaboratorDialog from '@/components/folder/CollaboratorDialog';
 import { Button } from "@/components/ui/button";
 import ConfirmationDialog from '@/components/ui/confirmation-dialog';
 import {
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDeleteBookmark, useDeleteFolder, useFolder } from '@/lib/hooks/use-bookmarks';
 import type { Bookmark } from '@/types';
-import { ArrowsClockwiseIcon, PencilSimpleLineIcon, PlusIcon, ShareFatIcon, TrashIcon } from "@phosphor-icons/react";
+import { ArrowsClockwiseIcon, PencilSimpleLineIcon, PlusIcon, ShareFatIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
 import { ArrowLeft, MoreVertical, Plus, RefreshCw } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -28,6 +29,7 @@ const FolderDetailPage = () => {
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(false);
+  const [showCollaborators, setShowCollaborators] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Use React Query for data fetching
@@ -142,6 +144,16 @@ const FolderDetailPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   setDropdownOpen(false);
+                  setShowCollaborators(true);
+                }}
+                className="cursor-pointer rounded-lg text-nowrap"
+              >
+                <UsersIcon weight="duotone" className="h-4 w-4" />
+                Manage Collaborators
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setDropdownOpen(false);
                   setShowEditFolder(true);
                 }}
                 className="cursor-pointer rounded-lg"
@@ -248,6 +260,13 @@ const FolderDetailPage = () => {
           setShowEditFolder(false);
           // React Query will automatically refetch after mutation
         }}
+      />
+
+      <CollaboratorDialog
+        open={showCollaborators}
+        onOpenChange={setShowCollaborators}
+        folderId={folderId}
+        folderName={folder?.name || ''}
       />
 
       {/* Folder Deletion Confirmation Dialog */}
