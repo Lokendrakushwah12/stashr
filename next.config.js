@@ -6,7 +6,10 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
-    output: 'standalone'
+    output: 'standalone',
+    eslint: {
+        ignoreDuringBuilds: false,
+    },
 };
 
 export default config;

@@ -79,7 +79,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const body = await request.json() as { email?: string; role?: string };
     const { email, role = 'editor' } = body;
 
     if (!email?.trim()) {
@@ -128,9 +128,9 @@ export async function POST(
       folderId: id,
       userId: email.trim(), // In production, you'd look up the actual user ID by email
       email: email.trim().toLowerCase(),
-      role,
+      role: role as 'editor' | 'viewer',
       invitedByUserId: session.user.id,
-      invitedByUserName: session.user.name || session.user.email || 'Unknown User',
+      invitedByUserName: session.user.name ?? session.user.email ?? 'Unknown User',
       status: 'pending', // In production, you might auto-accept or send an email invitation
     });
 

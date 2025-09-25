@@ -99,7 +99,7 @@ export default function FolderPage() {
   // Fetch invitations when component mounts
   useEffect(() => {
     if (session?.user?.id) {
-      fetchPendingInvitations();
+      void fetchPendingInvitations();
     }
   }, [session?.user?.id]);
 

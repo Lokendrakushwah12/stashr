@@ -18,10 +18,10 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const body = await request.json() as { status?: string };
     const { status } = body;
 
-    if (!['accepted', 'declined'].includes(status)) {
+    if (!status || !['accepted', 'declined'].includes(status)) {
       return NextResponse.json(
         { error: "Invalid status. Must be 'accepted' or 'declined'" },
         { status: 400 }
@@ -49,7 +49,7 @@ export async function PUT(
     }
 
     // Update the collaboration status
-    collaboration.status = status;
+    collaboration.status = status as 'accepted' | 'declined';
     await collaboration.save();
 
     return NextResponse.json({ 

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import type { FolderCollaboration } from "@/types";
 import { UsersIcon, UserPlusIcon, XIcon } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 
 interface CollaboratorDialogProps {
@@ -50,31 +50,31 @@ export default function CollaboratorDialog({
     role: 'editor',
   });
 
-  // Fetch collaborators when dialog opens
-  useEffect(() => {
-    if (open && folderId) {
-      fetchCollaborators();
-    }
-  }, [open, folderId]);
-
-  const fetchCollaborators = async () => {
+  const fetchCollaborators = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/folders/${folderId}/collaborators`);
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch collaborators');
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error ?? 'Failed to fetch collaborators');
       }
       
-      const data = await response.json();
-      setCollaborators(data.collaborators || []);
+      const data = await response.json() as { collaborators?: FolderCollaboration[] };
+      setCollaborators(data.collaborators ?? []);
     } catch (error) {
       console.error('Error fetching collaborators:', error);
       toast.error('Failed to load collaborators');
     } finally {
       setLoading(false);
     }
-  };
+  }, [folderId]);
+
+  // Fetch collaborators when dialog opens
+  useEffect(() => {
+    if (open && folderId) {
+      void fetchCollaborators();
+    }
+  }, [open, folderId, fetchCollaborators]);
 
   const handleAddCollaborator = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,11 +98,11 @@ export default function CollaboratorDialog({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to add collaborator');
+        const error = await response.json() as { error?: string };
+        throw new Error(error.error ?? 'Failed to add collaborator');
       }
 
-      const data = await response.json();
+      const data = await response.json() as { collaboration: FolderCollaboration };
       setCollaborators(prev => [...prev, data.collaboration]);
       setFormData({ email: '', role: 'editor' });
       toast.success('Collaborator added successfully');
@@ -121,8 +121,8 @@ export default function CollaboratorDialog({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to remove collaborator');
+        const error = await response.json() as { error?: string };
+        throw new Error(error.error ?? 'Failed to remove collaborator');
       }
 
       setCollaborators(prev => prev.filter(c => c._id !== collaborationId));
@@ -143,7 +143,7 @@ export default function CollaboratorDialog({
             Manage Collaborators
           </DialogTitle>
           <DialogDescription>
-            Add and manage collaborators for "{folderName}"
+            Add and manage collaborators for &quot;{folderName}&quot;
           </DialogDescription>
         </DialogHeader>
 

@@ -23,24 +23,24 @@ export default function CollaborationInvite({
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
 
-  const handleAccept = async () => {
+  const handleAccept = () => {
     setIsProcessing(true);
     try {
-      await onAccept(collaboration._id!);
+      onAccept(collaboration._id!);
       toast.success('Invitation accepted! You can now access this folder.');
-    } catch (error) {
+    } catch {
       toast.error('Failed to accept invitation');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDecline = async () => {
+  const handleDecline = () => {
     setIsProcessing(true);
     try {
-      await onDecline(collaboration._id!);
+      onDecline(collaboration._id!);
       toast.success('Invitation declined');
-    } catch (error) {
+    } catch {
       toast.error('Failed to decline invitation');
     } finally {
       setIsProcessing(false);
@@ -54,7 +54,6 @@ export default function CollaborationInvite({
   };
 
   const isAccepted = collaboration.status === 'accepted';
-  const isPending = collaboration.status === 'pending';
 
   return (
     <Card className={`border-l-4 ${isAccepted ? 'border-l-green-500' : 'border-l-blue-500'}`}>
@@ -74,7 +73,7 @@ export default function CollaborationInvite({
                 <>
                   You have access to collaborate on{" "}
                   <span className="font-medium">
-                    {collaboration.folder?.name || "this folder"}
+                    {collaboration.folder?.name ?? "this folder"}
                   </span>
                   {" "}as a{" "}
                   <Badge variant={collaboration.role === 'editor' ? 'info' : 'gray'} className="text-xs">
@@ -83,9 +82,9 @@ export default function CollaborationInvite({
                 </>
               ) : (
                 <>
-                  You've been invited to collaborate on{" "}
+                  You&apos;ve been invited to collaborate on{" "}
                   <span className="font-medium">
-                    {collaboration.folder?.name || "a folder"}
+                    {collaboration.folder?.name ?? "a folder"}
                   </span>
                   {" "}as a{" "}
                   <Badge variant={collaboration.role === 'editor' ? 'info' : 'gray'} className="text-xs">
