@@ -33,9 +33,11 @@ interface BookmarkCardProps {
     bookmark: Bookmark;
     onEdit: (bookmark: Bookmark) => void;
     onDelete: (bookmarkId: string) => void;
-}
+    showDropdown?: boolean;
 
-const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
+gi}
+
+const BookmarkCard = ({ bookmark, onEdit, onDelete, showDropdown = true }: BookmarkCardProps) => {
     const [metaImageUrl, setMetaImageUrl] = useState<string>('');
     const [isExtracting, setIsExtracting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -124,7 +126,7 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
             <Card className="rounded-2xl mb-2 bg-secondary/20 relative z-10 overflow-hidden hover:bg-accent/50 transition-all group">
             <CardContent className="p-1 w-full">
                 <div className="flex w-full items-center p-1 pb-0 sm:p-2 sm:pb-0">
-                    <Link href={bookmark.url} target="_blank" className='w-full -mr-8'>
+                    <Link href={bookmark.url} target="_blank" className={showDropdown ? 'w-full -mr-8' : 'w-full'}>
                         <div className="flex items-center gap-2 sm:gap-4 w-full">
                             <img
                                 src={bookmark.favicon ?? `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`}
@@ -145,40 +147,42 @@ const BookmarkCard = ({ bookmark, onEdit, onDelete }: BookmarkCardProps) => {
                             </div>
                         </div>
                     </Link>
-                    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                className='size-9'
-                            >
-                                <DotsVerticalIcon />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 rounded-xl z-50">
-                            <DropdownMenuItem
-                                onClick={handleEdit}
-                                className="cursor-pointer rounded-lg"
-                            >
-                                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={handleCopyLink}
-                                className="cursor-pointer rounded-lg"
-                            >
-                                <CopyIcon weight="duotone" className="h-4 w-4" />
-                                Copy Link
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={handleDelete}
-                                className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
-                            >
-                                <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {showDropdown && (
+                        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className='size-9'
+                                >
+                                    <DotsVerticalIcon />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 rounded-xl z-50">
+                                <DropdownMenuItem
+                                    onClick={handleEdit}
+                                    className="cursor-pointer rounded-lg"
+                                >
+                                    <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={handleCopyLink}
+                                    className="cursor-pointer rounded-lg"
+                                >
+                                    <CopyIcon weight="duotone" className="h-4 w-4" />
+                                    Copy Link
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={handleDelete}
+                                    className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
+                                >
+                                    <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
 
                 {/* Meta Image Preview */}

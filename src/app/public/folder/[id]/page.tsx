@@ -87,6 +87,7 @@ export default function PublicFolderPage() {
                                     bookmark={bookmark}
                                     onEdit={() => undefined}
                                     onDelete={() => undefined}
+                                    showDropdown={false}
                                 />
                             ))}
                         </div>
