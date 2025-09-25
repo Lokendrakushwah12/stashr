@@ -50,7 +50,7 @@ export default function AccountPopover({ className = "" }: AccountPopoverProps) 
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start gap-3 p-2 h-auto hover:bg-muted/50",
+            "w-full justify-start gap-3 p-2 h-auto hover:bg-muted/70 bg-muted/40",
             className
           )}
         >

@@ -60,13 +60,6 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/folder" }
             active: currentPath === "/folder",
           },
           {
-            id: "bookmarks",
-            label: "Bookmarks",
-            icon: BookmarksIcon,
-            href: "/bookmarks",
-            active: currentPath === "/bookmarks",
-          },
-          {
             id: "inbox",
             label: "Inbox",
             icon: EnvelopeIcon,

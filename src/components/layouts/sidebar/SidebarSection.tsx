@@ -12,9 +12,10 @@ interface SidebarSectionProps {
   section: SidebarSectionType;
   onItemClick?: (item: SidebarSectionType["items"][0]) => void;
   className?: string;
+  isCollapsed?: boolean;
 }
 
-export default function SidebarSection({ section, onItemClick, className }: SidebarSectionProps) {
+export default function SidebarSection({ section, onItemClick, className, isCollapsed }: SidebarSectionProps) {
   const [isOpen, setIsOpen] = useState(!section.defaultCollapsed);
 
   const handleToggle = () => {
@@ -24,7 +25,7 @@ export default function SidebarSection({ section, onItemClick, className }: Side
   };
 
   return (
-    <div className={cn("space-y-1", className)}>
+    <div className={cn("space-y-1 w-full", className)}>
       {section.title && (
         <div>
           {section.collapsible ? (
@@ -36,7 +37,7 @@ export default function SidebarSection({ section, onItemClick, className }: Side
                   className="w-full justify-between px-2 py-1 h-auto text-xs font-medium text-muted-foreground hover:text-foreground"
                   onClick={handleToggle}
                 >
-                  <span className="uppercase tracking-wide">{section.title}</span>
+                  <span className={cn("uppercase tracking-wide", isCollapsed && "hidden")}>{section.title}</span>
                   <CaretDownIcon 
                     className={cn(
                       "h-3 w-3 transition-transform",
@@ -57,7 +58,7 @@ export default function SidebarSection({ section, onItemClick, className }: Side
             </Collapsible>
           ) : (
             <div className="px-2 py-1">
-              <span className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wide">
+              <span className={cn("text-xs font-mono font-medium text-muted-foreground uppercase tracking-wide", isCollapsed && "hidden")}>
                 {section.title}
               </span>
             </div>
@@ -66,12 +67,13 @@ export default function SidebarSection({ section, onItemClick, className }: Side
       )}
       
       {!section.collapsible && (
-        <div className="space-y-1">
+        <div className="space-y-1 w-full flex flex-col">
           {section.items.map((item) => (
             <SidebarItem
               key={item.id}
               item={item}
               onClick={() => onItemClick?.(item)}
+              isCollapsed={isCollapsed}
             />
           ))}
         </div>

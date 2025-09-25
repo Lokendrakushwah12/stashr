@@ -4,10 +4,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SidebarSection from "./SidebarSection";
 import AccountPopover from "./AccountPopover";
 import type { SidebarProps, SidebarItem as SidebarItemType } from "./types";
+import { SidebarIcon } from "@phosphor-icons/react";
 
 export default function Sidebar({ 
   config, 
@@ -18,6 +19,23 @@ export default function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const [mounted, setMounted] = useState(false);
+
+  // Load collapsed state from localStorage on mount
+  useEffect(() => {
+    setMounted(true);
+    const savedState = localStorage.getItem('sidebar-collapsed');
+    if (savedState !== null) {
+      setIsCollapsed(JSON.parse(savedState));
+    }
+  }, []);
+
+  // Save collapsed state to localStorage when it changes
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed));
+    }
+  }, [isCollapsed, mounted]);
 
   const handleItemClick = (item: SidebarItemType) => {
     if (item.href) {
@@ -28,17 +46,36 @@ export default function Sidebar({
     }
   };
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <div className={cn(
+        "bg-background relative flex flex-col h-full items-start transition-all duration-200",
+        width,
+        className
+      )}>
+        <div className="p-2 space-y-6 w-full">
+          <div className="animate-pulse space-y-2">
+            <div className="h-8 bg-muted rounded" />
+            <div className="h-8 bg-muted rounded" />
+            <div className="h-8 bg-muted rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn(
-      "bg-background border-r border-border relative flex flex-col h-full transition-all duration-200",
+      "bg-background relative flex flex-col h-full items-start transition-all duration-200",
       width,
-      isCollapsed && "w-16",
+      isCollapsed && "w-14 items-center",
       className
     )}>
       {/* Header */}
       {config.header && (
-        <div className="p-3 border-b border-border">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="px-3 mt-6.5">
+          <div className="flex items-center gap-2">
             {config.header.icon && (
               <config.header.icon className="h-6 w-6 text-primary flex-shrink-0" />
             )}
@@ -53,20 +90,21 @@ export default function Sidebar({
       <Button
         variant="outline"
         size="sm"
-        className="size-7 bg-accent! absolute top-3 right-0 translate-x-1/2 "
+        className="size-7 bg-accent! rounded-md! absolute top-5 right-0 translate-x-[130%]"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
-        {isCollapsed ? "" : "←"}
+        <SidebarIcon weight="duotone" className="h-4 w-4" />
       </Button>
 
       {/* Main Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-6">
+      <ScrollArea className="flex-1 w-full">
+        <div className="p-2 space-y-6 w-full">
           {config.sections.map((section) => (
             <SidebarSection
               key={section.id}
               section={section}
               onItemClick={handleItemClick}
+              isCollapsed={isCollapsed}
             />
           ))}
         </div>
@@ -74,7 +112,7 @@ export default function Sidebar({
 
       {/* Account Section */}
       {config.account?.showAccountInfo && (
-        <div className="p-2 border-t border-border">
+        <div className={cn("p-2 w-full", isCollapsed && "px-1")}>
           <AccountPopover />
         </div>
       )}
