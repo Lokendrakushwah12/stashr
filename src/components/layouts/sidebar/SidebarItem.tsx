@@ -40,16 +40,18 @@ export default function SidebarItem({ item, onClick, className, isCollapsed }: S
     <Button
       variant={item.active ? "secondary" : "ghost"}
       className={cn(
-        "relative justify-start gap-2 h-auto p-2 mx-auto!",
+        "relative justify-center gap-1 h-auto p-2",
         item.disabled && "opacity-50 cursor-not-allowed",
         isCollapsed ? "size-8 rounded-md!" : "w-full",
+        // Mobile specific styles
+        "md:justify-start md:gap-2",
         className
       )}
       onClick={handleClick}
       disabled={item.disabled}
     >
       {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
-      <span className={cn("flex-1 text-left truncate",isCollapsed && "hidden")}>{item.label}</span>
+      <span className={cn("text-left truncate hidden md:block", isCollapsed && "hidden")}>{item.label}</span>
       {item.badge && item.badge.count > 0 && (
         <Badge variant={item.badge.variant ?? "default"} className={cn("text-xs text-white", isCollapsed && "absolute size-4 p-1 rounded-sm right-0 top-0 -translate-y-1/4 translate-x-1/4")}>
           {item.badge.count}

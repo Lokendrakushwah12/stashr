@@ -67,7 +67,7 @@ export default function SidebarSection({ section, onItemClick, className, isColl
       )}
       
       {!section.collapsible && (
-        <div className="space-y-1 w-full flex flex-col">
+        <div className="space-y-1 w-full flex flex-col items-center">
           {section.items.map((item) => (
             <SidebarItem
               key={item.id}

@@ -99,7 +99,7 @@ const FolderDetailPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Button
           onClick={() => {
-            router.push('/');
+            router.push('/folder');
           }}
           variant="outline"
           size="sm"
