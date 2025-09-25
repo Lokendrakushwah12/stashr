@@ -67,7 +67,6 @@ export default function CollaboratorDialog({
       }
       
       const data = await response.json();
-      console.log('Fetched collaborators:', data);
       setCollaborators(data.collaborators || []);
     } catch (error) {
       console.error('Error fetching collaborators:', error);
@@ -104,7 +103,6 @@ export default function CollaboratorDialog({
       }
 
       const data = await response.json();
-      console.log('Added collaborator:', data);
       setCollaborators(prev => [...prev, data.collaboration]);
       setFormData({ email: '', role: 'editor' });
       toast.success('Collaborator added successfully');

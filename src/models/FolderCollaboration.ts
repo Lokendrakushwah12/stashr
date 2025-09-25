@@ -26,9 +26,13 @@ const folderCollaborationSchema = new mongoose.Schema<FolderCollaborationDocumen
       default: 'editor',
       required: true,
     },
-    invitedBy: {
+    invitedByUserId: {
       type: String,
       required: [true, 'Invited by user ID is required'],
+    },
+    invitedByUserName: {
+      type: String,
+      required: [true, 'Invited by user name is required'],
     },
     status: {
       type: String,

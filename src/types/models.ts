@@ -30,7 +30,8 @@ export interface FolderCollaboration {
   userId: string;
   email: string;
   role: 'editor' | 'viewer';
-  invitedBy: string;
+  invitedByUserId: string;
+  invitedByUserName: string;
   status: 'pending' | 'accepted' | 'declined';
   createdAt?: Date;
   updatedAt?: Date;

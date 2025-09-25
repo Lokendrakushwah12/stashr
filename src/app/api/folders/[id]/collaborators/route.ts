@@ -46,7 +46,7 @@ export async function GET(
     // Get all collaborators for this folder (including pending)
     const collaborators = await FolderCollaboration.find({
       folderId: id
-    }).select('userId email role invitedBy status createdAt').lean().exec();
+    }).select('userId email role invitedByUserId invitedByUserName status createdAt').lean().exec();
 
     return NextResponse.json({ collaborators }, { status: 200 });
   } catch (error) {
@@ -129,7 +129,8 @@ export async function POST(
       userId: email.trim(), // In production, you'd look up the actual user ID by email
       email: email.trim().toLowerCase(),
       role,
-      invitedBy: session.user.id,
+      invitedByUserId: session.user.id,
+      invitedByUserName: session.user.name || session.user.email || 'Unknown User',
       status: 'pending', // In production, you might auto-accept or send an email invitation
     });
 

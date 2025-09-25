@@ -29,7 +29,8 @@ export interface FolderCollaborationDocument extends Document {
   userId: string;
   email: string;
   role: 'editor' | 'viewer';
-  invitedBy: string;
+  invitedByUserId: string;
+  invitedByUserName: string;
   status: 'pending' | 'accepted' | 'declined';
   createdAt: Date;
   updatedAt: Date;
