@@ -34,8 +34,7 @@ interface BookmarkCardProps {
     onEdit: (bookmark: Bookmark) => void;
     onDelete: (bookmarkId: string) => void;
     showDropdown?: boolean;
-
-gi}
+}
 
 const BookmarkCard = ({ bookmark, onEdit, onDelete, showDropdown = true }: BookmarkCardProps) => {
     const [metaImageUrl, setMetaImageUrl] = useState<string>('');

@@ -22,4 +22,16 @@ export interface Folder {
   bookmarkCount?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface FolderCollaboration {
+  _id?: string;
+  folderId: string;
+  userId: string;
+  email: string;
+  role: 'editor' | 'viewer';
+  invitedBy: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt?: Date;
+  updatedAt?: Date;
 } 

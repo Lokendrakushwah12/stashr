@@ -24,6 +24,18 @@ export interface FolderDocument extends Document {
   updatedAt: Date;
 }
 
+export interface FolderCollaborationDocument extends Document {
+  folderId: mongoose.Types.ObjectId;
+  userId: string;
+  email: string;
+  role: 'editor' | 'viewer';
+  invitedBy: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Database Model Types
 export type BookmarkModel = Model<BookmarkDocument>;
-export type FolderModel = Model<FolderDocument>; 
+export type FolderModel = Model<FolderDocument>;
+export type FolderCollaborationModel = Model<FolderCollaborationDocument>; 

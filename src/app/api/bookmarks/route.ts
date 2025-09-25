@@ -21,7 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     await connectDB();
-    const { Bookmark, Folder } = await registerModels();
+    const { Bookmark, Folder, FolderCollaboration } = await registerModels();
     
     const body = await request.json() as CreateBookmarkRequest;
     const { title, url, description, folderId } = body;
@@ -58,17 +58,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
     
-    // Check if folder exists and belongs to the user
-    const folder = await Folder.findOne({
-      _id: folderId,
-      userId: session.user.id
-    }).exec();
+    // Check if folder exists and user has access (owner or collaborator)
+    const folder = await Folder.findById(folderId).exec();
     
     if (!folder) {
       return NextResponse.json(
         { error: 'Folder not found' },
         { status: 404 }
       );
+    }
+
+    // Check if user is owner or has editor role
+    const isOwner = folder.userId === session.user.id;
+    
+    if (!isOwner) {
+      const collaboration = await FolderCollaboration.findOne({
+        folderId: folderId,
+        userId: session.user.id,
+        status: 'accepted',
+        role: 'editor'
+      }).exec();
+
+      if (!collaboration) {
+        return NextResponse.json(
+          { error: 'You do not have permission to add bookmarks to this folder' },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if bookmark with same URL already exists for this user

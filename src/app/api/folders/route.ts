@@ -16,13 +16,34 @@ export async function GET(): Promise<NextResponse> {
     }
 
     await connectDB();
-    const { Folder } = await registerModels();
+    const { Folder, FolderCollaboration } = await registerModels();
 
-    const folders = await Folder.find({ userId: session.user.id })
+    // Get folders owned by user
+    const ownedFolders = await Folder.find({ userId: session.user.id })
       .select("_id name description color userId bookmarks createdAt updatedAt")
       .sort({ createdAt: -1 })
       .lean()
       .exec();
+
+    // Get folders where user is a collaborator
+    const collaborations = await FolderCollaboration.find({
+      userId: session.user.id,
+      status: 'accepted'
+    }).select('folderId').lean().exec();
+
+    const collaborationFolderIds = collaborations.map(c => c.folderId);
+    
+    const collaboratorFolders = collaborationFolderIds.length > 0 
+      ? await Folder.find({ _id: { $in: collaborationFolderIds } })
+          .select("_id name description color userId bookmarks createdAt updatedAt")
+          .sort({ createdAt: -1 })
+          .lean()
+          .exec()
+      : [];
+
+    // Combine and sort all folders
+    const allFolders = [...ownedFolders, ...collaboratorFolders];
+    const folders = allFolders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     // Transform folders to include bookmark count instead of full bookmark data
     const foldersWithCount = folders.map(folder => ({
