@@ -1,19 +1,21 @@
-import Footer from "@/components/landing/footer";
-import Navbar from "@/components/landing/navbar";
+import Sidebar from "@/components/layouts/sidebar";
 import React from "react";
 
 interface Props {
   children: React.ReactNode;
 }
 
-const LandingLayout = ({ children }: Props) => {
+const FolderLayout = ({ children }: Props) => {
   return (
-    <>
-      <Navbar />
-      <main className="relative z-40 max-w-[86rem] px-5 mx-auto w-full">{children}</main>
-      <Footer />
-    </>
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <main className="flex-1 overflow-auto">
+        <div className="p-6">
+          {children}
+        </div>
+      </main>
+    </div>
   );
 };
 
-export default LandingLayout;
+export default FolderLayout;

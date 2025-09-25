@@ -3,16 +3,14 @@
 import AddFolderDialog from '@/components/bookmark/AddFolderDialog';
 import FolderCard from '@/components/bookmark/FolderCard';
 import ImportExportDialog from '@/components/bookmark/ImportExportDialog';
-import CollaborationInvite from '@/components/notifications/CollaborationInvite';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFolders } from '@/lib/hooks/use-bookmarks';
-import type { FolderCollaboration, Folder } from '@/types';
 import { ArrowsClockwiseIcon, BookmarksIcon, FolderOpenIcon, FoldersIcon, PlusIcon } from '@phosphor-icons/react';
 import { Loader, Plus, RefreshCw, Upload } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function FolderPage() {
@@ -20,8 +18,6 @@ export default function FolderPage() {
   const router = useRouter();
   const [showAddFolder, setShowAddFolder] = useState(false);
   const [showImportExport, setShowImportExport] = useState(false);
-  const [pendingInvitations, setPendingInvitations] = useState<(FolderCollaboration & { folder?: Folder })[]>([]);
-  const [loadingInvitations, setLoadingInvitations] = useState(false);
 
   // Use React Query for data fetching
   const {
@@ -41,67 +37,6 @@ export default function FolderPage() {
     }
   };
 
-  // Fetch all invitations (pending and accepted)
-  const fetchPendingInvitations = async () => {
-    if (!session?.user?.id) return;
-    
-    setLoadingInvitations(true);
-    try {
-      const response = await fetch('/api/collaborations/pending');
-      if (!response.ok) throw new Error('Failed to fetch invitations');
-      
-      const data = await response.json();
-      setPendingInvitations(data.invitations || []);
-    } catch (error) {
-      console.error('Error fetching invitations:', error);
-    } finally {
-      setLoadingInvitations(false);
-    }
-  };
-
-  // Handle accepting an invitation
-  const handleAcceptInvitation = async (collaborationId: string) => {
-    try {
-      const response = await fetch(`/api/collaborations/${collaborationId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'accepted' })
-      });
-
-      if (!response.ok) throw new Error('Failed to accept invitation');
-
-      // Remove from pending list and refresh folders
-      setPendingInvitations(prev => prev.filter(inv => inv._id !== collaborationId));
-      await handleRefetch();
-    } catch (error) {
-      console.error('Error accepting invitation:', error);
-      throw error;
-    }
-  };
-
-  // Handle declining an invitation
-  const handleDeclineInvitation = async (collaborationId: string) => {
-    try {
-      const response = await fetch(`/api/collaborations/${collaborationId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Failed to decline invitation');
-
-      // Remove from pending list
-      setPendingInvitations(prev => prev.filter(inv => inv._id !== collaborationId));
-    } catch (error) {
-      console.error('Error declining invitation:', error);
-      throw error;
-    }
-  };
-
-  // Fetch invitations when component mounts
-  useEffect(() => {
-    if (session?.user?.id) {
-      void fetchPendingInvitations();
-    }
-  }, [session?.user?.id]);
 
   const folders = foldersResponse?.data?.folders ?? [];
 
@@ -192,27 +127,6 @@ export default function FolderPage() {
           </div>
         </div>
 
-        {/* Collaboration Invitations */}
-        {pendingInvitations.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Collaboration Invitations</h2>
-              <div className="px-2 py-1 bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full text-xs font-medium">
-                {pendingInvitations.length}
-              </div>
-            </div>
-            <div className="space-y-3">
-              {pendingInvitations.map((invitation) => (
-                <CollaborationInvite
-                  key={invitation._id}
-                  collaboration={invitation}
-                  onAccept={handleAcceptInvitation}
-                  onDecline={handleDeclineInvitation}
-                />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Folders Grid */}
         {isLoading ? (

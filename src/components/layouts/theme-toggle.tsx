@@ -3,20 +3,22 @@
 import { useTheme } from 'next-themes'
 import { Button } from '../ui/button'
 import { ThemeToggleIcon } from '../ui/icons'
+import { cn } from '@/lib/utils'
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "", title = "Toggle theme" }: { className?: string, title?: string }) {
   const { setTheme } = useTheme()
 
   return (
     <Button
       data-slot="button"
       onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-      className="relative size-6 sm:size-9 p-0"
+      className={cn("relative justify-start", className)}
       variant="ghost"
       aria-label="Toggle theme"
-      title="Toggle theme"
+      title={title}
     >
       <ThemeToggleIcon />
+      <span className="">{title}</span>
     </Button>
   )
 }
