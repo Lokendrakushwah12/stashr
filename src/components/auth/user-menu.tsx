@@ -28,7 +28,7 @@ export default function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative size-5 sm:size-8 rounded-full">
-          <Avatar className="size-5 sm:size-8">
+          <Avatar className="size-5 rounded-md sm:size-8">
             <AvatarImage src={session.user.image ?? ""} alt={session.user.name ?? ""} />
             <AvatarFallback>
               {session.user.name?.charAt(0) ?? session.user.email?.charAt(0) ?? "U"}

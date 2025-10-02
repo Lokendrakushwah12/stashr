@@ -1,18 +1,14 @@
 "use client";
 
 import Logo from "@/assets/svgs/assets/svgs/Logo";
-import { useAdminStatus } from "@/lib/hooks/use-admin";
 import { cn } from "@/lib/utils";
-import { Shield } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import UserMenu from "../auth/user-menu";
-import { ThemeToggle } from "../layouts/theme-toggle";
 import { Button } from "../ui/button";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
-  const { isAdmin } = useAdminStatus();
 
   return (
     <>
@@ -31,15 +27,6 @@ const Navbar = () => {
             <span className="text-base font-medium">Stashr</span>
           </Link>
           <div className="flex items-center justify-center space-x-2">
-            <ThemeToggle />
-            {isAdmin && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/admin" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Admin
-                </Link>
-              </Button>
-            )}
             {status === "loading" ? (
               <div className="h-8 w-8 animate-pulse rounded-full bg-secondary"></div>
             ) : session ? (
@@ -63,21 +50,6 @@ const Navbar = () => {
             <Logo width={20} />
             <span className="text-xs font-medium">Home</span>
           </Link>
-
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <Shield className="h-5 w-5" />
-              <span className="text-xs font-medium">Admin</span>
-            </Link>
-          )}
-
-          <div className="flex flex-col items-center gap-0 px-3 py-2">
-            <ThemeToggle />
-            <span className="text-xs font-medium text-muted-foreground">Theme</span>
-          </div>
 
           {status === "loading" ? (
             <div className="flex flex-col items-center gap-1 px-3 py-2">

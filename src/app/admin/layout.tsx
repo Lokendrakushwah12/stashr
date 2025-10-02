@@ -10,7 +10,7 @@ const AdminLayout = ({ children }: Props) => {
   return (
     <>
       <Navbar />
-      <main className="relative z-40 max-w-[86rem] px-5 mx-auto w-full">{children}</main>
+      <main className="relative z-40 max-w-[86rem] px-5 mx-auto w-full py-8">{children}</main>
       <Footer />
     </>
   );

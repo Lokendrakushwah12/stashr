@@ -123,7 +123,7 @@ export default function InboxPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
           <div className="flex flex-col w-full justify-center items-start p-4">
             {loadingInvitations ? (
