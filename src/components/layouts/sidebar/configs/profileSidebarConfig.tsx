@@ -1,0 +1,77 @@
+"use client";
+
+import {
+    ArrowLeftIcon,
+    BellIcon,
+    GearIcon,
+    PaletteIcon,
+    ShieldIcon,
+    UserIcon
+} from "@phosphor-icons/react";
+import { usePathname } from "next/navigation";
+import type { SidebarConfig } from "../types";
+
+export function useProfileSidebarConfig(): SidebarConfig {
+  const pathname = usePathname();
+
+  return {
+    sections: [
+      {
+        id: "navigation",
+        title: "Navigation",
+        items: [
+          {
+            id: "back",
+            label: "Back to Folders",
+            icon: ArrowLeftIcon,
+            href: "/folder",
+          }
+        ],
+      },
+      {
+        id: "profile-settings",
+        title: "Profile Settings",
+        items: [
+          {
+            id: "profile",
+            label: "Profile",
+            icon: UserIcon,
+            href: "/profile",
+            active: pathname === "/profile",
+          },
+          {
+            id: "security",
+            label: "Security",
+            icon: ShieldIcon,
+            href: "/profile/security",
+            active: pathname === "/profile/security",
+          },
+          {
+            id: "preferences",
+            label: "Preferences",
+            icon: GearIcon,
+            href: "/profile/preferences",
+            active: pathname === "/profile/preferences",
+          },
+          {
+            id: "notifications",
+            label: "Notifications",
+            icon: BellIcon,
+            href: "/profile/notifications",
+            active: pathname === "/profile/notifications",
+          },
+          {
+            id: "appearance",
+            label: "Appearance",
+            icon: PaletteIcon,
+            href: "/profile/appearance",
+            active: pathname === "/profile/appearance",
+          },
+        ],
+      },
+    ],
+    account: {
+      showAccountInfo: true,
+    },
+  };
+}

@@ -4,4 +4,5 @@ export { default as SidebarItem } from "./SidebarItem";
 export { default as InboxSection } from "./InboxSection";
 export { default as AccountPopover } from "./AccountPopover";
 export { useBookmarkSidebarConfig } from "./configs/bookmarkSidebarConfig";
+export { useProfileSidebarConfig } from "./configs/profileSidebarConfig";
 export type { SidebarConfig, SidebarSection as SidebarSectionType, SidebarItem as SidebarItemType, SidebarProps } from "./types";
