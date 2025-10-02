@@ -41,6 +41,16 @@ const FolderDetailPage = () => {
   } = useFolder(folderId);
 
   const folder = folderResponse?.data?.folder;
+  const userRole = folder?.userRole ?? 'owner';
+  const canEdit = userRole === 'owner' || userRole === 'editor';
+
+  // No-op functions for viewers
+  const noOpEdit = () => {
+    // No operation for viewers
+  };
+  const noOpDelete = () => {
+    // No operation for viewers
+  };
 
   // Use React Query mutations
   const deleteBookmarkMutation = useDeleteBookmark();
@@ -118,58 +128,68 @@ const FolderDetailPage = () => {
             Refresh
           </Button>
 
-          <Button onClick={() => setShowAddBookmark(true)}>
-            <PlusIcon weight="duotone" className="h-4 w-4" />
-            Add Bookmark
-          </Button>
+          {canEdit && (
+            <Button onClick={() => setShowAddBookmark(true)}>
+              <PlusIcon weight="duotone" className="h-4 w-4" />
+              Add Bookmark
+            </Button>
+          )}
 
-          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="px-2">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl w-48">
-              <DropdownMenuItem
-                onClick={() => {
-                  const url = `${window.location.origin}/public/folder/${folderId}`;
-                  navigator.clipboard?.writeText(url).catch(() => { void 0; });
-                  window.open(url, "_blank");
-                }}
-                className="cursor-pointer rounded-lg"
-              >
-                <ShareFatIcon weight="duotone" className="h-4 w-4" />
-                Share Public Link
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setDropdownOpen(false);
-                  setShowCollaborators(true);
-                }}
-                className="cursor-pointer rounded-lg text-nowrap"
-              >
-                <UsersIcon weight="duotone" className="h-4 w-4" />
-                Manage Collaborators
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setDropdownOpen(false);
-                  setShowEditFolder(true);
-                }}
-                className="cursor-pointer rounded-lg"
-              >
-                <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
-                Edit Folder
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDeleteFolder}
-                className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
-              >
-                <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
-                {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {(userRole === 'owner' || canEdit) && (
+            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="px-2">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl w-48">
+                <DropdownMenuItem
+                  onClick={() => {
+                    const url = `${window.location.origin}/public/folder/${folderId}`;
+                    navigator.clipboard?.writeText(url).catch(() => { void 0; });
+                    window.open(url, "_blank");
+                  }}
+                  className="cursor-pointer rounded-lg"
+                >
+                  <ShareFatIcon weight="duotone" className="h-4 w-4" />
+                  Share Public Link
+                </DropdownMenuItem>
+                {userRole === 'owner' && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setShowCollaborators(true);
+                    }}
+                    className="cursor-pointer rounded-lg text-nowrap"
+                  >
+                    <UsersIcon weight="duotone" className="h-4 w-4" />
+                    Manage Collaborators
+                  </DropdownMenuItem>
+                )}
+                {canEdit && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setShowEditFolder(true);
+                    }}
+                    className="cursor-pointer rounded-lg"
+                  >
+                    <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
+                    Edit Folder
+                  </DropdownMenuItem>
+                )}
+                {userRole === 'owner' && (
+                  <DropdownMenuItem
+                    onClick={handleDeleteFolder}
+                    className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
+                  >
+                    <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
+                    {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
       
@@ -206,14 +226,21 @@ const FolderDetailPage = () => {
               <div className="border border-[#ddd] group-hover:-rotate-2 transition-all dark:border-white/10 w-[95%] h-[60%] scale-95 bg-white/50 dark:bg-muted/50 z-10 backdrop-blur-2xl p-2 rounded-t-2xl absolute bottom-4 left-1/2 -translate-x-1/2" />
               <div className="border border-[#ddd] group-hover:rotate-2 transition-all dark:border-white/10 w-[85%] h-[60%] scale-90 bg-white/40 dark:bg-muted/40 z-0 p-2 rounded-t-2xl absolute bottom-8 left-1/2 -translate-x-1/2" />
             </div>
-            <h3 className="text-2xl font-medium mb-2">You don&apos;t have any bookmarks yet</h3>
+            <h3 className="text-2xl font-medium mb-2">
+              {canEdit ? "You don't have any bookmarks yet" : "No bookmarks in this folder"}
+            </h3>
             <p className="text-muted-foreground mb-6 max-w-md">
-              Get started by adding your first bookmark to this folder.
+              {canEdit 
+                ? "Get started by adding your first bookmark to this folder."
+                : "This folder doesn't contain any bookmarks yet."
+              }
             </p>
-            <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
-              <Plus className="h-4 w-4" />
-              Add Your First Bookmark
-            </Button>
+            {canEdit && (
+              <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
+                <Plus className="h-4 w-4" />
+                Add Your First Bookmark
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -221,8 +248,9 @@ const FolderDetailPage = () => {
               <BookmarkCard
                 key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? 'editing' : 'normal'}`}
                 bookmark={bookmark}
-                onEdit={setEditingBookmark}
-                onDelete={handleDeleteBookmark}
+                onEdit={canEdit ? setEditingBookmark : noOpEdit}
+                onDelete={canEdit ? handleDeleteBookmark : noOpDelete}
+                showDropdown={canEdit}
               />
             ))}
           </div>

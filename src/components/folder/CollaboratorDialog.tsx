@@ -133,6 +133,35 @@ export default function CollaboratorDialog({
     }
   };
 
+  const handleUpdateRole = async (collabId: string, newRole: 'editor' | 'viewer') => {
+    try {
+      
+      const response = await fetch(`/api/folders/${folderId}/collaborators`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collaboratorId: collabId,
+          role: newRole,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json() as { error?: string };
+        throw new Error(error.error ?? 'Failed to update collaborator role');
+      }
+
+      setCollaborators(prev => prev.map(c => 
+        c._id === collabId ? { ...c, role: newRole } : c
+      ));
+      toast.success('Collaborator role updated successfully');
+    } catch (error) {
+      console.error('Error updating collaborator role:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update collaborator role');
+    }
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -248,17 +277,46 @@ export default function CollaboratorDialog({
                             </div>
                             <div className="flex-1">
                               <p className="font-medium">{collaborator.email}</p>
-                                <Badge variant={collaborator.role === 'editor' ? 'info' : 'gray'}>
-                                  {collaborator.role}
-                                </Badge>
-                            </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Select
+                                  value={collaborator.role}
+                                  onValueChange={(value: 'editor' | 'viewer') => {
+                                    if (collaborator._id) {
+                                      void handleUpdateRole(collaborator._id, value);
+                                    } else {
+                                      toast.error('Collaborator ID not found');
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="w-24 h-6 text-xs">
+                                    <SelectValue>
+                                      <Badge variant={collaborator.role === 'editor' ? 'info' : 'gray'} className="text-xs px-1 py-0">
+                                        {collaborator.role}
+                                      </Badge>
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="editor">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="info" className="text-xs">Editor</Badge>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="viewer">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="gray" className="text-xs">Viewer</Badge>
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
                                 <Badge variant={
                                   collaborator.status === 'accepted' ? 'success' : 
                                   collaborator.status === 'pending' ? 'warning' : 
                                   'destructive'
-                                }>
+                                } className="text-xs">
                                   {collaborator.status}
                                 </Badge>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <Button

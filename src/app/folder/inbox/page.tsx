@@ -129,7 +129,7 @@ export default function InboxPage() {
             {loadingInvitations ? (
               <Skeleton className="h-9 w-16 mb-1" />
             ) : (
-              <div className="text-3xl font-mono font-semibold">{pendingInvitations.length}</div>
+              <div className="text-3xl font-mono font-semibold">{pendingInvitations.filter(inv => inv.status === 'pending').length}</div>
             )}
             <div className="text-sm text-muted-foreground">Pending Invitations</div>
           </div>

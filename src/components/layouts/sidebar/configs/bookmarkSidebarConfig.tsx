@@ -30,7 +30,7 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/folder" }
         throw new Error('Failed to fetch invitations');
       }
       const data = await response.json() as { invitations: (FolderCollaboration & { folder?: Folder })[] };
-      setPendingInvitationsCount(data.invitations?.length ?? 0);
+      setPendingInvitationsCount(data.invitations?.filter(inv => inv.status === 'pending').length ?? 0);
     } catch (error) {
       console.error('Error fetching invitations count:', error);
     }

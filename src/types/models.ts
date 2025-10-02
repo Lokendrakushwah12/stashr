@@ -22,6 +22,7 @@ export interface Folder {
   bookmarkCount?: number;
   createdAt?: string;
   updatedAt?: string;
+  userRole?: 'owner' | 'editor' | 'viewer';
 }
 
 export interface FolderCollaboration {

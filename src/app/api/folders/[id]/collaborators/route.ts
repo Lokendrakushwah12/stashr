@@ -46,7 +46,7 @@ export async function GET(
     // Get all collaborators for this folder (including pending)
     const collaborators = await FolderCollaboration.find({
       folderId: id
-    }).select('userId email role invitedByUserId invitedByUserName status createdAt').lean().exec();
+    }).select('_id userId email role invitedByUserId invitedByUserName status createdAt').lean().exec();
 
     return NextResponse.json({ collaborators }, { status: 200 });
   } catch (error) {
@@ -224,6 +224,82 @@ export async function DELETE(
 
     return NextResponse.json(
       { error: "Failed to remove collaborator" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/folders/[id]/collaborators - Update collaborator role
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = (await request.json()) as {
+      collaboratorId: string;
+      role: 'editor' | 'viewer';
+    };
+
+    const { collaboratorId, role } = body;
+
+    if (!collaboratorId || !role || !['editor', 'viewer'].includes(role)) {
+      return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    }
+
+    await connectDB();
+    const { Folder, FolderCollaboration } = await registerModels();
+
+    const folder = await Folder.findById(id)
+      .select("_id name userId")
+      .lean()
+      .exec();
+
+    if (!folder) {
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+    }
+
+    // Check if user is folder owner
+    if (folder.userId !== session.user.id) {
+      return NextResponse.json({ error: "Only folder owner can update collaborator roles" }, { status: 403 });
+    }
+
+    const collaboration = await FolderCollaboration.findOneAndUpdate(
+      {
+        _id: collaboratorId,
+        folderId: id
+      },
+      { role },
+      { new: true, runValidators: true }
+    ).exec();
+
+    if (!collaboration) {
+      return NextResponse.json({ error: "Collaboration not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ 
+      message: "Collaborator role updated successfully",
+      collaboration 
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error updating collaborator role:", error);
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: `Failed to update collaborator role: ${error.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to update collaborator role" },
       { status: 500 }
     );
   }

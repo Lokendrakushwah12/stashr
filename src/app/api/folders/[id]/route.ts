@@ -21,12 +21,13 @@ export async function GET(
 
     const resolvedParams = await params;
     await connectDB();
-    const { Folder, Bookmark } = await registerModels();
+    const { Folder, Bookmark, FolderCollaboration } = await registerModels();
 
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
+    // Check if user owns the folder or is a collaborator
     const folder = await Folder.findOne({
       _id: resolvedParams.id,
       userId: session.user.id,
@@ -35,11 +36,45 @@ export async function GET(
       .lean()
       .exec();
 
+    // If not found as owner, check if user is a collaborator
+    if (!folder) {
+      const collaboration = await FolderCollaboration.findOne({
+        folderId: resolvedParams.id,
+        $or: [
+          { userId: session.user.id },
+          { email: session.user.email }
+        ],
+        status: 'accepted'
+      }).exec();
+
+      if (collaboration) {
+        // User is a collaborator, fetch the folder
+        const sharedFolder = await Folder.findById(resolvedParams.id)
+          .populate("bookmarks")
+          .lean()
+          .exec();
+        
+        if (sharedFolder) {
+          return NextResponse.json({ 
+            folder: {
+              ...sharedFolder,
+              userRole: collaboration.role
+            }
+          }, { status: 200 });
+        }
+      }
+    }
+
     if (!folder) {
       return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ folder }, { status: 200 });
+    return NextResponse.json({ 
+      folder: {
+        ...folder,
+        userRole: 'owner'
+      }
+    }, { status: 200 });
   } catch (error) {
     console.error("Error fetching folder:", error);
 
@@ -71,7 +106,7 @@ export async function PUT(
 
     const resolvedParams = await params;
     await connectDB();
-    const { Folder, Bookmark } = await registerModels();
+    const { Folder, Bookmark, FolderCollaboration } = await registerModels();
 
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
@@ -99,6 +134,32 @@ export async function PUT(
       );
     }
 
+    // Check if user owns the folder or is an editor collaborator
+    const ownedFolder = await Folder.findOne({
+      _id: resolvedParams.id,
+      userId: session.user.id,
+    }).exec();
+
+    let isEditor = false;
+    if (!ownedFolder) {
+      // Check if user is an editor collaborator
+      const collaboration = await FolderCollaboration.findOne({
+        folderId: resolvedParams.id,
+        $or: [
+          { userId: session.user.id },
+          { email: session.user.email }
+        ],
+        status: 'accepted',
+        role: 'editor'
+      }).exec();
+      
+      if (collaboration) {
+        isEditor = true;
+      } else {
+        return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+      }
+    }
+
     // Check if name already exists for this user (excluding current folder)
     if (name) {
       const existingFolder = await Folder.findOne({
@@ -122,8 +183,8 @@ export async function PUT(
       updateData.description = description?.trim() ?? "";
     if (color) updateData.color = color;
 
-    const folder = await Folder.findOneAndUpdate(
-      { _id: resolvedParams.id, userId: session.user.id },
+    const folder = await Folder.findByIdAndUpdate(
+      resolvedParams.id,
       updateData,
       {
         new: true,
@@ -179,12 +240,13 @@ export async function DELETE(
 
     const resolvedParams = await params;
     await connectDB();
-    const { Folder, Bookmark } = await registerModels();
+    const { Folder, Bookmark, FolderCollaboration } = await registerModels();
 
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
+    // Only folder owners can delete folders
     const folder = await Folder.findOne({
       _id: resolvedParams.id,
       userId: session.user.id,
@@ -201,6 +263,11 @@ export async function DELETE(
         userId: session.user.id,
       }).exec();
     }
+
+    // Remove all collaborations for this folder
+    await FolderCollaboration.deleteMany({
+      folderId: resolvedParams.id,
+    }).exec();
 
     // Delete the folder
     await Folder.findByIdAndDelete(resolvedParams.id).exec();
