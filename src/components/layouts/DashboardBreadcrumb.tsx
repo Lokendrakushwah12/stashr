@@ -51,7 +51,7 @@ export default function DashboardBreadcrumb() {
       <Button
         variant="outline"
         size="sm"
-        className="hidden md:flex size-8 bg-accent border border-border rounded-sm hover:bg-accent/80"
+        className="hidden md:flex size-7 bg-accent border border-border rounded-sm hover:bg-accent/80"
         onClick={toggleCollapsed}
       >
         <SidebarIcon weight="duotone" className="h-4 w-4 text-muted-foreground hover:text-foreground" />

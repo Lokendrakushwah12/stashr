@@ -68,10 +68,11 @@ export function useUpdateFolder() {
       }
       return response;
     },
-    onSuccess: (data, variables) => {
-      void queryClient.setQueryData(folderKeys.detail(variables.id), data.data?.folder);
+    onSuccess: (response, variables) => {
+      // Update the cache with the correct structure
+      void queryClient.setQueryData(folderKeys.detail(variables.id), response);
+      // Invalidate folder list to update counts/colors
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
-      toast.success(`Folder "${data.data?.folder.name}" updated successfully`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update folder: ${error.message}`);

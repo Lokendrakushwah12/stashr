@@ -3,9 +3,9 @@
 import AddBookmarkDialog from "@/components/bookmark/AddBookmarkDialog";
 import BookmarkCard from "@/components/bookmark/BookmarkCard";
 import EditBookmarkDialog from "@/components/bookmark/EditBookmarkDialog";
-import EditFolderDialog from "@/components/bookmark/EditFolderDialog";
 import CollaboratorDialog from "@/components/folder/CollaboratorDialog";
 import { Button } from "@/components/ui/button";
+import ColorPicker from "@/components/ui/color-picker";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
   DropdownMenu,
@@ -13,15 +13,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import InlineEdit from "@/components/ui/inline-edit";
 import {
   useDeleteBookmark,
   useDeleteFolder,
   useFolder,
+  useUpdateFolder,
 } from "@/lib/hooks/use-bookmarks";
 import type { Bookmark } from "@/types";
 import {
   ArrowsClockwiseIcon,
-  PencilSimpleLineIcon,
   PlusIcon,
   ShareFatIcon,
   TrashIcon,
@@ -37,7 +38,6 @@ const FolderDetailPage = () => {
   const folderId = params.id as string;
 
   const [showAddBookmark, setShowAddBookmark] = useState(false);
-  const [showEditFolder, setShowEditFolder] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(false);
   const [showCollaborators, setShowCollaborators] = useState(false);
@@ -66,6 +66,7 @@ const FolderDetailPage = () => {
   // Use React Query mutations
   const deleteBookmarkMutation = useDeleteBookmark();
   const deleteFolderMutation = useDeleteFolder();
+  const updateFolderMutation = useUpdateFolder();
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     try {
@@ -78,6 +79,47 @@ const FolderDetailPage = () => {
   const handleDeleteFolder = () => {
     setDropdownOpen(false);
     setShowDeleteFolderConfirm(true);
+  };
+
+  const handleUpdateTitle = async (newTitle: string) => {
+    if (!canEdit || !folder) return;
+
+    try {
+      await updateFolderMutation.mutateAsync({
+        id: folderId,
+        data: { name: newTitle },
+      });
+    } catch (error) {
+      console.error("Error updating title:", error);
+      throw error;
+    }
+  };
+
+  const handleUpdateDescription = async (newDescription: string) => {
+    if (!canEdit || !folder) return;
+
+    try {
+      await updateFolderMutation.mutateAsync({
+        id: folderId,
+        data: { description: newDescription },
+      });
+    } catch (error) {
+      console.error("Error updating description:", error);
+      throw error;
+    }
+  };
+
+  const handleUpdateColor = async (newColor: string) => {
+    if (!canEdit || !folder) return;
+
+    try {
+      await updateFolderMutation.mutateAsync({
+        id: folderId,
+        data: { color: newColor },
+      });
+    } catch (error) {
+      console.error("Error updating color:", error);
+    }
   };
 
   const confirmDeleteFolder = async () => {
@@ -119,14 +161,35 @@ const FolderDetailPage = () => {
   return (
     <div className="min-h-screen space-y-4 pt-2">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">
-          <div
-            className="mt-0.5 size-5 rounded-sm opacity-60"
-            style={{ backgroundColor: folder.color }}
-          />
-          {folder.name}
-        </h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="flex flex-shrink-0 items-center justify-center">
+              <ColorPicker
+                value={folder.color ?? "#3b82f6"}
+                onChange={handleUpdateColor}
+                disabled={!canEdit}
+              >
+                <button
+                  type="button"
+                  disabled={!canEdit}
+                  className="size-5 cursor-pointer rounded-sm opacity-60 transition-all hover:opacity-100 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: folder.color ?? "#3b82f6" }}
+                />
+              </ColorPicker>
+            </div>
+            <InlineEdit
+              value={folder.name}
+              onSave={handleUpdateTitle}
+              placeholder="Enter board name..."
+              fontSize="3xl"
+              fontWeight="semibold"
+              disabled={!canEdit}
+              maxLength={100}
+              className="tracking-tight"
+            />
+          </div>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={() => refetch()}
@@ -181,21 +244,6 @@ const FolderDetailPage = () => {
                     Manage Collaborators
                   </DropdownMenuItem>
                 )}
-                {canEdit && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      setShowEditFolder(true);
-                    }}
-                    className="cursor-pointer rounded-lg"
-                  >
-                    <PencilSimpleLineIcon
-                      weight="duotone"
-                      className="h-4 w-4"
-                    />
-                    Edit Folder
-                  </DropdownMenuItem>
-                )}
                 {userRole === "owner" && (
                   <DropdownMenuItem
                     onClick={handleDeleteFolder}
@@ -216,9 +264,17 @@ const FolderDetailPage = () => {
         </div>
       </div>
 
-      {folder.description && (
-        <p className="text-muted-foreground">{folder.description}</p>
-      )}
+      <InlineEdit
+        value={folder.description ?? ""}
+        onSave={handleUpdateDescription}
+        placeholder="Add a description..."
+        fontSize="base"
+        fontWeight="normal"
+        disabled={!canEdit}
+        multiline
+        maxLength={500}
+        className="text-muted-foreground"
+      />
 
       {/* Bookmarks List */}
       {isLoading ? (
@@ -290,16 +346,6 @@ const FolderDetailPage = () => {
           }}
         />
       )}
-
-      <EditFolderDialog
-        open={showEditFolder}
-        onOpenChange={setShowEditFolder}
-        folder={folder}
-        onSuccess={() => {
-          setShowEditFolder(false);
-          // React Query will automatically refetch after mutation
-        }}
-      />
 
       <CollaboratorDialog
         open={showCollaborators}
