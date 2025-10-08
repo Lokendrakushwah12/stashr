@@ -49,7 +49,7 @@ export default function CollaborationInvite({
 
   const handleGoToFolder = () => {
     if (collaboration.folderId) {
-      router.push(`/folder/${collaboration.folderId}`);
+      router.push(`/board/${collaboration.folderId}`);
     }
   };
 

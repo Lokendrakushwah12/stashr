@@ -20,7 +20,7 @@ const Navbar = () => {
       >
         <div className="max-w-[86rem] px-5 mx-auto flex h-16 w-full items-center justify-between">
           <Link
-            href={session ? "/folder" : "/"}
+            href={session ? "/board" : "/"}
             className="flex items-center gap-2 text-lg font-semibold text-foreground"
           >
             <Logo width={28} />
@@ -44,7 +44,7 @@ const Navbar = () => {
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-[50] bg-background/95 backdrop-blur-lg border-t border-border">
         <div className="flex items-center justify-around py-2 px-4">
           <Link
-            href={session ? "/folder" : "/"}
+            href={session ? "/board" : "/"}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
           >
             <Logo width={20} />

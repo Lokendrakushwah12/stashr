@@ -1,24 +1,35 @@
 "use client";
 
-import AddBookmarkDialog from '@/components/bookmark/AddBookmarkDialog';
-import BookmarkCard from '@/components/bookmark/BookmarkCard';
-import EditBookmarkDialog from '@/components/bookmark/EditBookmarkDialog';
-import EditFolderDialog from '@/components/bookmark/EditFolderDialog';
-import CollaboratorDialog from '@/components/folder/CollaboratorDialog';
+import AddBookmarkDialog from "@/components/bookmark/AddBookmarkDialog";
+import BookmarkCard from "@/components/bookmark/BookmarkCard";
+import EditBookmarkDialog from "@/components/bookmark/EditBookmarkDialog";
+import EditFolderDialog from "@/components/bookmark/EditFolderDialog";
+import CollaboratorDialog from "@/components/folder/CollaboratorDialog";
 import { Button } from "@/components/ui/button";
-import ConfirmationDialog from '@/components/ui/confirmation-dialog';
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteBookmark, useDeleteFolder, useFolder } from '@/lib/hooks/use-bookmarks';
-import type { Bookmark } from '@/types';
-import { ArrowsClockwiseIcon, PencilSimpleLineIcon, PlusIcon, ShareFatIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
-import { ArrowLeft, MoreVertical, Plus, RefreshCw } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import {
+  useDeleteBookmark,
+  useDeleteFolder,
+  useFolder,
+} from "@/lib/hooks/use-bookmarks";
+import type { Bookmark } from "@/types";
+import {
+  ArrowsClockwiseIcon,
+  PencilSimpleLineIcon,
+  PlusIcon,
+  ShareFatIcon,
+  TrashIcon,
+  UsersIcon,
+} from "@phosphor-icons/react";
+import { ArrowLeft, MoreVertical, Plus, RefreshCw } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const FolderDetailPage = () => {
   const params = useParams();
@@ -37,12 +48,12 @@ const FolderDetailPage = () => {
     data: folderResponse,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useFolder(folderId);
 
   const folder = folderResponse?.data?.folder;
-  const userRole = folder?.userRole ?? 'owner';
-  const canEdit = userRole === 'owner' || userRole === 'editor';
+  const userRole = folder?.userRole ?? "owner";
+  const canEdit = userRole === "owner" || userRole === "editor";
 
   // No-op functions for viewers
   const noOpEdit = () => {
@@ -60,7 +71,7 @@ const FolderDetailPage = () => {
     try {
       await deleteBookmarkMutation.mutateAsync({ id: bookmarkId, folderId });
     } catch (error) {
-      console.error('Error deleting bookmark:', error);
+      console.error("Error deleting bookmark:", error);
     }
   };
 
@@ -72,18 +83,20 @@ const FolderDetailPage = () => {
   const confirmDeleteFolder = async () => {
     try {
       await deleteFolderMutation.mutateAsync(folderId);
-      router.push('/');
+      router.push("/");
     } catch (error) {
-      console.error('Error deleting folder:', error);
+      console.error("Error deleting folder:", error);
     }
   };
 
   if (error) {
     return (
-      <div className="max-w-[86rem] px-5 mx-auto flex flex-col items-center justify-center min-h-[90vh] text-center">
+      <div className="mx-auto flex min-h-[90vh] max-w-[86rem] flex-col items-center justify-center px-5 text-center">
         <div className="max-w-md">
-          <p className="text-destructive mb-4">{error.message || 'Folder not found'}</p>
-          <Button onClick={() => router.push('/')} variant="outline">
+          <p className="text-destructive mb-4">
+            {error.message || "Folder not found"}
+          </p>
+          <Button onClick={() => router.push("/")} variant="outline">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
@@ -94,9 +107,9 @@ const FolderDetailPage = () => {
 
   if (!folder) {
     return (
-      <div className="max-w-[86rem] px-5 mx-auto flex flex-col items-center justify-center min-h-[90vh] text-center">
+      <div className="mx-auto flex min-h-[90vh] max-w-[86rem] flex-col items-center justify-center px-5 text-center">
         <div className="max-w-md">
-          <RefreshCw className="h-8 w-8 mx-auto animate-spin text-muted-foreground mb-4" />
+          <RefreshCw className="text-muted-foreground mx-auto mb-4 h-8 w-8 animate-spin" />
           <p className="text-muted-foreground">Loading your bookmarks...</p>
         </div>
       </div>
@@ -104,19 +117,16 @@ const FolderDetailPage = () => {
   }
 
   return (
-    <div className="py-4 space-y-4 min-h-screen">
+    <div className="min-h-screen space-y-4 pt-2">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Button
-          onClick={() => {
-            router.push('/folder');
-          }}
-          variant="outline"
-          size="sm"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">
+          <div
+            className="mt-0.5 size-5 rounded-sm opacity-60"
+            style={{ backgroundColor: folder.color }}
+          />
+          {folder.name}
+        </h1>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={() => refetch()}
@@ -124,7 +134,10 @@ const FolderDetailPage = () => {
             size="sm"
             disabled={isLoading}
           >
-            <ArrowsClockwiseIcon weight="duotone" className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <ArrowsClockwiseIcon
+              weight="duotone"
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
 
@@ -135,18 +148,20 @@ const FolderDetailPage = () => {
             </Button>
           )}
 
-          {(userRole === 'owner' || canEdit) && (
+          {(userRole === "owner" || canEdit) && (
             <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="px-2">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl w-48">
+              <DropdownMenuContent align="end" className="w-48 rounded-xl">
                 <DropdownMenuItem
                   onClick={() => {
                     const url = `${window.location.origin}/public/folder/${folderId}`;
-                    navigator.clipboard?.writeText(url).catch(() => { void 0; });
+                    navigator.clipboard?.writeText(url).catch(() => {
+                      void 0;
+                    });
                     window.open(url, "_blank");
                   }}
                   className="cursor-pointer rounded-lg"
@@ -154,7 +169,7 @@ const FolderDetailPage = () => {
                   <ShareFatIcon weight="duotone" className="h-4 w-4" />
                   Share Public Link
                 </DropdownMenuItem>
-                {userRole === 'owner' && (
+                {userRole === "owner" && (
                   <DropdownMenuItem
                     onClick={() => {
                       setDropdownOpen(false);
@@ -174,17 +189,25 @@ const FolderDetailPage = () => {
                     }}
                     className="cursor-pointer rounded-lg"
                   >
-                    <PencilSimpleLineIcon weight="duotone" className="h-4 w-4" />
+                    <PencilSimpleLineIcon
+                      weight="duotone"
+                      className="h-4 w-4"
+                    />
                     Edit Folder
                   </DropdownMenuItem>
                 )}
-                {userRole === 'owner' && (
+                {userRole === "owner" && (
                   <DropdownMenuItem
                     onClick={handleDeleteFolder}
                     className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                   >
-                    <TrashIcon weight="duotone" className="h-4 w-4 text-destructive" />
-                    {deleteFolderMutation.isPending ? 'Deleting...' : 'Delete Folder'}
+                    <TrashIcon
+                      weight="duotone"
+                      className="text-destructive h-4 w-4"
+                    />
+                    {deleteFolderMutation.isPending
+                      ? "Deleting..."
+                      : "Delete Folder"}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -192,69 +215,57 @@ const FolderDetailPage = () => {
           )}
         </div>
       </div>
-      
-      <div className="flex items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
-            <div
-              className="w-4 h-4 rounded-full"
-              style={{ backgroundColor: folder.color }}
-            />
-            {folder.name}
-          </h1>
-          {folder.description && (
-            <p className="text-muted-foreground mt-2">{folder.description}</p>
-          )}
-        </div>
-      </div>
+
+      {folder.description && (
+        <p className="text-muted-foreground">{folder.description}</p>
+      )}
 
       {/* Bookmarks List */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+          <RefreshCw className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
           <p className="text-muted-foreground">Loading your bookmarks...</p>
         </div>
-      ) : (
-        folder.bookmarks?.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className='relative h-32 w-full sm:w-[25rem]'>
-              <div className='absolute bottom-0 w-full h-16 bg-gradient-to-t from-background to-transparent z-[99]' />
-              <div className="border border-[#ddd] dark:border-white/10 w-full h-[60%] bg-white/60 dark:bg-muted/60 z-20 p-2 backdrop-blur-2xl rounded-t-2xl absolute bottom-0" >
-                <div className="w-[50%] h-[50%] bg-black/5 dark:bg-white/10 rounded-lg mb-2" />
-                <div className="w-full h-[50%] bg-black/5 dark:bg-white/10 rounded-lg" />
-              </div>
-              <div className="border border-[#ddd] group-hover:-rotate-2 transition-all dark:border-white/10 w-[95%] h-[60%] scale-95 bg-white/50 dark:bg-muted/50 z-10 backdrop-blur-2xl p-2 rounded-t-2xl absolute bottom-4 left-1/2 -translate-x-1/2" />
-              <div className="border border-[#ddd] group-hover:rotate-2 transition-all dark:border-white/10 w-[85%] h-[60%] scale-90 bg-white/40 dark:bg-muted/40 z-0 p-2 rounded-t-2xl absolute bottom-8 left-1/2 -translate-x-1/2" />
+      ) : folder.bookmarks?.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="relative h-32 w-full sm:w-[25rem]">
+            <div className="from-background absolute bottom-0 z-[99] h-16 w-full bg-gradient-to-t to-transparent" />
+            <div className="dark:bg-muted/60 absolute bottom-0 z-20 h-[60%] w-full rounded-t-2xl border border-[#ddd] bg-white/60 p-2 backdrop-blur-2xl dark:border-white/10">
+              <div className="mb-2 h-[50%] w-[50%] rounded-lg bg-black/5 dark:bg-white/10" />
+              <div className="h-[50%] w-full rounded-lg bg-black/5 dark:bg-white/10" />
             </div>
-            <h3 className="text-2xl font-medium mb-2">
-              {canEdit ? "You don't have any bookmarks yet" : "No bookmarks in this folder"}
-            </h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              {canEdit 
-                ? "Get started by adding your first bookmark to this folder."
-                : "This folder doesn't contain any bookmarks yet."
-              }
-            </p>
-            {canEdit && (
-              <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
-                <Plus className="h-4 w-4" />
-                Add Your First Bookmark
-              </Button>
-            )}
+            <div className="dark:bg-muted/50 absolute bottom-4 left-1/2 z-10 h-[60%] w-[95%] -translate-x-1/2 scale-95 rounded-t-2xl border border-[#ddd] bg-white/50 p-2 backdrop-blur-2xl transition-all group-hover:-rotate-2 dark:border-white/10" />
+            <div className="dark:bg-muted/40 absolute bottom-8 left-1/2 z-0 h-[60%] w-[85%] -translate-x-1/2 scale-90 rounded-t-2xl border border-[#ddd] bg-white/40 p-2 transition-all group-hover:rotate-2 dark:border-white/10" />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {folder.bookmarks?.map((bookmark) => (
-              <BookmarkCard
-                key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? 'editing' : 'normal'}`}
-                bookmark={bookmark}
-                onEdit={canEdit ? setEditingBookmark : noOpEdit}
-                onDelete={canEdit ? handleDeleteBookmark : noOpDelete}
-                showDropdown={canEdit}
-              />
-            ))}
-          </div>
-        )
+          <h3 className="mb-2 text-2xl font-medium">
+            {canEdit
+              ? "You don't have any bookmarks yet"
+              : "No bookmarks in this folder"}
+          </h3>
+          <p className="text-muted-foreground mb-6 max-w-md">
+            {canEdit
+              ? "Get started by adding your first bookmark to this folder."
+              : "This folder doesn't contain any bookmarks yet."}
+          </p>
+          {canEdit && (
+            <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
+              <Plus className="h-4 w-4" />
+              Add Your First Bookmark
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {folder.bookmarks?.map((bookmark) => (
+            <BookmarkCard
+              key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? "editing" : "normal"}`}
+              bookmark={bookmark}
+              onEdit={canEdit ? setEditingBookmark : noOpEdit}
+              onDelete={canEdit ? handleDeleteBookmark : noOpDelete}
+              showDropdown={canEdit}
+            />
+          ))}
+        </div>
       )}
 
       {/* Dialogs */}
@@ -294,7 +305,7 @@ const FolderDetailPage = () => {
         open={showCollaborators}
         onOpenChange={setShowCollaborators}
         folderId={folderId}
-        folderName={folder?.name || ''}
+        folderName={folder?.name || ""}
       />
 
       {/* Folder Deletion Confirmation Dialog */}
@@ -313,4 +324,4 @@ const FolderDetailPage = () => {
   );
 };
 
-export default FolderDetailPage; 
+export default FolderDetailPage;

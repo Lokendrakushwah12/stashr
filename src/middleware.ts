@@ -15,8 +15,11 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/folder/:path*",
+    "/board/:path*",
+    "/inbox/:path*",
+    "/profile/:path*",
     "/api/folders/:path*",
     "/api/bookmarks/:path*",
+    "/api/collaborations/:path*",
   ],
 }; 

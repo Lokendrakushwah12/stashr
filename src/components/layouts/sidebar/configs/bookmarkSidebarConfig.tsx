@@ -17,7 +17,7 @@ interface UseBookmarkSidebarConfigProps {
   currentPath?: string;
 }
 
-export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/folder" }: UseBookmarkSidebarConfigProps = {}) {
+export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/board" }: UseBookmarkSidebarConfigProps = {}) {
   const { data: session } = useSession();
   const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
 
@@ -53,18 +53,18 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/folder" }
         title: "Navigation",
         items: [
           {
-            id: "folders",
-            label: "All Folders",
+            id: "boards",
+            label: "All Boards",
             icon: FoldersIcon,
-            href: "/folder",
-            active: currentPath === "/folder",
+            href: "/board",
+            active: currentPath === "/board",
           },
           {
             id: "inbox",
             label: "Inbox",
             icon: EnvelopeIcon,
-            href: "/folder/inbox",
-            active: currentPath === "/folder/inbox",
+            href: "/inbox",
+            active: currentPath === "/inbox",
             badge: pendingInvitationsCount > 0 ? {
               count: pendingInvitationsCount,
               variant: "destructive" as const,

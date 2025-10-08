@@ -1,7 +1,6 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -9,7 +8,7 @@ import SidebarSection from "./SidebarSection";
 import SidebarItem from "./SidebarItem";
 import AccountPopover from "./AccountPopover";
 import type { SidebarProps, SidebarItem as SidebarItemType } from "./types";
-import { SidebarIcon } from "@phosphor-icons/react";
+import { useSidebar } from "@/lib/contexts/sidebar-context";
 
 export default function Sidebar({ 
   config, 
@@ -19,24 +18,12 @@ export default function Sidebar({
   defaultCollapsed = false 
 }: SidebarProps) {
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const { isCollapsed } = useSidebar();
   const [mounted, setMounted] = useState(false);
 
-  // Load collapsed state from localStorage on mount
   useEffect(() => {
     setMounted(true);
-    const savedState = localStorage.getItem('sidebar-collapsed');
-    if (savedState !== null) {
-      setIsCollapsed(JSON.parse(savedState));
-    }
   }, []);
-
-  // Save collapsed state to localStorage when it changes
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed));
-    }
-  }, [isCollapsed, mounted]);
 
   const handleItemClick = (item: SidebarItemType) => {
     if (item.href) {
@@ -90,16 +77,6 @@ export default function Sidebar({
             </div>
           </div>
         )}
-
-        {/* Collapse Toggle */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="size-8 bg-accent! border border-border rounded-sm absolute top-5 -right-10 hover:bg-accent/80"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          <SidebarIcon weight="duotone" className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-        </Button>
 
         {/* Main Content */}
         <ScrollArea className="flex-1 w-full">

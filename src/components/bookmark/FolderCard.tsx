@@ -15,7 +15,7 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
     const router = useRouter();
 
     const handleCardClick = () => {
-        router.push(`/folder/${folder._id}`);
+        router.push(`/board/${folder._id}`);
     };
 
     return (

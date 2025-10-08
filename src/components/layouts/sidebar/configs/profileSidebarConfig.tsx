@@ -22,9 +22,9 @@ export function useProfileSidebarConfig(): SidebarConfig {
         items: [
           {
             id: "back",
-            label: "Back to Folders",
+            label: "Back to Boards",
             icon: ArrowLeftIcon,
-            href: "/folder",
+            href: "/board",
           }
         ],
       },
