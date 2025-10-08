@@ -25,7 +25,7 @@ export default function DashboardBreadcrumb() {
 
   // Fetch board/folder data if we're on a specific board page
   const shouldFetchBoard = !!boardId && pathname?.includes(`/board/${boardId}`);
-  const { data: folderResponse } = useFolder(boardId || "");
+  const { data: folderResponse } = useFolder(boardId ?? "");
   const board = shouldFetchBoard ? folderResponse?.data?.folder : null;
 
   // Generate breadcrumb segments dynamically
