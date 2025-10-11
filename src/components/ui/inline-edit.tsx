@@ -12,6 +12,7 @@ interface InlineEditProps {
   multiline?: boolean;
   disabled?: boolean;
   maxLength?: number;
+  allowEmpty?: boolean;
   fontSize?: "sm" | "base" | "lg" | "xl" | "2xl" | "3xl";
   fontWeight?: "normal" | "medium" | "semibold" | "bold";
 }
@@ -24,6 +25,7 @@ export default function InlineEdit({
   multiline = false,
   disabled = false,
   maxLength,
+  allowEmpty = false,
   fontSize = "base",
   fontWeight = "normal",
 }: InlineEditProps) {
@@ -64,7 +66,8 @@ export default function InlineEdit({
       return;
     }
 
-    if (currentValue === "") {
+    // If allowEmpty is false and current value is empty, revert to original value
+    if (!allowEmpty && currentValue === "") {
       if (editableRef.current) {
         editableRef.current.textContent = initialValueRef.current;
       }

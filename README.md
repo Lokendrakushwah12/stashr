@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://stashr.in/favicon.svg" alt="Stashr Logo" width="80" height="80">
   <h1>Stashr</h1>
-  <p><strong>Organize Your Bookmarks</strong></p>
+  <p><strong>Turn scattered inspiration into organized thinking</strong></p>
 </div>
 
 <br>
@@ -12,7 +12,7 @@
 
 <br>
 
-**Stashr** is a modern, fast, and beautiful bookmark management application built with Next.js 15, TypeScript, and MongoDB. Organize your web bookmarks into colorful folders with an intuitive interface and secure user authentication powered by NextAuth.js.
+**Stashr** is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.
 
 ## 🚀 Live Demo
 

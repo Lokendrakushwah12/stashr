@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Hero from "./_components/Hero";
+import HowItWorks from "./_components/HowItWorks";
 
 export default function LandingPage() {
   const { data: session } = useSession();
@@ -18,6 +19,7 @@ export default function LandingPage() {
   return (
     <div className="relative">
       <Hero />
+      <HowItWorks />
     </div>
   );
 }

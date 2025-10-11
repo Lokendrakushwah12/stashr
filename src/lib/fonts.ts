@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -12,4 +13,10 @@ const inter = Geist({
   variable: "--font-geist",
 });
 
-export { geistMono, inter };
+const displayFont = localFont({
+  src: '../../public/fonts/Lastik-Regular.otf',
+  variable: '--font-display',
+});
+
+
+export { geistMono, inter, displayFont };

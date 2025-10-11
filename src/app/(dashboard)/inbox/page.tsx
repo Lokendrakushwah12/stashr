@@ -101,8 +101,8 @@ export default function InboxPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Inbox</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="font-display text-3xl tracking-tight">Inbox</h1>
+          <p className="text-muted-foreground">
             Manage your collaboration invitations
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function InboxPage() {
           >
             <ArrowsClockwiseIcon 
               weight="duotone" 
-              className={`h-4 w-4 ${loadingInvitations ? 'animate-spin' : ''}`} 
+              className={`h-4 w-4 ${loadingInvitations ? "animate-spin" : ""}`} 
             />
             Refresh
           </Button>

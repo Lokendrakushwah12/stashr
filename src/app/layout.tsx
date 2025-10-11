@@ -6,6 +6,7 @@ import { GeistMono } from 'geist/font/mono';
 import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Toaster } from "sonner";
+import { displayFont } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Stashr - Organize Your Bookmarks",
@@ -78,7 +79,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} ${displayFont.variable} font-sans antialiased`}
       >
         <AuthSessionProvider>
           <QueryProvider>

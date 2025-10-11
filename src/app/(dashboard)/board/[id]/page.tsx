@@ -186,7 +186,8 @@ const FolderDetailPage = () => {
               fontWeight="semibold"
               disabled={!canEdit}
               maxLength={100}
-              className="tracking-tight"
+              allowEmpty={false}
+              className="tracking-tight font-display"
             />
           </div>
         </div>
@@ -273,6 +274,7 @@ const FolderDetailPage = () => {
         disabled={!canEdit}
         multiline
         maxLength={500}
+        allowEmpty={true}
         className="text-muted-foreground"
       />
 

@@ -5,7 +5,7 @@ import { Button } from '../ui/button'
 import { ThemeToggleIcon } from '../ui/icons'
 import { cn } from '@/lib/utils'
 
-export function ThemeToggle({ className = "", title = "Toggle theme" }: { className?: string, title?: string }) {
+export function ThemeToggle({ className = "", title }: { className?: string, title?: string }) {
   const { setTheme } = useTheme()
 
   return (
@@ -18,7 +18,9 @@ export function ThemeToggle({ className = "", title = "Toggle theme" }: { classN
       title={title}
     >
       <ThemeToggleIcon />
-      <span className="">{title}</span>
+      {title && (
+        <span className="">{title}</span>
+      )}
     </Button>
   )
 }

@@ -34,7 +34,7 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
                 <CardHeader className="px-4 py-2 gap-0 space-y-0">
                     <CardTitle className="flex items-center justify-between gap-2 text-lg">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="truncate">{folder.name}</span>
+                            <span className="truncate text-xl font-display">{folder.name}</span>
                             {collaboratorCount > 0 && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                     <Users className="h-3 w-3" />

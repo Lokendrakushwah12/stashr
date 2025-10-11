@@ -36,7 +36,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen space-y-6 py-4">
+    <div className="space-y-6 py-4">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
