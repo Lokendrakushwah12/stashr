@@ -7,7 +7,7 @@ import { registerModels } from '@/models';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,7 @@ export async function PUT(
 
     const body = await request.json();
     const { status } = body;
-    const collaborationId = params.id;
+    const collaborationId = (await params).id;
 
     if (!status || !['accepted', 'declined'].includes(status)) {
       return NextResponse.json({ error: 'Valid status is required' }, { status: 400 });
@@ -55,7 +55,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -63,7 +63,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const collaborationId = params.id;
+    const collaborationId = (await params).id;
 
     await connectDB();
     const models = await registerModels();

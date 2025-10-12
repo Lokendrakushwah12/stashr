@@ -7,7 +7,7 @@ import { registerModels } from '@/models';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,8 @@ export async function GET(
 
     await connectDB();
     const models = await registerModels();
-    const boardId = params.id;
+    const resolvedParams = await params;
+    const boardId = resolvedParams.id;
 
     // Verify user owns the board
     const board = await models.Board.findOne({ 
@@ -64,7 +65,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -74,7 +75,8 @@ export async function POST(
 
     const body = await request.json();
     const { title, description, status, priority, linkedFolderId } = body;
-    const boardId = params.id;
+    const resolvedParams = await params;
+    const boardId = resolvedParams.id;
 
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
       return NextResponse.json({ error: 'Card title is required' }, { status: 400 });

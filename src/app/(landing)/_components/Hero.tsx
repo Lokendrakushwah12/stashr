@@ -26,13 +26,13 @@ const Hero = () => {
           <span className="text-primary">organized thinking</span>
         </h1>
 
-        <p className="text-muted-foreground mx-auto mb-8 max-w-3xl text-lg leading-relaxed">
+        <p className="text-muted-foreground mx-auto mb-8 max-w-3xl text-sm md:text-lg leading-relaxed">
           Stashr is where ideas take shape—before they become projects. Collect
           links, cluster concepts, and collaborate on Boards that evolve into
           actionable plans.
         </p>
 
-        <div className="mb-16 flex flex-col justify-center gap-4 sm:flex-row">
+        <div className="mb-16 flex flex-col justify-center gap-2 md:gap-4 sm:flex-row">
           <Button size="sm" asChild className="group">
             <Link href="/auth/signin">
               Start Exploring
@@ -42,7 +42,7 @@ const Hero = () => {
               />
             </Link>
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm" className="bg-background" asChild>
             <Link href="#how-it-works">See How It Works</Link>
           </Button>
         </div>
@@ -50,7 +50,7 @@ const Hero = () => {
         {/* dashboard image */}
         <div className="relative mx-auto max-w-7xl">
           <div className="pointer-events-none absolute bottom-0 z-30 h-60 w-full bg-gradient-to-t from-[#f6f6f6] dark:from-[#101010] to-transparent" />
-          <div className="border-border/50 aspect-[16/9] relative overflow-hidden rounded-t-2xl border border-b-0 bg-[#fff] dark:bg-[#09090b] select-none">
+          <div className="border-border/50 aspect-[16/9] relative overflow-hidden rounded-sm lg:rounded-t-2xl border border-b-0 bg-[#fff] dark:bg-[#09090b] select-none">
             <img
               src="/og.png"
               alt="Stashr Dashboard Preview"
@@ -104,8 +104,7 @@ const Hero = () => {
             </div>
             <h3 className="mb-2 font-display text-2xl md:text-3xl">Evolve Ideas</h3>
             <p className="text-muted-foreground text-sm">
-              Turn Boards into actionable plans. Export to Linear when ready to
-              build.
+              Turn Boards into actionable plans. Build your own Idea.
             </p>
           </div>
         </div>

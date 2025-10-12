@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +18,8 @@ export async function GET(
 
     await connectDB();
     const models = await registerModels();
-    const boardId = params.id;
+    const resolvedParams = await params;
+    const boardId = resolvedParams.id;
 
     // Check if user has access to this board
     const board = await models.Board.findById(boardId);
@@ -69,7 +70,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -79,7 +80,8 @@ export async function POST(
 
     const body = await request.json();
     const { content, action } = body;
-    const boardId = params.id;
+    const resolvedParams = await params;
+    const boardId = resolvedParams.id;
 
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });

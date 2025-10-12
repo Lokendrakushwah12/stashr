@@ -7,7 +7,7 @@ import { registerModels } from '@/models';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,8 @@ export async function PUT(
 
     const body = await request.json();
     const { title, description, status, priority, linkedFolderId } = body;
-    const cardId = params.id;
+    const resolvedParams = await params;
+    const cardId = resolvedParams.id;
 
     await connectDB();
     const models = await registerModels();
@@ -94,7 +95,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -102,7 +103,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const cardId = params.id;
+    const resolvedParams = await params;
+    const cardId = resolvedParams.id;
 
     await connectDB();
     const models = await registerModels();

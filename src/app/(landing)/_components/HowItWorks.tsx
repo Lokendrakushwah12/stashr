@@ -14,13 +14,13 @@ const HowItWorks = () => {
             From scattered ideas to{" "}
             <span className="text-primary">organized action</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Stashr bridges the gap between inspiration and execution. 
             Here&apos;s how knowledge workers turn curiosity into clarity.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-16">
           <Card className="border-0 bg-background/50 backdrop-blur-sm">
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mb-4 mx-auto">
@@ -56,19 +56,6 @@ const HowItWorks = () => {
               <p className="text-sm text-muted-foreground">
                 Share Boards with your team. 
                 Build shared understanding before committing to action.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 bg-background/50 backdrop-blur-sm">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4 mx-auto">
-                <RocketIcon weight="duotone" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="font-display text-2xl md:text-3xl mb-2">4. Execute</h3>
-              <p className="text-sm text-muted-foreground">
-                When ready, export to Linear or your project tool. 
-                Start building with full context.
               </p>
             </CardContent>
           </Card>

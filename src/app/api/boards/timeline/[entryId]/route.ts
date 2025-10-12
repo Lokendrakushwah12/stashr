@@ -7,7 +7,7 @@ import { registerModels } from '@/models';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { entryId: string } }
+  { params }: { params: Promise<{ entryId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,8 @@ export async function PUT(
 
     const body = await request.json();
     const { content } = body;
-    const entryId = params.entryId;
+    const resolvedParams = await params;
+    const entryId = resolvedParams.entryId;
 
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
@@ -54,7 +55,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { entryId: string } }
+  { params }: { params: Promise<{ entryId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -62,7 +63,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const entryId = params.entryId;
+    const resolvedParams = await params;
+    const entryId = resolvedParams.entryId;
 
     await connectDB();
     const models = await registerModels();
