@@ -75,16 +75,3 @@ export interface BoardCard {
   createdAt?: string;
   updatedAt?: string;
 }
-
-export interface BoardCollaboration {
-  _id?: string;
-  boardId: string;
-  userId: string;
-  email: string;
-  role: 'editor' | 'viewer';
-  invitedByUserId: string;
-  invitedByUserName: string;
-  status: 'pending' | 'accepted' | 'declined';
-  createdAt?: Date;
-  updatedAt?: Date;
-} 

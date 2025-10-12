@@ -6,8 +6,7 @@ import {
   ArrowRightIcon,
   BookOpenIcon,
   LightbulbIcon,
-  RocketIcon,
-  ShareIcon,
+  ShareIcon
 } from "@phosphor-icons/react";
 import Link from "next/link";
 
