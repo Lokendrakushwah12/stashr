@@ -12,7 +12,7 @@ import Link from "next/link";
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="bg-muted/30 py-24">
+    <section id="how-it-works" className="py-24">
       <div className="mx-auto max-w-[86rem] px-5">
         <div className="mb-16 text-center">
           <h2 className="font-display mb-4 text-3xl tracking-tight md:text-5xl">

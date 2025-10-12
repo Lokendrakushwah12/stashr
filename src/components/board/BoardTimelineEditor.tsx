@@ -8,7 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { useSession } from "next-auth/react";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -34,7 +34,7 @@ export default function BoardTimelineEditor({
   userRole = "viewer",
 }: BoardTimelineEditorProps) {
   const { data: session } = useSession();
-  const [showNewEntry, setShowNewEntry] = useState(false);
+  const [manualShowEntry, setManualShowEntry] = useState(false);
   const [newEntryContent, setNewEntryContent] = useState("");
   const createTimelineEntry = useCreateTimelineEntry(boardId);
   const updateTimelineEntry = useUpdateTimelineEntry(boardId);
@@ -46,8 +46,11 @@ export default function BoardTimelineEditor({
       .join("")
       .toUpperCase() ?? "U";
 
+  // Show entry form when there are no entries OR when manually triggered
+  const showNewEntry = timelineEntries.length === 0 || manualShowEntry;
+
   const handleAddNewEntry = () => {
-    setShowNewEntry(true);
+    setManualShowEntry(true);
   };
 
   const handleSaveNewEntry = async (content: string) => {
@@ -59,7 +62,7 @@ export default function BoardTimelineEditor({
         action: 'created',
       });
       setNewEntryContent("");
-      setShowNewEntry(false);
+      setManualShowEntry(false);
     } catch (error) {
       console.error("Error saving entry:", error);
     }
@@ -67,7 +70,7 @@ export default function BoardTimelineEditor({
 
   const handleCancelNewEntry = () => {
     setNewEntryContent("");
-    setShowNewEntry(false);
+    setManualShowEntry(false);
   };
 
   const handleUpdateEntry = async (entryId: string, newContent: string) => {
