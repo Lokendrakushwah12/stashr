@@ -12,6 +12,8 @@ export interface SidebarItem {
   };
   active?: boolean;
   disabled?: boolean;
+  mobileOnly?: boolean;
+  desktopOnly?: boolean;
 }
 
 export interface SidebarSection {

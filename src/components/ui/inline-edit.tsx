@@ -37,9 +37,10 @@ export default function InlineEdit({
   useEffect(() => {
     initialValueRef.current = value;
     if (editableRef.current && !isEditing) {
-      editableRef.current.textContent = value || "";
+      const isEmpty = !value || value.trim() === "";
+      editableRef.current.textContent = isEmpty ? placeholder : value;
     }
-  }, [value, isEditing]);
+  }, [value, isEditing, placeholder]);
 
   useEffect(() => {
     if (isEditing && editableRef.current) {
@@ -69,7 +70,8 @@ export default function InlineEdit({
     // If allowEmpty is false and current value is empty, revert to original value
     if (!allowEmpty && currentValue === "") {
       if (editableRef.current) {
-        editableRef.current.textContent = initialValueRef.current;
+        const isEmpty = !initialValueRef.current || initialValueRef.current.trim() === "";
+        editableRef.current.textContent = isEmpty ? placeholder : initialValueRef.current;
       }
       setIsEditing(false);
       return;
@@ -83,7 +85,8 @@ export default function InlineEdit({
     } catch (error) {
       console.error("Failed to save:", error);
       if (editableRef.current) {
-        editableRef.current.textContent = initialValueRef.current;
+        const isEmpty = !initialValueRef.current || initialValueRef.current.trim() === "";
+        editableRef.current.textContent = isEmpty ? placeholder : initialValueRef.current;
       }
       setIsEditing(false);
     } finally {
@@ -93,7 +96,8 @@ export default function InlineEdit({
 
   const handleCancel = () => {
     if (editableRef.current) {
-      editableRef.current.textContent = initialValueRef.current;
+      const isEmpty = !initialValueRef.current || initialValueRef.current.trim() === "";
+      editableRef.current.textContent = isEmpty ? placeholder : initialValueRef.current;
     }
     setIsEditing(false);
   };
@@ -171,11 +175,11 @@ export default function InlineEdit({
           "whitespace-pre-wrap break-words",
           fontSizeClasses[fontSize],
           fontWeightClasses[fontWeight],
-          isEmpty && !isEditing && "text-muted-foreground italic",
+          isEmpty && !isEditing && "text-muted-foreground",
           !multiline && "whitespace-nowrap overflow-hidden text-ellipsis"
         )}
       >
-        {value ?? (isEmpty && !isEditing ? placeholder : "")}
+        {isEmpty && !isEditing ? placeholder : (value || "")}
       </div>
       
       {!disabled && !isEditing && (

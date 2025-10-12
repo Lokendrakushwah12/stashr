@@ -3,7 +3,7 @@
 import CollaborationInvite from "@/components/notifications/CollaborationInvite";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { FolderCollaboration, Folder } from "@/types";
+import type { FolderCollaboration, Folder, BoardCollaboration, Board } from "@/types";
 import { ArrowsClockwiseIcon, EnvelopeIcon } from "@phosphor-icons/react";
 import { Loader, RefreshCw } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -14,7 +14,8 @@ import { toast } from "sonner";
 export default function InboxPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [pendingInvitations, setPendingInvitations] = useState<(FolderCollaboration & { folder?: Folder })[]>([]);
+  const [folderInvitations, setFolderInvitations] = useState<(FolderCollaboration & { folder?: Folder })[]>([]);
+  const [boardInvitations, setBoardInvitations] = useState<(BoardCollaboration & { board?: Board })[]>([]);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
 
   const fetchPendingInvitations = async () => {
@@ -22,12 +23,19 @@ export default function InboxPage() {
     
     setLoadingInvitations(true);
     try {
-      const response = await fetch('/api/collaborations/pending');
-      if (!response.ok) {
-        throw new Error('Failed to fetch invitations');
+      // Fetch folder collaborations
+      const folderResponse = await fetch('/api/collaborations/pending');
+      if (folderResponse.ok) {
+        const folderData = await folderResponse.json() as { invitations: (FolderCollaboration & { folder?: Folder })[] };
+        setFolderInvitations(folderData.invitations ?? []);
       }
-      const data = await response.json() as { invitations: (FolderCollaboration & { folder?: Folder })[] };
-      setPendingInvitations(data.invitations ?? []);
+
+      // Fetch board collaborations
+      const boardResponse = await fetch('/api/boards/collaborations/pending');
+      if (boardResponse.ok) {
+        const boardData = await boardResponse.json() as { invitations: (BoardCollaboration & { board?: Board })[] };
+        setBoardInvitations(boardData.invitations ?? []);
+      }
     } catch (error) {
       console.error('Error fetching invitations:', error);
       toast.error('Failed to load invitations');
@@ -36,9 +44,15 @@ export default function InboxPage() {
     }
   };
 
-  const handleAcceptInvitation = async (collaborationId: string) => {
+  const pendingInvitations = [...folderInvitations, ...boardInvitations];
+
+  const handleAcceptInvitation = async (collaborationId: string, type: 'folder' | 'board') => {
     try {
-      const response = await fetch(`/api/collaborations/${collaborationId}`, {
+      const endpoint = type === 'board' 
+        ? `/api/boards/collaborations/${collaborationId}`
+        : `/api/collaborations/${collaborationId}`;
+        
+      const response = await fetch(endpoint, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -58,9 +72,13 @@ export default function InboxPage() {
     }
   };
 
-  const handleDeclineInvitation = async (collaborationId: string) => {
+  const handleDeclineInvitation = async (collaborationId: string, type: 'folder' | 'board') => {
     try {
-      const response = await fetch(`/api/collaborations/${collaborationId}`, {
+      const endpoint = type === 'board'
+        ? `/api/boards/collaborations/${collaborationId}`
+        : `/api/collaborations/${collaborationId}`;
+        
+      const response = await fetch(endpoint, {
         method: 'DELETE',
       });
 
@@ -80,6 +98,7 @@ export default function InboxPage() {
     if (session?.user?.id) {
       void fetchPendingInvitations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
   // Redirect if not authenticated

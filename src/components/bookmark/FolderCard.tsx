@@ -15,19 +15,19 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
     const router = useRouter();
 
     const handleCardClick = () => {
-        router.push(`/board/${folder._id}`);
+        router.push(`/bookmarks/${folder._id}`);
     };
 
     return (
         <>
             <Card
-                className="group relative rounded-2xl h-32 overflow-hidden transition-all duration-200 cursor-pointer"
+                className="group relative rounded-2xl rounded-br-none ease-out h-32 overflow-hidden transition-all duration-200 cursor-pointer"
                 style={{ background: `${folder.color}3A`, borderColor: `${folder.color}2A` }}
                 onClick={handleCardClick}
             >
-                <div className="border group-hover:rotate-3 rounded-br-xl overflow-hidden transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-90 bg-white/40 dark:bg-white/10 z0 p-2 rounded-tl-2xl absolute bottom-3.5 -right-4" />
-                <div className="border group-hover:rotate-1 rounded-br-xl overflow-hidden transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-95 bg-white/50 dark:bg-white/10 z10 backdrop-blur-2xl p-2 rounded-tl-2xl absolute bottom-1.5 -right-2" />
-                <div className="border group-hover:-rotate-2 rounded-br-xl overflow-hidden transition-all duration-200 dark:border-white/10 w-full translate-x-1/4 h-[60%] bg-white/60 dark:bg-white/10 z20 p-2 backdrop-blur-2xl rounded-tl-2xl absolute -bottom-1 -right-1" >
+                <div className="border group-hover:rotate-3 rounded-br-xl overflow-hidden ease-out transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-90 bg-white/40 dark:bg-white/10 z0 p-2 rounded-tl-2xl absolute bottom-3.5 -right-4" />
+                <div className="border group-hover:rotate-1 rounded-br-xl overflow-hidden ease-out transition-all dark:border-white/10 w-full translate-x-1/4 h-[60%] scale-95 bg-white/50 dark:bg-white/10 z10 backdrop-blur-2xl p-2 rounded-tl-2xl absolute bottom-1.5 -right-2" />
+                <div className="border group-hover:-rotate-2 rounded-br-xl overflow-hidden ease-out transition-all duration-200 dark:border-white/10 w-full translate-x-1/4 h-[60%] bg-white/60 dark:bg-white/10 z20 p-2 backdrop-blur-2xl rounded-tl-2xl absolute -bottom-1 -right-1" >
                     <div className="w-[50%] h-[50%] bg-black/5 dark:bg-white/10 rounded-lg mb-2" />
                     <div className="w-full h-[50%] bg-black/5 dark:bg-white/10 rounded-lg" />
                 </div>

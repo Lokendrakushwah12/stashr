@@ -47,7 +47,7 @@ export default function SidebarSection({ section, onItemClick, className, isColl
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1 mt-1">
-                {section.items.map((item) => (
+                {section.items.filter(item => !item.mobileOnly).map((item) => (
                   <SidebarItem
                     key={item.id}
                     item={item}
@@ -68,7 +68,7 @@ export default function SidebarSection({ section, onItemClick, className, isColl
       
       {!section.collapsible && (
         <div className="space-y-1 w-full flex flex-col items-center">
-          {section.items.map((item) => (
+          {section.items.filter(item => !item.mobileOnly).map((item) => (
             <SidebarItem
               key={item.id}
               item={item}

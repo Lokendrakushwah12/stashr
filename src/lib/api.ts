@@ -4,8 +4,18 @@ import type {
   UpdateBookmarkRequest, 
   CreateFolderRequest, 
   UpdateFolderRequest,
+  CreateBoardRequest,
+  UpdateBoardRequest,
+  CreateBoardCardRequest,
+  UpdateBoardCardRequest,
+  AddCollaboratorRequest,
+  BoardCollaboration,
+  BoardTimelineEntry,
+  CreateTimelineEntryRequest,
   Bookmark,
-  Folder
+  Folder,
+  Board,
+  BoardCard
 } from '@/types';
 
 // Base API configuration
@@ -106,10 +116,131 @@ export const folderApi = {
   },
 };
 
+// Board API functions
+export const boardApi = {
+  // Get all boards
+  async getAll(): Promise<ApiResponse<{ boards: Board[] }>> {
+    return apiRequest<{ boards: Board[] }>('/boards');
+  },
+
+  // Get a specific board with cards
+  async getById(id: string): Promise<ApiResponse<{ board: Board }>> {
+    return apiRequest<{ board: Board }>(`/boards/${id}`);
+  },
+
+  // Create a new board
+  async create(request: CreateBoardRequest): Promise<ApiResponse<{ board: Board }>> {
+    return apiRequest<{ board: Board }>('/boards', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Update a board
+  async update(id: string, request: UpdateBoardRequest): Promise<ApiResponse<{ board: Board }>> {
+    return apiRequest<{ board: Board }>(`/boards/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Delete a board
+  async delete(id: string): Promise<ApiResponse<{ message: string }>> {
+    return apiRequest<{ message: string }>(`/boards/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Get cards for a board
+  async getCards(boardId: string): Promise<ApiResponse<{ cards: BoardCard[] }>> {
+    return apiRequest<{ cards: BoardCard[] }>(`/boards/${boardId}/cards`);
+  },
+
+  // Create a new board card
+  async createCard(request: CreateBoardCardRequest): Promise<ApiResponse<{ card: BoardCard }>> {
+    return apiRequest<{ card: BoardCard }>(`/boards/${request.boardId}/cards`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Update a board card
+  async updateCard(id: string, request: UpdateBoardCardRequest): Promise<ApiResponse<{ card: BoardCard }>> {
+    return apiRequest<{ card: BoardCard }>(`/board-cards/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Delete a board card
+  async deleteCard(id: string): Promise<ApiResponse<{ message: string }>> {
+    return apiRequest<{ message: string }>(`/board-cards/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Get collaborators for a board
+  async getCollaborators(boardId: string): Promise<ApiResponse<{ collaborations: BoardCollaboration[] }>> {
+    return apiRequest<{ collaborations: BoardCollaboration[] }>(`/boards/${boardId}/collaborators`);
+  },
+
+  // Add a collaborator to a board
+  async addCollaborator(boardId: string, request: AddCollaboratorRequest): Promise<ApiResponse<{ collaboration: BoardCollaboration }>> {
+    return apiRequest<{ collaboration: BoardCollaboration }>(`/boards/${boardId}/collaborators`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Update a collaborator's role
+  async updateCollaboratorRole(boardId: string, collaboratorId: string, role: 'editor' | 'viewer'): Promise<ApiResponse<{ collaboration: BoardCollaboration }>> {
+    return apiRequest<{ collaboration: BoardCollaboration }>(`/boards/${boardId}/collaborators/${collaboratorId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  // Remove a collaborator
+  async removeCollaborator(boardId: string, collaboratorId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiRequest<{ message: string }>(`/boards/${boardId}/collaborators/${collaboratorId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Get timeline entries for a board
+  async getTimeline(boardId: string): Promise<ApiResponse<{ entries: BoardTimelineEntry[] }>> {
+    return apiRequest<{ entries: BoardTimelineEntry[] }>(`/boards/${boardId}/timeline`);
+  },
+
+  // Create a timeline entry
+  async createTimelineEntry(boardId: string, request: CreateTimelineEntryRequest): Promise<ApiResponse<{ entry: BoardTimelineEntry }>> {
+    return apiRequest<{ entry: BoardTimelineEntry }>(`/boards/${boardId}/timeline`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Update a timeline entry
+  async updateTimelineEntry(entryId: string, content: string): Promise<ApiResponse<{ entry: BoardTimelineEntry }>> {
+    return apiRequest<{ entry: BoardTimelineEntry }>(`/boards/timeline/${entryId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  // Delete a timeline entry
+  async deleteTimelineEntry(entryId: string): Promise<ApiResponse<{ message: string }>> {
+    return apiRequest<{ message: string }>(`/boards/timeline/${entryId}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
 // Export all API functions
 export const api = {
   bookmarks: bookmarkApi,
   folders: folderApi,
+  boards: boardApi,
 };
 
 export default api; 

@@ -1,16 +1,16 @@
 "use client";
 
-import type { FolderCollaboration, Folder } from "@/types";
-import { 
-  BookmarksIcon, 
-  FoldersIcon, 
+import Stashr from "@/assets/svgs/assets/svgs/Stashr";
+import type { Folder, FolderCollaboration } from "@/types";
+import {
+  BookmarksIcon,
   EnvelopeIcon,
+  SparkleIcon,
+  UserIcon
 } from "@phosphor-icons/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import type { SidebarConfig } from "../types";
-import { StashrLogo } from "@/components/ui/icons";
-import Stashr from "@/assets/svgs/assets/svgs/Stashr";
 
 interface UseBookmarkSidebarConfigProps {
   onNavigate?: (path: string) => void;
@@ -55,9 +55,16 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/board" }:
           {
             id: "boards",
             label: "All Boards",
-            icon: FoldersIcon,
+            icon: SparkleIcon,
             href: "/board",
             active: currentPath === "/board",
+          },
+          {
+            id: "bookmarks",
+            label: "All Bookmarks",
+            icon: BookmarksIcon,
+            href: "/bookmarks",
+            active: currentPath === "/bookmarks",
           },
           {
             id: "inbox",
@@ -69,6 +76,14 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/board" }:
               count: pendingInvitationsCount,
               variant: "destructive" as const,
             } : undefined,
+          },
+          {
+            id: "profile",
+            label: "Profile",
+            icon: UserIcon,
+            href: "/profile",
+            active: currentPath === "/profile",
+            mobileOnly: true,
           },
         ],
       },

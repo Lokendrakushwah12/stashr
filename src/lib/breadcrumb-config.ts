@@ -21,16 +21,28 @@ export const routeConfigs: RouteConfig[] = [
   // Board home page
   {
     pattern: /^\/board$/,
-    getSegments: () => [{ label: "Home" }],
+    getSegments: () => [{ label: "All Boards" }],
+  },
+  
+  // All Bookmarks page
+  {
+    pattern: /^\/bookmarks$/,
+    getSegments: () => [{ label: "All Bookmarks" }],
+  },
+  
+  // Bookmark folder detail page (dynamic)
+  {
+    pattern: /^\/bookmarks\/[^/]+$/,
+    getSegments: (_pathname, _params, dynamicData) => [
+      { label: "All Bookmarks", href: "/bookmarks" },
+      { label: dynamicData?.folderName as string || "Loading..." },
+    ],
   },
   
   // Inbox page
   {
     pattern: /^\/inbox$/,
-    getSegments: () => [
-      { label: "Home", href: "/board" },
-      { label: "Inbox" },
-    ],
+    getSegments: () => [{ label: "Inbox" }],
   },
   
   // Profile page
@@ -46,7 +58,7 @@ export const routeConfigs: RouteConfig[] = [
   {
     pattern: /^\/board\/[^/]+$/,
     getSegments: (_pathname, _params, dynamicData) => [
-      { label: "Home", href: "/board" },
+      { label: "All Boards", href: "/board" },
       { label: dynamicData?.boardName as string || "Loading..." },
     ],
   },

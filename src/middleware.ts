@@ -16,6 +16,7 @@ export default withAuth(
 export const config = {
   matcher: [
     "/board/:path*",
+    "/bookmarks/:path*",
     "/inbox/:path*",
     "/profile/:path*",
     "/api/folders/:path*",

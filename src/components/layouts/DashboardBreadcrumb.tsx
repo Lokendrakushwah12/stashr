@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { useFolder } from "@/lib/hooks/use-bookmarks";
+import { useBoard } from "@/lib/hooks/use-boards";
 import { getBreadcrumbSegments } from "@/lib/breadcrumb-config";
 import { useSidebar } from "@/lib/contexts/sidebar-context";
 import { SidebarIcon } from "@phosphor-icons/react";
@@ -23,22 +24,30 @@ export default function DashboardBreadcrumb() {
   const boardId = params?.id as string | undefined;
   const { toggleCollapsed } = useSidebar();
 
-  // Fetch board/folder data if we're on a specific board page
+  // Fetch board/folder data if we're on a specific board or bookmark page
   const shouldFetchBoard = !!boardId && pathname?.includes(`/board/${boardId}`);
-  const { data: folderResponse } = useFolder(boardId ?? "");
-  const board = shouldFetchBoard ? folderResponse?.data?.folder : null;
+  const shouldFetchBookmark = !!boardId && pathname?.includes(`/bookmarks/${boardId}`);
+  
+  const { data: boardResponse } = useBoard(shouldFetchBoard ? boardId ?? "" : "");
+  const { data: folderResponse } = useFolder(shouldFetchBookmark ? boardId ?? "" : "");
+  
+  const board = shouldFetchBoard ? boardResponse?.data?.board : null;
+  const folder = shouldFetchBookmark ? folderResponse?.data?.folder : null;
 
   // Generate breadcrumb segments dynamically
   const segments = useMemo(() => {
     const dynamicData: Record<string, unknown> = {};
     
     // Add dynamic data based on the current route
-    if (board?.name) {
+    if (shouldFetchBoard && board?.name) {
       dynamicData.boardName = board.name;
+    }
+    if (shouldFetchBookmark && folder?.name) {
+      dynamicData.folderName = folder.name;
     }
     
     return getBreadcrumbSegments(pathname, params as Record<string, string>, dynamicData);
-  }, [pathname, params, board?.name]);
+  }, [pathname, params, board?.name, folder?.name, shouldFetchBoard, shouldFetchBookmark]);
 
   // Don't render if no segments
   if (segments.length === 0) {

@@ -36,4 +36,55 @@ export interface FolderCollaboration {
   status: 'pending' | 'accepted' | 'declined';
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface Board {
+  _id?: string;
+  name: string;
+  description?: string;
+  content?: string;
+  color?: string;
+  userId?: string;
+  linkedFolderId?: string;
+  linkedFolder?: {
+    id: string;
+    name: string;
+    color: string;
+  };
+  cards?: BoardCard[];
+  cardCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  userRole?: 'owner' | 'editor' | 'viewer';
+}
+
+export interface BoardCard {
+  _id?: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in-progress' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  linkedFolderId?: string; // Reference to bookmark folder
+  linkedFolder?: {
+    id: string;
+    name: string;
+    color: string;
+  };
+  boardId: string;
+  userId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BoardCollaboration {
+  _id?: string;
+  boardId: string;
+  userId: string;
+  email: string;
+  role: 'editor' | 'viewer';
+  invitedByUserId: string;
+  invitedByUserName: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt?: Date;
+  updatedAt?: Date;
 } 

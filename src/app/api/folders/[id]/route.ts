@@ -21,7 +21,7 @@ export async function GET(
 
     const resolvedParams = await params;
     await connectDB();
-    const { Folder, Bookmark, FolderCollaboration } = await registerModels();
+    const { Folder, FolderCollaboration } = await registerModels();
 
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
@@ -38,6 +38,7 @@ export async function GET(
 
     // If not found as owner, check if user is a collaborator
     if (!folder) {
+      // Check folder collaboration
       const collaboration = await FolderCollaboration.findOne({
         folderId: resolvedParams.id,
         $or: [
@@ -47,7 +48,28 @@ export async function GET(
         status: 'accepted'
       }).exec();
 
-      if (collaboration) {
+      // Check if folder is linked to a board user has access to
+      const models = await registerModels();
+      const linkedBoard = await models.Board.findOne({
+        linkedFolderId: resolvedParams.id,
+      });
+
+      let hasBoardAccess = false;
+      if (linkedBoard) {
+        // Check if user owns the board or is a collaborator
+        if (linkedBoard.userId === session.user.id) {
+          hasBoardAccess = true;
+        } else {
+          const boardCollaboration = await models.BoardCollaboration.findOne({
+            boardId: linkedBoard._id?.toString(),
+            userId: session.user.id,
+            status: 'accepted',
+          });
+          hasBoardAccess = !!boardCollaboration;
+        }
+      }
+
+      if (collaboration || hasBoardAccess) {
         // User is a collaborator, fetch the folder
         const sharedFolder = await Folder.findById(resolvedParams.id)
           .populate("bookmarks")
@@ -58,7 +80,7 @@ export async function GET(
           return NextResponse.json({ 
             folder: {
               ...sharedFolder,
-              userRole: collaboration.role
+              userRole: collaboration?.role ?? 'viewer'
             }
           }, { status: 200 });
         }

@@ -107,15 +107,18 @@ export default function Sidebar({
       )}>
         {/* Mobile Navigation */}
         <div className="flex flex-1 items-center justify-around px-2 bg-background">
-          {config.sections.flatMap(section => section.items).map((item) => (
-            <SidebarItem
-              key={item.id}
-              item={item}
-              onClick={() => handleItemClick(item)}
-              isCollapsed={false}
-              className="flex-1 max-w-16"
-            />
-          ))}
+          {config.sections
+            .flatMap(section => section.items)
+            .filter(item => !item.desktopOnly)
+            .map((item) => (
+              <SidebarItem
+                key={item.id}
+                item={item}
+                onClick={() => handleItemClick(item)}
+                isCollapsed={false}
+                className="flex-1 max-w-16"
+              />
+            ))}
         </div>
       </div>
     </>

@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    jwt: ({ token, user, account }) => {
+    jwt: ({ token, user, account, trigger, session }) => {
       // Persist the user id to the token right after signin
       if (account && user) {
         token.id = user.id;
@@ -23,6 +23,14 @@ export const authOptions: NextAuthOptions = {
         // userType will come from the user object in the database
         token.userType = user.userType ?? 'user';
       }
+      
+      // Handle session updates (e.g., from profile page)
+      if (trigger === "update" && session) {
+        token.name = session.name ?? token.name;
+        token.email = session.email ?? token.email;
+        token.image = session.image ?? token.image;
+      }
+      
       return token;
     },
     session: ({ session, token }) => {
