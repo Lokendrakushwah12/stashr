@@ -77,7 +77,7 @@ export default function AdminPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <Tabs defaultValue="analytics" className="w-full">
+            <Tabs defaultValue="analytics" className="w-full" variant="bordered">
                 <TabsList className="grid w-fit grid-cols-3 mb-4">
                     <TabsTrigger value="analytics">
                         <BarChart3 className="h-4 w-4" />

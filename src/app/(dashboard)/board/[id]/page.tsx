@@ -156,8 +156,7 @@ const BoardDetailPage = () => {
     <div className="min-h-screen space-y-4 pt-2">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2">
+        <div className="w-full flex justify-between items-center">
             <InlineEdit
               value={board?.name || ""}
               onSave={handleUpdateTitle}
@@ -169,8 +168,6 @@ const BoardDetailPage = () => {
               allowEmpty={false}
               className="font-display tracking-tight"
             />
-          </div>
-        </div>
         <div className="flex flex-wrap items-center gap-2">
           {(board.userRole === "owner" || canEdit) && (
             <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -220,6 +217,7 @@ const BoardDetailPage = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+        </div>
         </div>
       </div>
 

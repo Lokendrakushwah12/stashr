@@ -9,8 +9,8 @@ import { Toaster } from "sonner";
 import { displayFont } from "@/lib/fonts";
 
 export const metadata: Metadata = {
-  title: "Stashr - Organize Your Bookmarks",
-  description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management built with Next.js.",
+  title: "Stashr - Turn scattered inspiration into organized thinking",
+  description: " Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
   keywords: ["bookmarks", "organizer", "web", "folders", "management", "nextjs", "typescript"],
   authors: [{ name: "Lokendra" }],
   creator: "Lokendra",
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://stashr.in",
-    title: "Stashr - Organize Your Bookmarks",
-    description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
+    title: "Stashr - Turn scattered inspiration into organized thinking",
+    description: "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
     siteName: "Stashr",
     images: [
       {
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stashr - Organize Your Bookmarks",
-    description: "Organize your web bookmarks into colorful folders with an intuitive interface. Fast, beautiful, and secure bookmark management.",
+    title: "Stashr - Turn scattered inspiration into organized thinking",
+    description: "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
     images: ["/og.png"],
     creator: "@lokendratwt",
   },
