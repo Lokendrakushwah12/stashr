@@ -15,6 +15,7 @@ type TabsContextType = {
   value: string;
   setValue: (val: string) => void;
   uniqueId: string;
+  variant?: "filled" | "bordered";
 };
 
 const TabsContext = createContext<TabsContextType | null>(null);
@@ -29,12 +30,14 @@ function useTabsContext() {
 function Tabs({
   defaultValue,
   onValueChange,
+  variant,
   children,
   className,
   style,
 }: {
   defaultValue: string;
   onValueChange?: (val: string) => void;
+  variant?: "filled" | "bordered";
   children: ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -48,34 +51,33 @@ function Tabs({
   };
 
   return (
-    <TabsContext.Provider value={{ value, setValue: handleChange, uniqueId }}>
+    <TabsContext.Provider value={{ value, setValue: handleChange, uniqueId, variant }}>
       <div className={cn("relative", className)} style={style} >{children}</div>
     </TabsContext.Provider>
   );
 }
 
 function TabsList({ children, className, style }: { children: ReactNode; className?: string, style?: React.CSSProperties }) {
-  return <div className={cn("flex relative", className)} style={style}>{children}</div>;
+  const { variant } = useTabsContext();
+  return <div className={cn("flex relative", variant === "filled" && "p-px bg-accent/50 dark:bg-accent border rounded-lg", className)} style={style}>{children}</div>;
 }
 
 function TabsTrigger({
   value,
   children,
   className,
-  style,
   transition = {
     type: 'spring',
-    stiffness: 200,
-    damping: 18,
+    stiffness: 300,
+    damping: 26,
   },
 }: {
   value: string;
   children: ReactNode;
   className?: string;
-  style?: React.CSSProperties;
   transition?: Transition;
 }) {
-  const { value: active, setValue, uniqueId } = useTabsContext();
+  const { value: active, setValue, uniqueId, variant } = useTabsContext();
   const isActive = active === value;
 
   return (
@@ -92,8 +94,11 @@ function TabsTrigger({
         {isActive && (
           <motion.div
             layoutId={`underline-${uniqueId}`}
-            className="absolute inset-0 border-b-2 border-primary"
-            style={style}
+            className={cn(
+              "absolute inset-0",
+              variant === "filled" && "bg-primary text-center rounded-md shadow-sm border border-border",
+              variant === "bordered" && "border-b-2 border-primary"
+            )}
             transition={transition}
           />
         )}

@@ -1,21 +1,21 @@
-import type { 
-  ApiResponse, 
-  CreateBookmarkRequest, 
-  UpdateBookmarkRequest, 
-  CreateFolderRequest, 
-  UpdateFolderRequest,
-  CreateBoardRequest,
-  UpdateBoardRequest,
-  CreateBoardCardRequest,
-  UpdateBoardCardRequest,
+import type {
   AddCollaboratorRequest,
+  ApiResponse,
+  Board,
+  BoardCard,
   BoardCollaboration,
   BoardTimelineEntry,
-  CreateTimelineEntryRequest,
   Bookmark,
+  CreateBoardCardRequest,
+  CreateBoardRequest,
+  CreateBookmarkRequest,
+  CreateFolderRequest,
+  CreateTimelineEntryRequest,
   Folder,
-  Board,
-  BoardCard
+  UpdateBoardCardRequest,
+  UpdateBoardRequest,
+  UpdateBookmarkRequest,
+  UpdateFolderRequest
 } from '@/types';
 
 // Base API configuration
@@ -119,8 +119,9 @@ export const folderApi = {
 // Board API functions
 export const boardApi = {
   // Get all boards
-  async getAll(): Promise<ApiResponse<{ boards: Board[] }>> {
-    return apiRequest<{ boards: Board[] }>('/boards');
+  async getAll(queryString?: string): Promise<ApiResponse<{ boards: Board[] }>> {
+    const url = queryString ? `/boards?${queryString}` : '/boards';
+    return apiRequest<{ boards: Board[] }>(url);
   },
 
   // Get a specific board with cards

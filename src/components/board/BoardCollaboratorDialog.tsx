@@ -9,12 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,15 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { MoreVertical, Plus, Trash2 } from "lucide-react";
 import {
-  useBoardCollaborators,
   useAddBoardCollaborator,
-  useUpdateBoardCollaboratorRole,
+  useBoardCollaborators,
   useRemoveBoardCollaborator,
+  useUpdateBoardCollaboratorRole,
 } from "@/lib/hooks/use-board-collaborators";
 import type { BoardCollaboration } from "@/types";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "../ui/badge";
 
 interface BoardCollaboratorDialogProps {
@@ -102,7 +96,7 @@ export default function BoardCollaboratorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 p-3 bg-background border border-border/70 rounded-xl">
           {/* Add new collaborator */}
           <div className="space-y-4">
             <div className="flex items-end gap-3">

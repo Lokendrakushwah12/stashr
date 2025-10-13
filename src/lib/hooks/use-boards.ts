@@ -20,11 +20,17 @@ export const boardCardKeys = {
   detail: (id: string) => [...boardCardKeys.details(), id] as const,
 };
 
-// Board hooks
-export function useBoards() {
+// Board hooksØ
+export function useBoards(sortBy?: string, role?: string) {
+  const params = new URLSearchParams();
+  if (sortBy) params.set('sortBy', sortBy);
+  if (role && role !== 'all') params.set('role', role);
+  
+  const queryString = params.toString();
+  
   return useQuery({
-    queryKey: boardKeys.lists(),
-    queryFn: () => boardApi.getAll(),
+    queryKey: boardKeys.list(queryString),
+    queryFn: () => boardApi.getAll(queryString),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

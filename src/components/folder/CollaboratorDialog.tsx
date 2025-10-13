@@ -20,8 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { FolderCollaboration } from "@/types";
-import { UsersIcon, UserPlusIcon, XIcon } from "@phosphor-icons/react";
-import { useEffect, useState, useCallback } from "react";
+import { UserPlusIcon, UsersIcon, XIcon } from "@phosphor-icons/react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface CollaboratorDialogProps {
@@ -176,7 +176,7 @@ export default function CollaboratorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 p-3 pt-0 bg-background border border-border/70 rounded-xl">
+        <div className="space-y-6 p-3 bg-background border border-border/70 rounded-xl">
           {/* Add Collaborator Form - Single Line */}
           <form onSubmit={handleAddCollaborator} className="flex items-end gap-3">
             <div className="flex-1">
