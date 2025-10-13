@@ -34,14 +34,12 @@ export interface UpdateFolderRequest {
 export interface CreateBoardRequest {
   name: string;
   description?: string;
-  color?: string;
 }
 
 export interface UpdateBoardRequest {
   name?: string;
   description?: string;
   content?: string;
-  color?: string;
   linkedFolderId?: string | null;
 }
 

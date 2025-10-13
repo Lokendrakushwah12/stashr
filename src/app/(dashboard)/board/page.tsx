@@ -73,38 +73,6 @@ export default function BoardsPage() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
-            <div className="flex flex-col w-full justify-center items-start p-4">
-              {isLoading ? (
-                <Skeleton className="h-9 w-16 mb-1" />
-              ) : (
-                <div className="text-3xl font-mono font-semibold">{boards.length}</div>
-              )}
-              <div className="text-sm text-muted-foreground">Total Boards</div>
-            </div>
-            <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
-              <SparkleIcon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
-            </div>
-          </div>
-          <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
-            <div className="flex flex-col w-full justify-center items-start p-4">
-              {isLoading ? (
-                <Skeleton className="h-9 w-16 mb-1" />
-              ) : (
-                <div className="text-3xl font-mono font-semibold">
-                  {boards.reduce((acc, board) => acc + (board.cardCount ?? 0), 0)}
-                </div>
-              )}
-              <div className="text-sm text-muted-foreground">Total Cards</div>
-            </div>
-            <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
-              <SparkleIcon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
-            </div>
-          </div>
-        </div>
-
         {/* Boards Grid */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">

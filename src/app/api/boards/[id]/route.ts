@@ -111,7 +111,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, description, content, color, linkedFolderId } = body;
+    const { name, description, content, linkedFolderId } = body;
     const resolvedParams = await params;
     const boardId = resolvedParams.id;
 
@@ -160,10 +160,6 @@ export async function PUT(
 
     if (content !== undefined) {
       updateData.content = content?.trim() || undefined;
-    }
-
-    if (color !== undefined) {
-      updateData.color = color || '#3b82f6';
     }
 
     if (linkedFolderId !== undefined) {

@@ -43,7 +43,6 @@ export interface Board {
   name: string;
   description?: string;
   content?: string;
-  color?: string;
   userId?: string;
   linkedFolderId?: string;
   linkedFolder?: {

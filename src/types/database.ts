@@ -40,7 +40,6 @@ export interface BoardDocument extends Document {
   name: string;
   description?: string;
   content?: string;
-  color?: string;
   userId: string;
   cardCount?: number;
   linkedFolderId?: string;

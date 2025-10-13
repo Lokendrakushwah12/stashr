@@ -4,7 +4,6 @@ export interface BoardDocument extends Document {
   name: string;
   description?: string;
   content?: string;
-  color?: string;
   userId: string;
   linkedFolderId?: string;
   cardCount?: number;
@@ -29,10 +28,6 @@ const BoardSchema = new Schema<BoardDocument>({
     type: String,
     trim: true,
     maxlength: 10000,
-  },
-  color: {
-    type: String,
-    default: '#3b82f6',
   },
   userId: {
     type: String,

@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import ColorPicker from "@/components/ui/color-picker";
 import { useCreateBoard } from "@/lib/hooks/use-boards";
 import { useState } from "react";
 
@@ -22,33 +21,9 @@ interface AddBoardDialogProps {
   onSuccess?: () => void;
 }
 
-const colors = [
-  "#ef4444", // Red
-  "#f97316", // Orange
-  "#f59e0b", // Amber
-  "#eab308", // Yellow
-  "#84cc16", // Lime
-  "#22c55e", // Green
-  "#10b981", // Emerald
-  "#14b8a6", // Teal
-  "#06b6d4", // Cyan
-  "#0ea5e9", // Sky
-  "#3b82f6", // Blue
-  "#6366f1", // Indigo
-  "#9333ea", // Violet
-  "#a855f7", // Purple
-  "#d946ef", // Fuchsia
-  "#ec4899", // Pink
-  "#f43f5e", // Rose
-  "#64748b", // Slate
-  "#6b7280", // Gray
-  "#71717a", // Zinc
-];
-
 export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoardDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState("#3b82f6");
   
   const createBoardMutation = useCreateBoard();
 
@@ -61,13 +36,11 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
       await createBoardMutation.mutateAsync({
         name: name.trim(),
         description: description.trim() || undefined,
-        color,
       });
       
       // Reset form
       setName("");
       setDescription("");
-      setColor("#3b82f6");
       
       onSuccess?.();
     } catch (error) {
@@ -80,14 +53,13 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
       // Reset form when closing
       setName("");
       setDescription("");
-      setColor("#3b82f6");
     }
     onOpenChange(newOpen);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Board</DialogTitle>
           <DialogDescription>
@@ -95,7 +67,7 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
           <div className="space-y-2">
             <Label htmlFor="name">Board Name</Label>
             <Input
@@ -118,35 +90,6 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
               maxLength={500}
               rows={3}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Color</Label>
-            <div className="flex items-center gap-2">
-              <ColorPicker
-                value={color}
-                onChange={setColor}
-              >
-                <button
-                  type="button"
-                  className="size-8 rounded-md border-2 border-border cursor-pointer transition-all hover:scale-105"
-                  style={{ backgroundColor: color }}
-                />
-              </ColorPicker>
-              <div className="flex flex-wrap gap-1">
-                {colors.slice(0, 8).map((colorOption) => (
-                  <button
-                    key={colorOption}
-                    type="button"
-                    onClick={() => setColor(colorOption)}
-                    className={`size-6 rounded-sm border transition-all hover:scale-110 ${
-                      color === colorOption ? 'border-foreground' : 'border-border'
-                    }`}
-                    style={{ backgroundColor: colorOption }}
-                  />
-                ))}
-              </div>
-            </div>
           </div>
           
           <DialogFooter>

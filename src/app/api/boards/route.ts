@@ -17,7 +17,7 @@ export async function GET() {
 
     // Get boards owned by the user
     const ownedBoards = await models.Board.find({ userId: session.user.id })
-      .select('_id name description color userId linkedFolderId cardCount createdAt updatedAt')
+      .select('_id name description userId linkedFolderId cardCount createdAt updatedAt')
       .sort({ createdAt: -1 });
 
     // Get boards where user is a collaborator (accepted invitations)
@@ -29,7 +29,7 @@ export async function GET() {
     const collaboratedBoardIds = collaborations.map(c => c.boardId);
     const collaboratedBoards = await models.Board.find({
       _id: { $in: collaboratedBoardIds },
-    }).select('_id name description color userId linkedFolderId cardCount createdAt updatedAt');
+    }).select('_id name description userId linkedFolderId cardCount createdAt updatedAt');
 
     // Combine both lists
     const allBoards = [...ownedBoards, ...collaboratedBoards];
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, color } = body;
+    const { name, description } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Board name is required' }, { status: 400 });
@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
     const board = new Board({
       name: name.trim(),
       description: description?.trim() || undefined,
-      color: color || '#3b82f6',
       userId: session.user.id,
       cardCount: 0,
       userRole: 'owner',

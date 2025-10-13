@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import ColorPicker from "@/components/ui/color-picker";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
   DropdownMenu,
@@ -96,19 +95,6 @@ const BoardDetailPage = () => {
     }
   };
 
-  const handleUpdateColor = async (newColor: string) => {
-    if (!canEdit || !board?._id) return;
-
-    try {
-      await updateBoardMutation.mutateAsync({
-        id: board._id,
-        data: { color: newColor },
-      });
-    } catch (error) {
-      console.error("Error updating color:", error);
-    }
-  };
-
   const handleLinkFolder = async (folderId: string | null) => {
     if (!canEdit || !board?._id) return;
 
@@ -172,20 +158,6 @@ const BoardDetailPage = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
-            <div className="flex flex-shrink-0 items-center justify-center">
-              <ColorPicker
-                value={board.color ?? "#3b82f6"}
-                onChange={handleUpdateColor}
-                disabled={!canEdit}
-              >
-                <button
-                  type="button"
-                  disabled={!canEdit}
-                  className="size-5 cursor-pointer rounded-sm opacity-60 transition-all hover:opacity-100 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: board.color ?? "#3b82f6" }}
-                />
-              </ColorPicker>
-            </div>
             <InlineEdit
               value={board?.name || ""}
               onSave={handleUpdateTitle}
