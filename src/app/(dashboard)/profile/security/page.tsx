@@ -1,17 +1,16 @@
 "use client";
 
+import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSession, signOut } from "next-auth/react";
+import { Eye, EyeOff, Key, LogOut, Save, Shield } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield, Save, LogOut, Key, Eye, EyeOff } from "lucide-react";
-import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 
 export default function SecurityPage() {
-  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -64,7 +63,7 @@ export default function SecurityPage() {
   };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/auth/signin" });
+    void signOut({ callbackUrl: "/auth/signin" });
   };
 
   return (
@@ -106,23 +105,18 @@ export default function SecurityPage() {
               <div className="relative">
                 <Input
                   id="current-password"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  type="password"
                   placeholder="Enter your current password"
+                  disabled
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  disabled
                 >
-                  {showCurrentPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  <Eye className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -132,23 +126,18 @@ export default function SecurityPage() {
               <div className="relative">
                 <Input
                   id="new-password"
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  type="password"
                   placeholder="Enter your new password"
+                  disabled
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  disabled
                 >
-                  {showNewPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  <Eye className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -158,39 +147,26 @@ export default function SecurityPage() {
               <div className="relative">
                 <Input
                   id="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  type="password"
                   placeholder="Confirm your new password"
+                  disabled
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  <Eye className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center gap-2 pt-4">
-              <Button
-                onClick={handlePasswordChange}
-                disabled={
-                  isLoading ||
-                  !currentPassword.trim() ||
-                  !newPassword.trim() ||
-                  !confirmPassword.trim()
-                }
-              >
+              <Button disabled>
                 <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Updating..." : "Update Password"}
+                Coming Soon
               </Button>
             </div>
           </CardContent>

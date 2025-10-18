@@ -45,7 +45,7 @@ export function useProfileSidebarConfig(): SidebarConfig {
             icon: ShieldIcon,
             href: "/profile/security",
             active: pathname === "/profile/security",
-            disabled: true,
+            // disabled: true,
           },
           {
             id: "preferences",
@@ -53,7 +53,7 @@ export function useProfileSidebarConfig(): SidebarConfig {
             icon: GearIcon,
             href: "/profile/preferences",
             active: pathname === "/profile/preferences",
-            disabled: true,
+            // disabled: true,
           },
           {
             id: "notifications",
@@ -61,7 +61,7 @@ export function useProfileSidebarConfig(): SidebarConfig {
             icon: BellIcon,
             href: "/profile/notifications",
             active: pathname === "/profile/notifications",
-            disabled: true,
+            // disabled: true,
           },
           {
             id: "appearance",
@@ -69,7 +69,7 @@ export function useProfileSidebarConfig(): SidebarConfig {
             icon: PaletteIcon,
             href: "/profile/appearance",
             active: pathname === "/profile/appearance",
-            disabled: true,
+            // disabled: true,
           },
         ],
       },

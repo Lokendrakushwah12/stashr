@@ -1,19 +1,14 @@
 "use client";
 
+import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { Palette, Save, LogOut, Sun, Moon, Monitor } from "lucide-react";
-import { useTheme } from "next-themes";
-import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
+import { LogOut, Monitor, Moon, Palette, Save, Sun } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export default function AppearancePage() {
-  const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
-  const [isLoading, setIsLoading] = useState(false);
   const [appearance, setAppearance] = useState({
     theme: "system",
     fontSize: "medium",
@@ -35,38 +30,15 @@ export default function AppearancePage() {
         console.error("Error loading appearance:", error);
       }
     };
-    loadAppearance();
+    void loadAppearance();
   }, []);
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/user/appearance", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(appearance),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update appearance settings");
-      }
-
-      toast.success("Appearance settings updated successfully");
-    } catch (error) {
-      console.error("Error updating appearance:", error);
-      toast.error("Failed to update appearance settings");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/auth/signin" });
+    void signOut({ callbackUrl: "/auth/signin" });
   };
 
   const handleThemeChange = (newTheme: string) => {
     setAppearance({ ...appearance, theme: newTheme });
-    setTheme(newTheme);
   };
 
   return (
@@ -177,10 +149,7 @@ export default function AppearancePage() {
               <Label htmlFor="fontSize">Font Size</Label>
               <select
                 id="fontSize"
-                value={appearance.fontSize}
-                onChange={(e) =>
-                  setAppearance({ ...appearance, fontSize: e.target.value })
-                }
+                disabled
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="small">Small</option>
@@ -193,10 +162,7 @@ export default function AppearancePage() {
               <Label htmlFor="density">Interface Density</Label>
               <select
                 id="density"
-                value={appearance.density}
-                onChange={(e) =>
-                  setAppearance({ ...appearance, density: e.target.value })
-                }
+                disabled
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="compact">Compact</option>
@@ -214,10 +180,7 @@ export default function AppearancePage() {
               </div>
               <input
                 type="checkbox"
-                checked={appearance.animations}
-                onChange={(e) =>
-                  setAppearance({ ...appearance, animations: e.target.checked })
-                }
+                disabled
                 className="h-4 w-4 rounded border border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
@@ -231,18 +194,15 @@ export default function AppearancePage() {
               </div>
               <input
                 type="checkbox"
-                checked={appearance.reducedMotion}
-                onChange={(e) =>
-                  setAppearance({ ...appearance, reducedMotion: e.target.checked })
-                }
+                disabled
                 className="h-4 w-4 rounded border border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
             <div className="flex items-center gap-2 pt-4">
-              <Button onClick={handleSave} disabled={isLoading}>
+              <Button disabled>
                 <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Saving..." : "Save Settings"}
+                Coming Soon
               </Button>
             </div>
           </CardContent>

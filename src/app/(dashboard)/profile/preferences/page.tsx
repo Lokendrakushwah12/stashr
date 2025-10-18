@@ -1,68 +1,17 @@
 "use client";
 
+import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { Settings, Save, LogOut, Globe, Clock, Palette } from "lucide-react";
-import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
+import { Globe, LogOut, Save, Settings } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export default function PreferencesPage() {
-  const { data: session } = useSession();
-  const [isLoading, setIsLoading] = useState(false);
-  const [preferences, setPreferences] = useState({
-    language: "en",
-    timezone: "UTC",
-    dateFormat: "MM/DD/YYYY",
-    autoSave: true,
-    showTutorials: true,
-    compactMode: false,
-  });
-
-  useEffect(() => {
-    // Load user preferences from API or localStorage
-    const loadPreferences = async () => {
-      try {
-        const response = await fetch("/api/user/preferences");
-        if (response.ok) {
-          const data = await response.json();
-          setPreferences(data);
-        }
-      } catch (error) {
-        console.error("Error loading preferences:", error);
-      }
-    };
-    loadPreferences();
-  }, []);
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/user/preferences", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(preferences),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update preferences");
-      }
-
-      toast.success("Preferences updated successfully");
-    } catch (error) {
-      console.error("Error updating preferences:", error);
-      toast.error("Failed to update preferences");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/auth/signin" });
+    void signOut({ callbackUrl: "/auth/signin" });
   };
 
   return (
@@ -104,10 +53,7 @@ export default function PreferencesPage() {
                 <Label htmlFor="language">Language</Label>
                 <select
                   id="language"
-                  value={preferences.language}
-                  onChange={(e) =>
-                    setPreferences({ ...preferences, language: e.target.value })
-                  }
+                  disabled
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="en">English</option>
@@ -121,10 +67,7 @@ export default function PreferencesPage() {
                 <Label htmlFor="timezone">Timezone</Label>
                 <select
                   id="timezone"
-                  value={preferences.timezone}
-                  onChange={(e) =>
-                    setPreferences({ ...preferences, timezone: e.target.value })
-                  }
+                  disabled
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="UTC">UTC</option>
@@ -139,10 +82,7 @@ export default function PreferencesPage() {
                 <Label htmlFor="dateFormat">Date Format</Label>
                 <select
                   id="dateFormat"
-                  value={preferences.dateFormat}
-                  onChange={(e) =>
-                    setPreferences({ ...preferences, dateFormat: e.target.value })
-                  }
+                  disabled
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -153,9 +93,9 @@ export default function PreferencesPage() {
             </div>
 
             <div className="flex items-center gap-2 pt-4">
-              <Button onClick={handleSave} disabled={isLoading}>
+              <Button disabled>
                 <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Saving..." : "Save Preferences"}
+                Coming Soon
               </Button>
             </div>
           </CardContent>
@@ -177,12 +117,7 @@ export default function PreferencesPage() {
                   Automatically save your work as you type
                 </p>
               </div>
-              <Switch
-                checked={preferences.autoSave}
-                onCheckedChange={(checked) =>
-                  setPreferences({ ...preferences, autoSave: checked })
-                }
-              />
+              <Switch disabled />
             </div>
 
             <div className="flex items-center justify-between">
@@ -192,12 +127,7 @@ export default function PreferencesPage() {
                   Display helpful tips and tutorials
                 </p>
               </div>
-              <Switch
-                checked={preferences.showTutorials}
-                onCheckedChange={(checked) =>
-                  setPreferences({ ...preferences, showTutorials: checked })
-                }
-              />
+              <Switch disabled />
             </div>
 
             <div className="flex items-center justify-between">
@@ -207,12 +137,7 @@ export default function PreferencesPage() {
                   Use a more compact interface layout
                 </p>
               </div>
-              <Switch
-                checked={preferences.compactMode}
-                onCheckedChange={(checked) =>
-                  setPreferences({ ...preferences, compactMode: checked })
-                }
-              />
+              <Switch disabled />
             </div>
           </CardContent>
         </Card>
