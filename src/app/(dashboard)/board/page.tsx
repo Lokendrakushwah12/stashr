@@ -202,7 +202,6 @@ export default function BoardsPage() {
                 <SelectItem value="recent">Recently Updated</SelectItem>
                 <SelectItem value="oldest">Oldest First</SelectItem>
                 <SelectItem value="name">Name (A-Z)</SelectItem>
-                <SelectItem value="cards">Most Cards</SelectItem>
               </SelectContent>
             </Select>
           </div>

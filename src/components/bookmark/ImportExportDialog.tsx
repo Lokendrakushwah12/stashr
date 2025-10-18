@@ -140,8 +140,8 @@ const ImportExportDialog = ({ open, onOpenChange, folderId }: ImportExportDialog
                     </DialogDescription>
                 </DialogHeader>
                 <div className="h-[calc(60vh+50px)] bg-background border border-border/70 rounded-xl flex flex-col">
-                    <Tabs defaultValue={activeTab} onValueChange={(val) => setActiveTab(val)} className="w-full h-full flex flex-col">
-                        <TabsList className="grid w-full grid-cols-2 p-4 pb-0">
+                    <Tabs variant="bordered" defaultValue={activeTab} onValueChange={(val) => setActiveTab(val)} className="w-full h-full flex flex-col">
+                        <TabsList className="grid w-full grid-cols-2 px-4 py-1">
                             <TabsTrigger value="import" className="flex items-center justify-center gap-2 px-2 sm:px-3">
                                 <Upload className="h-4 w-4" />
                                 Import

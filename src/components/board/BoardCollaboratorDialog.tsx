@@ -43,24 +43,31 @@ export default function BoardCollaboratorDialog({
   boardName,
 }: BoardCollaboratorDialogProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<'editor' | 'viewer'>('viewer');
+  const [role, setRole] = useState<"editor" | "viewer">("viewer");
 
   // Use custom hooks
-  const { data: collaboratorsResponse, isLoading } = useBoardCollaborators(boardId, open);
+  const { data: collaboratorsResponse, isLoading } = useBoardCollaborators(
+    boardId,
+    open,
+  );
   const addCollaboratorMutation = useAddBoardCollaborator(boardId);
   const updateRoleMutation = useUpdateBoardCollaboratorRole(boardId);
   const removeCollaboratorMutation = useRemoveBoardCollaborator(boardId);
 
-  const collaborators: BoardCollaboration[] = collaboratorsResponse?.data?.collaborations ?? [];
+  const collaborators: BoardCollaboration[] =
+    collaboratorsResponse?.data?.collaborations ?? [];
 
   const handleAddCollaborator = async () => {
-    if (!email?.includes('@')) return;
+    if (!email?.includes("@")) return;
     await addCollaboratorMutation.mutateAsync({ email, role });
     setEmail("");
-    setRole('viewer');
+    setRole("viewer");
   };
 
-  const handleUpdateRole = async (collaboratorId: string, newRole: 'editor' | 'viewer') => {
+  const handleUpdateRole = async (
+    collaboratorId: string,
+    newRole: "editor" | "viewer",
+  ) => {
     updateRoleMutation.mutate({ collaboratorId, role: newRole });
   };
 
@@ -70,19 +77,14 @@ export default function BoardCollaboratorDialog({
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'owner': return 'text-purple-600';
-      case 'editor': return 'text-blue-600';
-      case 'viewer': return 'text-gray-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'declined': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "owner":
+        return "text-purple-600";
+      case "editor":
+        return "text-blue-600";
+      case "viewer":
+        return "text-gray-600";
+      default:
+        return "text-gray-600";
     }
   };
 
@@ -92,11 +94,12 @@ export default function BoardCollaboratorDialog({
         <DialogHeader>
           <DialogTitle>Manage Collaborators</DialogTitle>
           <DialogDescription>
-            Invite people to collaborate on &quot;{boardName}&quot; by adding their email address.
+            Invite people to collaborate on &quot;{boardName}&quot; by adding
+            their email address.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 p-3 bg-background border border-border/70 rounded-xl">
+        <div className="bg-background border-border/70 space-y-6 rounded-xl border p-3">
           {/* Add new collaborator */}
           <div className="space-y-4">
             <div className="flex items-end gap-3">
@@ -113,7 +116,10 @@ export default function BoardCollaboratorDialog({
               </div>
               <div className="space-y-2">
                 <Label>Role</Label>
-                <Select value={role} onValueChange={(value: 'editor' | 'viewer') => setRole(value)}>
+                <Select
+                  value={role}
+                  onValueChange={(value: "editor" | "viewer") => setRole(value)}
+                >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -123,9 +129,13 @@ export default function BoardCollaboratorDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
+              <Button
                 onClick={handleAddCollaborator}
-                disabled={!email || !email.includes('@') || addCollaboratorMutation.isPending}
+                disabled={
+                  !email ||
+                  !email.includes("@") ||
+                  addCollaboratorMutation.isPending
+                }
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
@@ -138,73 +148,99 @@ export default function BoardCollaboratorDialog({
           <div className="space-y-3">
             <h3 className="text-sm font-medium">Current collaborators</h3>
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">Loading collaborators...</div>
+              <div className="text-muted-foreground text-sm">
+                Loading collaborators...
+              </div>
             ) : collaborators.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No collaborators yet. Add someone to get started!</div>
+              <div className="text-muted-foreground text-sm">
+                No collaborators yet. Add someone to get started!
+              </div>
             ) : (
               <div className="space-y-2">
                 {collaborators.map((collaborator) => (
-                <div
-                  key={collaborator._id}
-                  className="flex items-center justify-between p-3 border border-border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={collaborator.userImage ?? ""} alt={collaborator.userName ?? collaborator.userEmail} />
-                      <AvatarFallback className="text-xs">
-                        {collaborator.userName 
-                          ? collaborator.userName.split(' ').map(n => n[0]).join('').toUpperCase()
-                          : collaborator.userEmail[0]?.toUpperCase() ?? '?'
-                        }
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          {collaborator.userName ?? collaborator.userEmail}
-                        </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusBadge(collaborator.status)}`}>
-                          {collaborator.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{collaborator.userEmail}</span>
+                  <div
+                    key={collaborator._id}
+                    className="bg-sidebar flex items-center justify-between rounded-lg p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={collaborator.userImage ?? ""}
+                          alt={collaborator.userName ?? collaborator.userEmail}
+                        />
+                        <AvatarFallback className="text-xs bg-background">
+                          {collaborator.userName
+                            ? collaborator.userName
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()
+                            : (collaborator.userEmail[0]?.toUpperCase() ?? "?")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            {collaborator.userName ?? collaborator.userEmail}
+                          </span>
+                          <Badge
+                            variant={
+                              collaborator.status === "accepted"
+                                ? "success"
+                                : collaborator.status === "pending"
+                                  ? "warning"
+                                  : "destructive"
+                            }
+                            className="text-xs"
+                          >
+                            {collaborator.status}
+                          </Badge>
+                        </div>
+                        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                          <span>{collaborator.userEmail}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    {collaborator.role !== 'owner' && (
-                      <Select
-                        value={collaborator.role}
-                        onValueChange={(newRole: 'editor' | 'viewer') => handleUpdateRole(collaborator._id, newRole)}
-                      >
-                        <SelectTrigger className="w-28 h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="editor">Editor</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                    {collaborator.role === 'owner' && (
-                      <Badge variant="default" className="px-3 h-8 flex items-center">
-                        Owner
-                      </Badge>
-                    )}
-                    {collaborator.role !== 'owner' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveCollaborator(collaborator._id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {collaborator.role !== "owner" && (
+                        <Select
+                          value={collaborator.role}
+                          onValueChange={(newRole: "editor" | "viewer") =>
+                            handleUpdateRole(collaborator._id, newRole)
+                          }
+                        >
+                          <SelectTrigger className="h-8 w-28">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="editor">Editor</SelectItem>
+                            <SelectItem value="viewer">Viewer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {collaborator.role === "owner" && (
+                        <Badge
+                          variant="default"
+                          className="flex h-8 items-center px-3"
+                        >
+                          Owner
+                        </Badge>
+                      )}
+                      {collaborator.role !== "owner" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            handleRemoveCollaborator(collaborator._id)
+                          }
+                          className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
                 ))}
               </div>
             )}
