@@ -154,7 +154,7 @@ export default function BoardsPage() {
               variant="filled"
               className="w-fit"
             >
-              <TabsList className="h-9">
+              <TabsList className="h-9 [&_div]:text-sm">
                 <TabsTrigger
                   value="all"
                   className="w-fit flex flex-col justify-center items-center gap-0 sm:flex-row"

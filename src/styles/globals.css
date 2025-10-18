@@ -26,6 +26,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -63,6 +64,7 @@
   --accent: oklch(0.95 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.6256 0.1933 23.0261);
+  --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.6659 0.1271 286.0783);
@@ -98,6 +100,7 @@
   --accent: oklch(0.241 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.5418 0.1699 24.8389);
+  --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.2739 0.0055 286.03);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.6659 0.1271 286.0783);
@@ -211,4 +214,13 @@
 :-webkit-autofill:focus {
   -webkit-text-fill-color: var(--color-foreground);
   -webkit-box-shadow: 0 0 0 30px var(--color-accent) inset !important;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

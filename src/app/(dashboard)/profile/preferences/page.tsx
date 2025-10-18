@@ -1,0 +1,247 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { Settings, Save, LogOut, Globe, Clock, Palette } from "lucide-react";
+import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
+
+export default function PreferencesPage() {
+  const { data: session } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const [preferences, setPreferences] = useState({
+    language: "en",
+    timezone: "UTC",
+    dateFormat: "MM/DD/YYYY",
+    autoSave: true,
+    showTutorials: true,
+    compactMode: false,
+  });
+
+  useEffect(() => {
+    // Load user preferences from API or localStorage
+    const loadPreferences = async () => {
+      try {
+        const response = await fetch("/api/user/preferences");
+        if (response.ok) {
+          const data = await response.json();
+          setPreferences(data);
+        }
+      } catch (error) {
+        console.error("Error loading preferences:", error);
+      }
+    };
+    loadPreferences();
+  }, []);
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/user/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(preferences),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update preferences");
+      }
+
+      toast.success("Preferences updated successfully");
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      toast.error("Failed to update preferences");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/auth/signin" });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl tracking-tight">
+            Preferences
+          </h1>
+          <p className="text-muted-foreground">
+            Customize your application experience
+          </p>
+        </div>
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="hidden gap-2 md:flex"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+      </div>
+
+      <ProfileMobileNav />
+
+      <div className="grid gap-6">
+        {/* General Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              General Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="language">Language</Label>
+                <select
+                  id="language"
+                  value={preferences.language}
+                  onChange={(e) =>
+                    setPreferences({ ...preferences, language: e.target.value })
+                  }
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="timezone">Timezone</Label>
+                <select
+                  id="timezone"
+                  value={preferences.timezone}
+                  onChange={(e) =>
+                    setPreferences({ ...preferences, timezone: e.target.value })
+                  }
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="UTC">UTC</option>
+                  <option value="America/New_York">Eastern Time</option>
+                  <option value="America/Chicago">Central Time</option>
+                  <option value="America/Denver">Mountain Time</option>
+                  <option value="America/Los_Angeles">Pacific Time</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dateFormat">Date Format</Label>
+                <select
+                  id="dateFormat"
+                  value={preferences.dateFormat}
+                  onChange={(e) =>
+                    setPreferences({ ...preferences, dateFormat: e.target.value })
+                  }
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-4">
+              <Button onClick={handleSave} disabled={isLoading}>
+                <Save className="mr-2 h-4 w-4" />
+                {isLoading ? "Saving..." : "Save Preferences"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Application Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Application Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto-save changes</Label>
+                <p className="text-muted-foreground text-sm">
+                  Automatically save your work as you type
+                </p>
+              </div>
+              <Switch
+                checked={preferences.autoSave}
+                onCheckedChange={(checked) =>
+                  setPreferences({ ...preferences, autoSave: checked })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Show tutorials</Label>
+                <p className="text-muted-foreground text-sm">
+                  Display helpful tips and tutorials
+                </p>
+              </div>
+              <Switch
+                checked={preferences.showTutorials}
+                onCheckedChange={(checked) =>
+                  setPreferences({ ...preferences, showTutorials: checked })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Compact mode</Label>
+                <p className="text-muted-foreground text-sm">
+                  Use a more compact interface layout
+                </p>
+              </div>
+              <Switch
+                checked={preferences.compactMode}
+                onCheckedChange={(checked) =>
+                  setPreferences({ ...preferences, compactMode: checked })
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border-destructive/20 flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <h3 className="font-medium">Sign Out</h3>
+                <p className="text-muted-foreground text-sm">
+                  Sign out from your account on this device
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

@@ -2,24 +2,24 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import SidebarSection from "./SidebarSection";
 import SidebarItem from "./SidebarItem";
 import AccountPopover from "./AccountPopover";
 import type { SidebarProps, SidebarItem as SidebarItemType } from "./types";
 import { useSidebar } from "@/lib/contexts/sidebar-context";
+import { BookmarksIcon, EnvelopeIcon, SparkleIcon, UserIcon } from "@phosphor-icons/react";
 
 export default function Sidebar({ 
   config, 
   className = "", 
   width = "w-80",
-  collapsible = true,
-  defaultCollapsed = false 
 }: SidebarProps) {
   const router = useRouter();
   const { isCollapsed } = useSidebar();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -105,20 +105,61 @@ export default function Sidebar({
         "bg-background transition-all duration-200 md:hidden flex flex-row items-center h-16 w-full border-t border-border fixed bottom-0 left-0 right-0 z-50",
         className
       )}>
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Always show main navigation items */}
         <div className="flex flex-1 items-center justify-around px-2 bg-background">
-          {config.sections
-            .flatMap(section => section.items)
-            .filter(item => !item.desktopOnly)
-            .map((item) => (
-              <SidebarItem
-                key={item.id}
-                item={item}
-                onClick={() => handleItemClick(item)}
-                isCollapsed={false}
-                className="flex-1 max-w-16"
-              />
-            ))}
+          {/* Main navigation items - always visible on mobile */}
+          <SidebarItem
+            key="board"
+            item={{
+              id: "board",
+              label: "Boards",
+              icon: SparkleIcon,
+              href: "/board",
+              active: pathname === "/board",
+            }}
+            onClick={() => router.push("/board")}
+            isCollapsed={false}
+            className="flex size-10"
+          />
+          <SidebarItem
+            key="bookmarks"
+            item={{
+              id: "bookmarks", 
+              label: "Bookmarks",
+              icon: BookmarksIcon,
+              href: "/bookmarks",
+              active: pathname === "/bookmarks",
+            }}
+            onClick={() => router.push("/bookmarks")}
+            isCollapsed={false}
+            className="flex size-10"
+          />
+          <SidebarItem
+            key="inbox"
+            item={{
+              id: "inbox",
+              label: "Inbox", 
+              icon: EnvelopeIcon,
+              href: "/inbox",
+              active: pathname === "/inbox",
+            }}
+            onClick={() => router.push("/inbox")}
+            isCollapsed={false}
+            className="flex size-10"
+          />
+          <SidebarItem
+            key="profile"
+            item={{
+              id: "profile",
+              label: "Profile",
+              icon: UserIcon,
+              href: "/profile",
+              active: pathname === "/profile",
+            }}
+            onClick={() => router.push("/profile")}
+            isCollapsed={false}
+            className="flex size-10"
+          />
         </div>
       </div>
     </>
