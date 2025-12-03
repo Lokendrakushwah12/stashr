@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { registerModels } from '@/models';
+import type { BoardTimelineEntryDocument } from '@/models/BoardTimelineEntry';
 
 export async function PUT(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { content } = body;
+    const { content, images } = body;
     const resolvedParams = await params;
     const entryId = resolvedParams.entryId;
 
@@ -39,14 +40,42 @@ export async function PUT(
       return NextResponse.json({ error: 'You can only edit your own entries' }, { status: 403 });
     }
 
-    // Update the entry
-    entry.content = content.trim();
-    entry.action = 'updated';
-    await entry.save();
+    // Build update object
+    const updateData: { content: string; action: string; images?: string[] } = {
+      content: content.trim(),
+      action: 'updated',
+    };
+    
+    // Always update images if provided
+    if (images !== undefined) {
+      updateData.images = Array.isArray(images) ? images : [];
+    }
+    
+    // Use findByIdAndUpdate to ensure the update is persisted
+    const updatedEntry = await models.BoardTimelineEntry.findByIdAndUpdate(
+      entryId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedEntry) {
+      return NextResponse.json({ error: 'Entry not found after update' }, { status: 404 });
+    }
+    
+    // Get the entry from DB to ensure we have the latest data
+    const entryFromDB = await models.BoardTimelineEntry.findById(entryId).lean() as (BoardTimelineEntryDocument & { images?: string[] }) | null;
+    const entryObject = (updatedEntry.toObject ? updatedEntry.toObject() : updatedEntry) as BoardTimelineEntryDocument & { images?: string[] };
+    const updatedEntryAsDoc = updatedEntry as unknown as BoardTimelineEntryDocument & { images?: string[] };
 
-    const entryObject = entry.toObject ? entry.toObject() : entry;
+    // Use the images from the request if DB doesn't have it, or use DB value
+    const imagesValue = entryFromDB?.images ?? updatedEntryAsDoc.images ?? entryObject.images ?? (images !== undefined ? (Array.isArray(images) ? images : []) : []);
 
-    return NextResponse.json({ entry: entryObject });
+    return NextResponse.json({ 
+      entry: {
+        ...entryObject,
+        images: imagesValue,
+      }
+    });
   } catch (error) {
     console.error('Error updating timeline entry:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

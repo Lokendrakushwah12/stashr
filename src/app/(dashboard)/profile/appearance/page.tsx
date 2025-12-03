@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { LogOut, Monitor, Moon, Palette, Save, Sun } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 export default function AppearancePage() {
+  const { theme, setTheme } = useTheme();
   const [appearance, setAppearance] = useState({
     theme: "system",
     fontSize: "medium",
@@ -18,26 +20,17 @@ export default function AppearancePage() {
   });
 
   useEffect(() => {
-    // Load appearance preferences from API
-    const loadAppearance = async () => {
-      try {
-        const response = await fetch("/api/user/appearance");
-        if (response.ok) {
-          const data = await response.json();
-          setAppearance(data);
-        }
-      } catch (error) {
-        console.error("Error loading appearance:", error);
-      }
-    };
-    void loadAppearance();
-  }, []);
+    if (theme) {
+      setAppearance((prev) => ({ ...prev, theme }));
+    }
+  }, [theme]);
 
   const handleLogout = async () => {
     void signOut({ callbackUrl: "/auth/signin" });
   };
 
   const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
     setAppearance({ ...appearance, theme: newTheme });
   };
 
@@ -46,9 +39,7 @@ export default function AppearancePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-tight">
-            Appearance
-          </h1>
+          <h1 className="font-display text-3xl tracking-tight">Appearance</h1>
           <p className="text-muted-foreground">
             Customize the look and feel of your application
           </p>
@@ -150,7 +141,7 @@ export default function AppearancePage() {
               <select
                 id="fontSize"
                 disabled
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>
@@ -163,7 +154,7 @@ export default function AppearancePage() {
               <select
                 id="density"
                 disabled
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="compact">Compact</option>
                 <option value="comfortable">Comfortable</option>
@@ -181,7 +172,7 @@ export default function AppearancePage() {
               <input
                 type="checkbox"
                 disabled
-                className="h-4 w-4 rounded border border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-input bg-background text-primary focus:ring-ring h-4 w-4 rounded border focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
@@ -195,7 +186,7 @@ export default function AppearancePage() {
               <input
                 type="checkbox"
                 disabled
-                className="h-4 w-4 rounded border border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-input bg-background text-primary focus:ring-ring h-4 w-4 rounded border focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 

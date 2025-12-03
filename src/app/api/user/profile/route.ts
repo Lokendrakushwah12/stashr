@@ -13,7 +13,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name } = body;
+    const { name, image } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -21,17 +21,24 @@ export async function PUT(request: NextRequest) {
 
     await connectDB();
 
+    // Build update object
+    const updateData: { name: string; image?: string | null } = { name: name.trim() };
+    if (image !== undefined) {
+      updateData.image = image === null ? null : (typeof image === 'string' ? image : undefined);
+    }
+
     // Update user in the users collection
     const usersCollection = mongoose.connection.collection('users');
     await usersCollection.updateOne(
       { _id: new mongoose.Types.ObjectId(session.user.id) },
-      { $set: { name: name.trim() } }
+      { $set: updateData }
     );
 
     return NextResponse.json({ 
       user: { 
         name: name.trim(),
-        email: session.user.email 
+        email: session.user.email,
+        image: updateData.image ?? session.user.image
       } 
     });
   } catch (error) {

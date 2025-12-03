@@ -222,10 +222,10 @@ export const boardApi = {
   },
 
   // Update a timeline entry
-  async updateTimelineEntry(entryId: string, content: string): Promise<ApiResponse<{ entry: BoardTimelineEntry }>> {
+  async updateTimelineEntry(entryId: string, content: string, images?: string[]): Promise<ApiResponse<{ entry: BoardTimelineEntry }>> {
     return apiRequest<{ entry: BoardTimelineEntry }>(`/boards/timeline/${entryId}`, {
       method: 'PUT',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, images }),
     });
   },
 

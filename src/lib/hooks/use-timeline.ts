@@ -47,8 +47,8 @@ export function useUpdateTimelineEntry(boardId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ entryId, content }: { entryId: string; content: string }) => {
-      const response = await boardApi.updateTimelineEntry(entryId, content);
+    mutationFn: async ({ entryId, content, images }: { entryId: string; content: string; images?: string[] }) => {
+      const response = await boardApi.updateTimelineEntry(entryId, content, images);
       if (response.error) {
         throw new Error(response.error);
       }

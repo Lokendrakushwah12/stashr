@@ -146,7 +146,7 @@ export function useUpdateBookmark() {
 export function useDeleteBookmark() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, folderId }: { id: string; folderId: string }) => {
+    mutationFn: async ({ id, folderId: _folderId }: { id: string; folderId: string }) => {
       const response = await bookmarkApi.delete(id);
       if (response.error) {
         throw new Error(response.error);

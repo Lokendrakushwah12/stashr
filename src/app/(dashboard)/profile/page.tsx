@@ -16,19 +16,23 @@ import {
   Bell,
   Palette,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ImageUpload } from "@/components/ui/image-upload";
 import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
+  const [image, setImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (session?.user?.name) {
       setName(session.user.name);
     }
-  }, [session?.user?.name]);
+    if (session?.user?.image) {
+      setImage(session.user.image);
+    }
+  }, [session?.user?.name, session?.user?.image]);
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -41,7 +45,10 @@ export default function ProfilePage() {
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ 
+          name: name.trim(),
+          ...(image && { image })
+        }),
       });
 
       if (!response.ok) {
@@ -49,11 +56,77 @@ export default function ProfilePage() {
       }
 
       // Update session
-      await update({ name: name.trim() });
+      await update({ 
+        name: name.trim(),
+        ...(image && { image })
+      });
       toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (url: string) => {
+    setImage(url);
+    // Auto-save image when uploaded
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          name: name.trim(),
+          image: url
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      // Update session
+      await update({ 
+        name: name.trim(),
+        image: url
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to save image");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageRemove = async () => {
+    setImage(null);
+    // Auto-save removal
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          name: name.trim(),
+          image: null
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      // Update session
+      await update({ 
+        name: name.trim(),
+        image: null
+      });
+      toast.success("Image removed successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to remove image");
     } finally {
       setIsLoading(false);
     }
@@ -108,15 +181,13 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               {/* Profile Picture and Name */}
               <div className="flex items-center gap-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage
-                    src={session?.user?.image ?? ""}
-                    alt={session?.user?.name ?? ""}
-                  />
-                  <AvatarFallback className="text-2xl">
-                    {userInitials}
-                  </AvatarFallback>
-                </Avatar>
+                <ImageUpload
+                  currentImage={image ?? session?.user?.image}
+                  onUploadComplete={handleImageUpload}
+                  onRemove={handleImageRemove}
+                  fallbackText={userInitials}
+                  size="md"
+                />
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
@@ -196,15 +267,13 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               {/* Profile Picture and Name */}
               <div className="flex items-center gap-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage
-                    src={session?.user?.image ?? ""}
-                    alt={session?.user?.name ?? ""}
-                  />
-                  <AvatarFallback className="text-2xl">
-                    {userInitials}
-                  </AvatarFallback>
-                </Avatar>
+                <ImageUpload
+                  currentImage={image ?? session?.user?.image}
+                  onUploadComplete={handleImageUpload}
+                  onRemove={handleImageRemove}
+                  fallbackText={userInitials}
+                  size="md"
+                />
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input

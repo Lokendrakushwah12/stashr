@@ -53,10 +53,15 @@ export async function GET(
           _id: new mongoose.Types.ObjectId(entryObject.userId),
         });
 
+        // Ensure images array is always included, even if undefined
+        // Check both entryObject.images and entry.images (in case toObject doesn't include it)
+        const images = entryObject.images ?? entry.images ?? [];
+        
         return {
           ...entryObject,
           userName: user?.name ?? entryObject.userName,
           userImage: user?.image ?? entryObject.userImage,
+          images: Array.isArray(images) ? images : [],
         };
       })
     );
@@ -79,7 +84,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { content, action } = body;
+    const { content, action, images } = body;
     const resolvedParams = await params;
     const boardId = resolvedParams.id;
 
@@ -112,6 +117,8 @@ export async function POST(
     }
 
     // Create timeline entry
+    const imagesArray = Array.isArray(images) ? images : [];
+    
     const timelineEntry = await models.BoardTimelineEntry.create({
       boardId,
       userId: session.user.id,
@@ -121,11 +128,18 @@ export async function POST(
       userRole,
       content: content.trim(),
       action: action ?? 'created',
+      images: imagesArray,
     });
 
     const entryObject = timelineEntry.toObject ? timelineEntry.toObject() : timelineEntry;
 
-    return NextResponse.json({ entry: entryObject }, { status: 201 });
+    // Ensure images is always included in response
+    return NextResponse.json({ 
+      entry: {
+        ...entryObject,
+        images: entryObject.images ?? [],
+      }
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating timeline entry:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

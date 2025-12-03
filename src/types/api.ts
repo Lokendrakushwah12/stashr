@@ -92,6 +92,7 @@ export interface BoardTimelineEntry {
   content: string;
   action: 'created' | 'updated' | 'commented';
   previousContent?: string;
+  images?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -99,4 +100,5 @@ export interface BoardTimelineEntry {
 export interface CreateTimelineEntryRequest {
   content: string;
   action?: 'created' | 'updated' | 'commented';
+  images?: string[];
 } 

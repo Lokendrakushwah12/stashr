@@ -156,68 +156,68 @@ const BoardDetailPage = () => {
     <div className="min-h-screen space-y-4 pt-2">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="w-full flex justify-between items-center">
-            <InlineEdit
-              value={board?.name || ""}
-              onSave={handleUpdateTitle}
-              placeholder="Enter board name..."
-              fontSize="3xl"
-              fontWeight="semibold"
-              disabled={!canEdit}
-              maxLength={100}
-              allowEmpty={false}
-              className="font-display tracking-tight"
-            />
-        <div className="flex flex-wrap items-center gap-2">
-          {(board.userRole === "owner" || canEdit) && (
-            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="px-2">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                <DropdownMenuItem
-                  onClick={() => {
-                    const url = `${window.location.origin}/public/folder/${boardId}`;
-                    navigator.clipboard?.writeText(url).catch(() => {
-                      void 0;
-                    });
-                    window.open(url, "_blank");
-                  }}
-                  className="cursor-pointer rounded-lg"
-                >
-                  <ShareFatIcon weight="duotone" className="h-4 w-4" />
-                  Share Public Link
-                </DropdownMenuItem>
-                {board.userRole === "owner" && (
+        <div className="flex w-full items-center justify-between">
+          <InlineEdit
+            value={board?.name || ""}
+            onSave={handleUpdateTitle}
+            placeholder="Enter board name..."
+            fontSize="3xl"
+            fontWeight="semibold"
+            disabled={!canEdit}
+            maxLength={100}
+            allowEmpty={false}
+            className="font-display tracking-tight"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {(board.userRole === "owner" || canEdit) && (
+              <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="px-2">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 rounded-xl">
                   <DropdownMenuItem
                     onClick={() => {
-                      setDropdownOpen(false);
-                      setShowCollaborators(true);
+                      const url = `${window.location.origin}/public/folder/${boardId}`;
+                      navigator.clipboard?.writeText(url).catch(() => {
+                        void 0;
+                      });
+                      window.open(url, "_blank");
                     }}
-                    className="cursor-pointer rounded-lg text-nowrap"
+                    className="cursor-pointer rounded-lg"
                   >
-                    <UsersIcon weight="duotone" className="h-4 w-4" />
-                    Manage Collaborators
+                    <ShareFatIcon weight="duotone" className="h-4 w-4" />
+                    Share Public Link
                   </DropdownMenuItem>
-                )}
-                {board.userRole === "owner" && (
-                  <DropdownMenuItem
-                    onClick={handleDeleteFolder}
-                    className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
-                  >
-                    <TrashIcon
-                      weight="duotone"
-                      className="text-destructive h-4 w-4"
-                    />
-                    Delete Board
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+                  {board.userRole === "owner" && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setShowCollaborators(true);
+                      }}
+                      className="cursor-pointer rounded-lg text-nowrap"
+                    >
+                      <UsersIcon weight="duotone" className="h-4 w-4" />
+                      Manage Collaborators
+                    </DropdownMenuItem>
+                  )}
+                  {board.userRole === "owner" && (
+                    <DropdownMenuItem
+                      onClick={handleDeleteFolder}
+                      className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
+                    >
+                      <TrashIcon
+                        weight="duotone"
+                        className="text-destructive h-4 w-4"
+                      />
+                      Delete Board
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </div>
 
@@ -245,7 +245,7 @@ const BoardDetailPage = () => {
             <div className="flex flex-1 items-center gap-2">
               {board?.linkedFolder ? (
                 // Show linked folder with option to change
-                <div className="bg-muted/30 flex h-9 w-full flex-1 items-center justify-between gap-2 rounded-lg border pl-2 pr-1">
+                <div className="bg-muted/30 flex h-9 w-full flex-1 items-center justify-between gap-2 rounded-lg border pr-1 pl-2">
                   <div
                     className="h-3 w-3 rounded-sm"
                     style={{ backgroundColor: board.linkedFolder.color }}
@@ -257,7 +257,7 @@ const BoardDetailPage = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleLinkFolder(null)}
-                    className="text-destructive rounded-sm hover:text-destructive h-7 gap-1 px-2 text-xs"
+                    className="text-destructive hover:text-destructive h-7 gap-1 rounded-sm px-2 text-xs"
                   >
                     <LinkBreakIcon weight="duotone" className="size-3" />
                     Unlink
