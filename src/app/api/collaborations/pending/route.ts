@@ -4,6 +4,8 @@ import connectDB from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import type { FolderCollaborationDocument } from "@/types/database";
+import type { FolderCollaboration } from "@/types/models";
 
 // GET /api/collaborations/pending - Get pending collaboration invitations for the current user
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -20,20 +22,45 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Get all collaborations for the current user (pending and accepted)
     // Note: In production, you'd look up the user's email from their profile
     // For now, we'll search by both userId and email patterns
-    const collaborations = await FolderCollaboration.find({
+    const emailFilter: Array<Record<string, unknown>> = session.user.email
+      ? [
+          {
+            email: { $regex: session.user.email, $options: "i" },
+            status: { $in: ["pending", "accepted"] as const },
+          },
+        ]
+      : [];
+    const query = {
       $or: [
-        { userId: session.user.id, status: { $in: ['pending', 'accepted'] } },
-        { email: { $regex: session.user.email, $options: 'i' }, status: { $in: ['pending', 'accepted'] } }
-      ]
-    })
-      .populate('folderId', 'name description color')
-      .select('folderId email role invitedByUserId invitedByUserName status createdAt')
+        {
+          userId: session.user.id,
+          status: { $in: ["pending", "accepted"] as const },
+        },
+        ...emailFilter,
+      ],
+    };
+    const collaborations = await FolderCollaboration.find(query)
+      .populate("folderId", "name description color")
+      .select(
+        "folderId email role invitedByUserId invitedByUserName status createdAt",
+      )
       .sort({ createdAt: -1 })
       .lean()
       .exec();
 
     // Transform the data to include folder information
-    const invitations = collaborations.map(collab => ({
+    const invitations = (
+      collaborations as unknown as Array<
+        FolderCollaboration & {
+          folderId: {
+            _id: string;
+            name: string;
+            description?: string;
+            color: string;
+          };
+        }
+      >
+    ).map((collab) => ({
       _id: collab._id,
       folderId: collab.folderId._id || collab.folderId, // Get the actual ID
       folder: collab.folderId, // This will be the populated folder data
@@ -42,7 +69,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       invitedByUserId: collab.invitedByUserId,
       invitedByUserName: collab.invitedByUserName,
       status: collab.status,
-      createdAt: collab.createdAt
+      createdAt: collab.createdAt,
     }));
 
     return NextResponse.json({ invitations }, { status: 200 });
@@ -52,13 +79,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to fetch invitations: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to fetch invitations" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

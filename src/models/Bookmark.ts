@@ -1,19 +1,19 @@
-import type { BookmarkDocument, BookmarkModel } from '@/types/database';
-import mongoose from 'mongoose';
+import type { BookmarkDocument, BookmarkModel } from "@/types/database";
+import mongoose from "mongoose";
 
 const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
   {
     title: {
       type: String,
-      required: [true, 'Bookmark title is required'],
+      required: [true, "Bookmark title is required"],
       trim: true,
     },
     url: {
       type: String,
-      required: [true, 'Bookmark URL is required'],
+      required: [true, "Bookmark URL is required"],
       trim: true,
       validate: {
-        validator: function(v: string) {
+        validator: function (v: string) {
           try {
             new URL(v);
             return true;
@@ -21,40 +21,40 @@ const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
             return false;
           }
         },
-        message: 'Please provide a valid URL'
-      }
+        message: "Please provide a valid URL",
+      },
     },
     description: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     },
     favicon: {
       type: String,
-      default: '',
+      default: "",
     },
     metaImage: {
       type: String,
-      default: '',
+      default: "",
     },
     userId: {
       type: String,
-      required: [true, 'User ID is required'],
+      required: [true, "User ID is required"],
       index: true,
     },
     folderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Folder',
-      required: [true, 'Folder ID is required'],
+      ref: "Folder",
+      required: [true, "Folder ID is required"],
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Pre-save middleware to set favicon if not provided
-bookmarkSchema.pre('save', function(next) {
+bookmarkSchema.pre("save", function () {
   if (!this.favicon && this.url) {
     try {
       const urlObj = new URL(this.url);
@@ -63,10 +63,10 @@ bookmarkSchema.pre('save', function(next) {
       // Invalid URL will be caught by mongoose validation
     }
   }
-  next();
 });
 
 // Compound index to ensure unique URLs per user
 bookmarkSchema.index({ userId: 1, url: 1 }, { unique: true });
 
-export default mongoose.models.Bookmark as BookmarkModel ?? mongoose.model<BookmarkDocument>('Bookmark', bookmarkSchema); 
+export default (mongoose.models.Bookmark as BookmarkModel) ??
+  mongoose.model<BookmarkDocument>("Bookmark", bookmarkSchema);
