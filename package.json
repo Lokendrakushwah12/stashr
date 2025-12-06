@@ -44,7 +44,7 @@
     "framer-motion": "^12.23.25",
     "geist": "^1.5.1",
     "lucide-react": "^0.556.0",
-    "mongodb": "^7.0.0",
+    "mongodb": "^6.3.0",
     "mongoose": "^9.0.1",
     "motion": "^12.23.25",
     "next": "^16.0.7",
