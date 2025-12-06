@@ -37,6 +37,7 @@
 ## 🚀 Tech Stack
 
 ### Frontend
+
 - **[Next.js 15](https://nextjs.org/)** - React framework with App Router
 - **[React 18](https://react.dev/)** - UI library with concurrent features
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
@@ -45,12 +46,14 @@
 - **[Lucide React](https://lucide.dev/)** - Beautiful & consistent icons
 
 ### Backend & Database
+
 - **[NextAuth.js](https://next-auth.js.org/)** - Authentication for Next.js
 - **[MongoDB](https://www.mongodb.com/)** - NoSQL database
 - **[Mongoose](https://mongoosejs.com/)** - MongoDB object modeling
 - **[MongoDB Adapter](https://next-auth.js.org/adapters/mongodb)** - NextAuth database adapter
 
 ### Development & Tools
+
 - **[ESLint](https://eslint.org/)** - Code linting
 - **[Prettier](https://prettier.io/)** - Code formatting
 - **[Next Themes](https://github.com/pacocoursey/next-themes)** - Dark/light mode
@@ -59,7 +62,8 @@
 ## 📦 Installation
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - MongoDB database
 - Google OAuth credentials
@@ -67,12 +71,14 @@
 ### Quick Start
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Lokendrakushwah12/stashr.git
    cd stashr
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -80,19 +86,21 @@
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp env.example .env.local
    ```
-   
+
    Fill in the following variables in `.env.local`:
+
    ```env
    # Database
    MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/stashr
-   
+
    # NextAuth.js
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-secret-key-here
-   
+
    # Google OAuth
    GOOGLE_CLIENT_ID=your-google-client-id
    GOOGLE_CLIENT_SECRET=your-google-client-secret
@@ -107,6 +115,7 @@
    - Copy the Client ID and Client Secret to your `.env.local` file
 
 5. **Run the development server**
+
    ```bash
    npm run dev
    # or
@@ -117,6 +126,7 @@
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Generate NEXTAUTH_SECRET
+
 ```bash
 openssl rand -base64 32
 ```
@@ -190,6 +200,7 @@ This project wouldn't be possible without these amazing open-source projects:
 - **[MongoDB](https://www.mongodb.com/)** - The database for modern applications
 - **[Radix UI](https://www.radix-ui.com/)** - Unstyled, accessible UI primitives
 - **[Vercel](https://vercel.com/)** - The platform for frontend developers
+  npx npm-check-updates -u
 
 ---
 
