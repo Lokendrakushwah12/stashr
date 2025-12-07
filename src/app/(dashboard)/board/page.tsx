@@ -1,7 +1,7 @@
 "use client";
 
 import AddBoardDialog from "@/components/board/AddBoardDialog";
-import BoardListCard from "@/components/board/BoardListCard";
+import FolderListCard from "@/components/board/BoardFolder/FolderListCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBoards } from "@/lib/hooks/use-boards";
-import {
-  PlusIcon,
-  SparkleIcon
-} from "@phosphor-icons/react";
+import { PlusIcon, SparkleIcon } from "@phosphor-icons/react";
 import { Loader, Plus, RefreshCw, Search, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -128,83 +125,95 @@ export default function BoardsPage() {
         </div>
 
         {/* Search and Sort */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                placeholder="Search boards..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-9 pl-9"
-              />
-              {searchQuery && (
-                <button
-                  onClick={handleClearSearch}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
-            <Tabs
-              defaultValue={roleFilter}
-              onValueChange={setRoleFilter}
-              variant="filled"
-              className="w-fit"
-            >
-              <TabsList className="h-9 [&_div]:text-sm">
-                <TabsTrigger
-                  value="all"
-                  className="w-fit flex flex-col justify-center items-center gap-0 sm:flex-row"
-                >
-                  <span>All</span>
-                  <Badge variant="secondary" className="bg-background/70 size-5 flex items-center justify-center text-muted-foreground text-xs">
-                    {roleCounts.all}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="owner"
-                  className="w-fit flex flex-col justify-center items-center gap-0 sm:flex-row"
-                >
-                  <span>Owner</span>
-                  <Badge variant="secondary" className="bg-background/70 size-5 flex items-center justify-center text-muted-foreground text-xs">
-                    {roleCounts.owner}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="editor"  
-                  className="w-fit flex flex-col justify-center items-center gap-0 sm:flex-row"
-                >
-                  <span>Editor</span>
-                  <Badge variant="secondary" className="bg-background/70 size-5 flex items-center justify-center text-muted-foreground text-xs">
-                    {roleCounts.editor}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="viewer"
-                    className="w-fit flex flex-col justify-center items-center gap-0 sm:flex-row"
-                >
-                  <span>Viewer</span>
-                  <Badge variant="secondary" className="bg-background/70 size-5 flex items-center justify-center text-muted-foreground text-xs">
-                    {roleCounts.viewer}
-                  </Badge>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {/* Sort By */}
-            <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">Recently Updated</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="name">Name (A-Z)</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <Input
+              placeholder="Search boards..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pr-9 pl-9"
+            />
+            {searchQuery && (
+              <button
+                onClick={handleClearSearch}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
+
+          <Tabs
+            defaultValue={roleFilter}
+            onValueChange={setRoleFilter}
+            variant="filled"
+            className="w-fit"
+          >
+            <TabsList className="h-9 [&_div]:text-sm">
+              <TabsTrigger
+                value="all"
+                className="flex w-fit flex-col items-center justify-center gap-0 sm:flex-row"
+              >
+                <span>All</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-background/70 text-muted-foreground flex size-5 items-center justify-center text-xs"
+                >
+                  {roleCounts.all}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger
+                value="owner"
+                className="flex w-fit flex-col items-center justify-center gap-0 sm:flex-row"
+              >
+                <span>Owner</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-background/70 text-muted-foreground flex size-5 items-center justify-center text-xs"
+                >
+                  {roleCounts.owner}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger
+                value="editor"
+                className="flex w-fit flex-col items-center justify-center gap-0 sm:flex-row"
+              >
+                <span>Editor</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-background/70 text-muted-foreground flex size-5 items-center justify-center text-xs"
+                >
+                  {roleCounts.editor}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger
+                value="viewer"
+                className="flex w-fit flex-col items-center justify-center gap-0 sm:flex-row"
+              >
+                <span>Viewer</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-background/70 text-muted-foreground flex size-5 items-center justify-center text-xs"
+                >
+                  {roleCounts.viewer}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {/* Sort By */}
+          <Select value={sortBy} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Recently Updated</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+              <SelectItem value="name">Name (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Results Count */}
         {boards.length > 0 && searchQuery && (
@@ -267,9 +276,9 @@ export default function BoardsPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredBoards.map((board) => (
-              <BoardListCard
+              <FolderListCard
                 key={board._id}
                 board={board}
                 onUpdate={() => handleRefetch()}
