@@ -1,12 +1,12 @@
 "use client";
 
-import Stashr from "@/assets/svgs/assets/svgs/Stashr";
+import { StashrLogo } from "@/components/ui/icons";
 import type { Folder, FolderCollaboration } from "@/types";
 import {
   BookmarksIcon,
   EnvelopeIcon,
   SparkleIcon,
-  UserIcon
+  UserIcon,
 } from "@phosphor-icons/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -17,22 +17,29 @@ interface UseBookmarkSidebarConfigProps {
   currentPath?: string;
 }
 
-export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/board" }: UseBookmarkSidebarConfigProps = {}) {
+export function useBookmarkSidebarConfig({
+  onNavigate,
+  currentPath = "/board",
+}: UseBookmarkSidebarConfigProps = {}) {
   const { data: session } = useSession();
   const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
 
   const fetchPendingInvitationsCount = async () => {
     if (!session?.user?.id) return;
-    
+
     try {
-      const response = await fetch('/api/collaborations/pending');
+      const response = await fetch("/api/collaborations/pending");
       if (!response.ok) {
-        throw new Error('Failed to fetch invitations');
+        throw new Error("Failed to fetch invitations");
       }
-      const data = await response.json() as { invitations: (FolderCollaboration & { folder?: Folder })[] };
-      setPendingInvitationsCount(data.invitations?.filter(inv => inv.status === 'pending').length ?? 0);
+      const data = (await response.json()) as {
+        invitations: (FolderCollaboration & { folder?: Folder })[];
+      };
+      setPendingInvitationsCount(
+        data.invitations?.filter((inv) => inv.status === "pending").length ?? 0,
+      );
     } catch (error) {
-      console.error('Error fetching invitations count:', error);
+      console.error("Error fetching invitations count:", error);
     }
   };
 
@@ -45,7 +52,7 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/board" }:
   const config: SidebarConfig = {
     header: {
       title: "Stashr",
-      icon: Stashr,
+      icon: StashrLogo,
     },
     sections: [
       {
@@ -72,10 +79,13 @@ export function useBookmarkSidebarConfig({ onNavigate, currentPath = "/board" }:
             icon: EnvelopeIcon,
             href: "/inbox",
             active: currentPath.startsWith("/inbox"),
-            badge: pendingInvitationsCount > 0 ? {
-              count: pendingInvitationsCount,
-              variant: "destructive" as const,
-            } : undefined,
+            badge:
+              pendingInvitationsCount > 0
+                ? {
+                    count: pendingInvitationsCount,
+                    variant: "destructive" as const,
+                  }
+                : undefined,
           },
           {
             id: "profile",

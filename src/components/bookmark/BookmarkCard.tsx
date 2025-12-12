@@ -1,6 +1,5 @@
 "use client";
 
-import Stashr from "@/assets/svgs/assets/svgs/Stashr";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
@@ -20,6 +19,7 @@ import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { StashrLogo } from "../ui/icons";
 
 interface ExtractionResult {
   success: boolean;
@@ -239,7 +239,7 @@ const BookmarkCard = ({
                 style={{ display: metaImageUrl ? "none" : "flex" }}
               >
                 <div className="flex flex-col items-center justify-center p-4">
-                  <Stashr width={44} />
+                  <StashrLogo width={44} className="text-primary/50" />
                   <p className="text-muted-foreground mt-6 text-sm">
                     Preview unavailable
                   </p>

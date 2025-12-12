@@ -21,7 +21,7 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
   return (
     <>
       <Card
-        className="group relative h-32 cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 ease-out"
+        className="group relative h-32 cursor-pointer overflow-hidden rounded-2xl p-0 transition-all duration-200 ease-out"
         style={{
           background: `${folder.color}2A`,
           borderColor: `${folder.color}0A`,
@@ -40,10 +40,10 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
           <div className="mb-2 h-[40%] w-[50%] rounded-md bg-black/5 dark:bg-white/10" />
           <div className="h-[40%] w-full rounded-md bg-black/5 dark:bg-white/10" />
         </div>
-        <CardHeader className="gap-0 space-y-0 px-4 py-2">
+        <CardHeader className="gap-0 space-y-0 p-2">
           <CardTitle className="flex items-center justify-between gap-2 text-lg">
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="font-display truncate text-xl">
+              <span className="font-display w-full truncate text-center text-xl">
                 {folder.name}
               </span>
               {collaboratorCount > 0 && (
@@ -54,7 +54,7 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
               )}
             </div>
             <span
-              className="flex-shrink-0 font-mono text-base font-normal"
+              className="font-mono text-base font-normal"
               style={{ color: folder.color }}
             >
               {folder.bookmarkCount ?? 0}

@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react'
+import type { SVGProps } from "react";
 
 export function LinkedInIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -15,7 +15,7 @@ export function LinkedInIcon(props: SVGProps<SVGSVGElement>) {
         fill="currentColor"
       />
     </svg>
-  )
+  );
 }
 
 export function GithubIcon(props: SVGProps<SVGSVGElement>) {
@@ -32,7 +32,7 @@ export function GithubIcon(props: SVGProps<SVGSVGElement>) {
         d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"
       ></path>
     </svg>
-  )
+  );
 }
 
 export function PnpmIcon(props: SVGProps<SVGSVGElement>) {
@@ -53,7 +53,7 @@ export function PnpmIcon(props: SVGProps<SVGSVGElement>) {
         d="M43.996 44v39.996h40V44ZM0 87.996v40h39.996v-40Zm43.996 0v40h40v-40Zm44.008 0v40H128v-40Z"
       ></path>
     </svg>
-  )
+  );
 }
 
 export function NpmIcon(props: SVGProps<SVGSVGElement>) {
@@ -74,7 +74,7 @@ export function NpmIcon(props: SVGProps<SVGSVGElement>) {
         d="M25.105 65.52V26.512H40.96c8.72 0 26.274.034 39.008.075l23.153.075v77.866H83.645v-58.54H64.057v58.54H25.105z"
       ></path>
     </svg>
-  )
+  );
 }
 
 export function YarnIcon(props: SVGProps<SVGSVGElement>) {
@@ -91,7 +91,7 @@ export function YarnIcon(props: SVGProps<SVGSVGElement>) {
         d="M64 0a64 64 0 1 0 64 64A64 64 0 0 0 64 0m4.685 21.948a5.04 5.04 0 0 1 2.21.802c.671.444 1.528 1.032 4.026 6.194a4.84 4.84 0 0 1 2.942-.103a3.93 3.93 0 0 1 2.468 2.004c2.55 4.893 2.889 13.614 1.774 19.22a34.9 34.9 0 0 1-6.028 13.74a26.6 26.6 0 0 1 5.957 9.733a26.2 26.2 0 0 1 1.456 10.746a30 30 0 0 0 3.22-1.796c3.158-1.951 7.927-4.894 13.615-4.966a6.834 6.834 0 0 1 7.225 5.885a6.555 6.555 0 0 1-5.046 7.256c-3.458.836-5.069 1.486-9.714 4.5a69.2 69.2 0 0 1-16.062 7.412a9 9 0 0 1-3.758 1.828c-3.933.96-17.425 1.682-18.488 1.682h-.248c-4.13 0-6.47-1.28-7.73-2.621c-3.51 1.755-8.052 1.03-11.355-.714a5.73 5.73 0 0 1-3.097-4.024a6.2 6.2 0 0 1 0-2.127a7 7 0 0 1-.816-1.032a16.9 16.9 0 0 1-2.333-10.386c.3-3.85 2.964-7.287 4.698-9.114A29.5 29.5 0 0 1 35.726 64a27.7 27.7 0 0 1 7.04-9.29c-1.703-2.87-3.436-7.288-1.754-11.789c1.208-3.21 2.199-4.996 4.377-5.76a7.1 7.1 0 0 0 2.59-1.383a18.22 18.22 0 0 1 12.243-5.843c.196-.495.423-1.033.671-1.508c1.652-3.51 3.406-5.48 5.46-6.193a5.04 5.04 0 0 1 2.332-.286m-.558 3.697c-2.703.089-5.355 8.099-5.355 8.099a14.45 14.45 0 0 0-12.089 4.645a9.95 9.95 0 0 1-3.973 2.345c-.424.144-.94.122-2.22 3.58c-1.961 5.234 3.345 11.16 3.345 11.16s-6.328 4.47-8.672 10.034a25.6 25.6 0 0 0-1.806 12.057s-4.5 3.901-4.788 7.927a13.3 13.3 0 0 0 1.826 8.083a2.003 2.003 0 0 0 2.714.94s-2.993 3.487-.196 4.963c2.55 1.331 6.844 2.065 9.115-.196c1.652-1.651 1.982-5.335 2.591-6.842c.144-.351.64.588 1.115 1.032a10.3 10.3 0 0 0 1.403 1.032s-4.024 1.734-2.373 5.688c.547 1.31 2.498 2.145 5.688 2.125c1.187 0 14.203-.743 17.671-1.58a4.47 4.47 0 0 0 2.696-1.505a65 65 0 0 0 15.99-7.226c4.892-3.19 6.895-4.059 10.848-4.998c3.262-.774 3.045-5.83-1.28-5.758c-4.48.052-8.402 2.363-11.716 4.427c-6.193 3.83-9.29 3.583-9.29 3.583l-.105-.175c-.423-.692 1.983-6.896-.712-14.287c-2.91-8.082-7.534-10.033-7.163-10.653c1.58-2.673 5.534-6.917 7.113-14.824c.94-4.79.691-12.676-1.435-16.805c-.393-.764-3.902 1.28-3.902 1.28s-3.283-7.319-4.201-7.907a1.44 1.44 0 0 0-.839-.244"
       ></path>
     </svg>
-  )
+  );
 }
 
 export function BunIcon(props: SVGProps<SVGSVGElement>) {
@@ -141,7 +141,7 @@ export function BunIcon(props: SVGProps<SVGSVGElement>) {
         d="M38.4 61.902a3.4 3.4 0 0 0 1.844-.531c.547-.35.974-.847 1.227-1.43a3.1 3.1 0 0 0 .195-1.847a3.16 3.16 0 0 0-.902-1.639a3.35 3.35 0 0 0-1.696-.878a3.43 3.43 0 0 0-1.916.179a3.3 3.3 0 0 0-1.489 1.176a3.1 3.1 0 0 0-.559 1.776c0 .844.347 1.654.964 2.253a3.37 3.37 0 0 0 2.332.94zm39.632 0a3.4 3.4 0 0 0 1.844-.531c.547-.35.974-.847 1.227-1.43a3.1 3.1 0 0 0 .195-1.847a3.16 3.16 0 0 0-.902-1.639a3.35 3.35 0 0 0-1.696-.878a3.43 3.43 0 0 0-1.916.179a3.3 3.3 0 0 0-1.489 1.176a3.1 3.1 0 0 0-.559 1.776c0 .84.342 1.644.953 2.242c.61.598 1.44.94 2.311.952z"
       ></path>
     </svg>
-  )
+  );
 }
 
 export function XIcon(props: SVGProps<SVGSVGElement>) {
@@ -167,31 +167,94 @@ export function XIcon(props: SVGProps<SVGSVGElement>) {
         </defs>
       </g>
     </svg>
-  )
+  );
 }
 
 export function StashrLogo(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256"
-      {...props}>
-      <path d="M224,48H32A16,16,0,0,0,16,64V88a16,16,0,0,0,16,16v88a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V104a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48ZM208,192H48V104H208ZM224,88H32V64H224V88ZM96,136a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,136Z"></path>
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 28 28"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M3.6945 3.50488C2.45661 3.50488 1.4541 4.50858 1.4541 5.74528V6.64144C1.4541 7.87933 2.4578 8.88184 3.6945 8.88184H24.3062C25.5429 8.88184 26.5466 7.87814 26.5466 6.64144V5.74528C26.5466 4.50739 25.5429 3.50488 24.3062 3.50488H3.6945Z"
+        fill="currentColor"
+      />
+      <path
+        d="M24.0034 21.1204C23.9498 22.0331 23.5495 22.8915 22.8843 23.5188C22.2191 24.1459 21.3394 24.4953 20.4253 24.4954H7.57178C6.65787 24.4948 5.7785 24.145 5.11377 23.5178C4.44903 22.8906 4.04922 22.0327 3.99561 21.1204L3.3501 10.1565H24.6499L24.0034 21.1204ZM10.814 13.7415C9.75821 13.7415 8.90202 14.5969 8.90186 15.6526C8.90186 16.7084 9.7581 17.5647 10.814 17.5647C11.8698 17.5647 12.7261 16.7084 12.7261 15.6526C12.7259 14.5969 11.8697 13.7415 10.814 13.7415ZM17.187 13.7415C16.1313 13.7415 15.2751 14.5969 15.2749 15.6526C15.2749 16.7084 16.1312 17.5647 17.187 17.5647C18.2427 17.5645 19.0981 16.7083 19.0981 15.6526C19.098 14.597 18.2426 13.7417 17.187 13.7415Z"
+        fill="currentColor"
+      />
     </svg>
-
-  )
+  );
 }
 
 export function ThemeToggleIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4.5" opacity="1" filter="none"
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-4.5"
+      opacity="1"
+      filter="none"
       {...props}
-    ><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M12 3l0 18"></path><path d="M12 9l4.65 -4.65"></path><path d="M12 14.3l7.37 -7.37"></path><path d="M12 19.6l8.85 -8.85"></path></svg>
-  )
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+      <path d="M12 3l0 18"></path>
+      <path d="M12 9l4.65 -4.65"></path>
+      <path d="M12 14.3l7.37 -7.37"></path>
+      <path d="M12 19.6l8.85 -8.85"></path>
+    </svg>
+  );
 }
 
 export function SiShadcnIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="size-5" fill="rgb(0, 0, 0)" stroke="none" strokeWidth="1px" opacity="1" filter="none" {...props}>
-      <rect width="256" height="256" fill="none"></rect><line x1="208" y1="128" x2="128" y2="208" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32"></line><line x1="192" y1="40" x2="40" y2="192" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32"></line>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      className="size-5"
+      fill="rgb(0, 0, 0)"
+      stroke="none"
+      strokeWidth="1px"
+      opacity="1"
+      filter="none"
+      {...props}
+    >
+      <rect width="256" height="256" fill="none"></rect>
+      <line
+        x1="208"
+        y1="128"
+        x2="128"
+        y2="208"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="32"
+      ></line>
+      <line
+        x1="192"
+        y1="40"
+        x2="40"
+        y2="192"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="32"
+      ></line>
     </svg>
-  )
+  );
 }

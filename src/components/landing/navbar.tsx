@@ -1,11 +1,11 @@
 "use client";
 
-import Logo from "@/assets/svgs/assets/svgs/Logo";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import UserMenu from "../auth/user-menu";
 import { Button } from "../ui/button";
+import { StashrLogo } from "../ui/icons";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
@@ -21,7 +21,7 @@ const Navbar = () => {
           href={session ? "/board" : "/"}
           className="text-foreground flex items-center gap-2 text-lg font-semibold"
         >
-          <Logo width={28} />
+          <StashrLogo width={28} className="text-primary" />
           <span className="text-base font-medium">Stashr</span>
         </Link>
         <div className="flex items-center justify-center space-x-2">
