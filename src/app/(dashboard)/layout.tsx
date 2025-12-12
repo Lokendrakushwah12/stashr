@@ -1,10 +1,10 @@
 "use client";
 
-import Sidebar from "@/components/layouts/sidebar/Sidebar";
 import DashboardBreadcrumb from "@/components/layouts/DashboardBreadcrumb";
-import { SidebarProvider } from "@/lib/contexts/sidebar-context";
 import { useBookmarkSidebarConfig } from "@/components/layouts/sidebar/configs/bookmarkSidebarConfig";
 import { useProfileSidebarConfig } from "@/components/layouts/sidebar/configs/profileSidebarConfig";
+import Sidebar from "@/components/layouts/sidebar/Sidebar";
+import { SidebarProvider } from "@/lib/contexts/sidebar-context";
 import { usePathname } from "next/navigation";
 import React from "react";
 

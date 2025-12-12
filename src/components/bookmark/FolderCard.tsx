@@ -21,22 +21,22 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
   return (
     <>
       <Card
-        className="group relative h-32 cursor-pointer overflow-hidden rounded-2xl p-0 transition-all duration-200 ease-out"
+        className="group relative h-32 cursor-pointer overflow-hidden rounded-2xl p-0 shadow-[0_-1px_--theme(--color-white/12%)] transition-all duration-200 ease-out"
         style={{
           background: `${folder.color}2A`,
           borderColor: `${folder.color}0A`,
         }}
         onClick={handleCardClick}
       >
-        <div className="absolute -bottom-1 left-1/2 z-1 h-[60%] w-[80%] -translate-x-1/2 translate-y-1/4 overflow-hidden rounded-xl border bg-white/60 p-2 backdrop-blur-2xl transition-all duration-200 ease-out group-hover:-rotate-2 dark:border-white/10 dark:bg-white/10">
+        <div className="shadow-[0_-1px_--theme(--color-border/30%)] absolute -bottom-1 left-1/2 z-1 h-[60%] w-[80%] -translate-x-1/2 translate-y-1/4 overflow-hidden rounded-xl border bg-white/60 p-2 backdrop-blur-2xl transition-all duration-200 ease-out group-hover:-rotate-2 dark:border-white/10 dark:bg-white/10">
           <div className="mb-2 h-[40%] w-[50%] rounded-md bg-black/5 dark:bg-white/10" />
           <div className="h-[40%] w-full rounded-md bg-black/5 dark:bg-white/10" />
         </div>
-        <div className="absolute -bottom-1 left-1/2 z-0 h-[60%] w-[80%] -translate-x-1/2 -translate-y-[10%] scale-90 overflow-hidden rounded-xl border bg-white/60 p-2 backdrop-blur-2xl transition-all duration-200 ease-out group-hover:-rotate-2 dark:border-white/10 dark:bg-white/10">
+        <div className="shadow-[0_-1px_--theme(--color-border/30%)] absolute -bottom-1 left-1/2 z-0 h-[60%] w-[80%] -translate-x-1/2 -translate-y-[10%] scale-90 overflow-hidden rounded-xl border bg-white/60 p-2 backdrop-blur-2xl transition-all duration-200 ease-out group-hover:-rotate-2 dark:border-white/10 dark:bg-white/10">
           <div className="mb-2 h-[40%] w-[50%] rounded-md bg-black/5 dark:bg-white/10" />
           <div className="h-[40%] w-full rounded-md bg-black/5 dark:bg-white/10" />
         </div>
-        <div className="absolute -bottom-1 left-1/2 z-0 h-[60%] w-[80%] -translate-x-1/2 translate-y-[5%] scale-95 overflow-hidden rounded-xl border bg-white/60 p-2 backdrop-blur-2xl transition-all duration-200 ease-out group-hover:rotate-2 dark:border-white/10 dark:bg-white/10">
+        <div className="shadow-[0_-1px_--theme(--color-border/30%)] absolute -bottom-1 left-1/2 z-0 h-[60%] w-[80%] -translate-x-1/2 translate-y-[5%] scale-95 overflow-hidden rounded-xl border bg-white/60 p-2 backdrop-blur-2xl transition-all duration-200 ease-out group-hover:rotate-2 dark:border-white/10 dark:bg-white/10">
           <div className="mb-2 h-[40%] w-[50%] rounded-md bg-black/5 dark:bg-white/10" />
           <div className="h-[40%] w-full rounded-md bg-black/5 dark:bg-white/10" />
         </div>

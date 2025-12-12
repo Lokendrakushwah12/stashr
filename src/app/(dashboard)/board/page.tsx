@@ -13,9 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useBoards } from "@/lib/hooks/use-boards";
 import { PlusIcon, SparkleIcon } from "@phosphor-icons/react";
-import { Loader, Plus, RefreshCw, Search, X } from "lucide-react";
+import { Loader, Plus, Search, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -231,9 +232,18 @@ export default function BoardsPage() {
 
         {/* Boards Grid */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <RefreshCw className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
-            <p className="text-muted-foreground">Loading your boards...</p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex w-full items-center justify-center">
+                <div className="group relative w-full perspective-midrange">
+                  <div className="h8 relative flex flex-row items-start justify-start">
+                    <Skeleton className="bg-border! h-6 w-32 rounded-tl-md rounded-br-none rounded-bl-none" />
+                    <div className="bg-border absolute top-full left-0 h-3 w-2 animate-pulse rounded-br-lg" />
+                  </div>
+                  <Skeleton className="bg-sidebar-ring! h-[135px] w-full rounded-lg sm:w-[300px]" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : boards.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">

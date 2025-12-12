@@ -1,5 +1,7 @@
 "use client";
 
+import BoardCollaboratorDialog from "@/components/board/BoardCollaboratorDialog";
+import BoardTimelineEditor from "@/components/board/BoardTimelineEditor";
 import { Button } from "@/components/ui/button";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
@@ -10,31 +12,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 import InlineEdit from "@/components/ui/inline-edit";
 import {
-  ShareFatIcon,
-  TrashIcon,
-  UsersIcon,
-  LinkSimpleIcon,
-  LinkBreakIcon,
-} from "@phosphor-icons/react";
-import { ArrowLeft, MoreVertical } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import {
-  useBoard,
-  useUpdateBoard,
-  useDeleteBoard,
-} from "@/lib/hooks/use-boards";
-import BoardTimelineEditor from "@/components/board/BoardTimelineEditor";
-import BoardCollaboratorDialog from "@/components/board/BoardCollaboratorDialog";
-import { useTimeline } from "@/lib/hooks/use-timeline";
-import { useFolders } from "@/lib/hooks/use-bookmarks";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useBoard,
+  useDeleteBoard,
+  useUpdateBoard,
+} from "@/lib/hooks/use-boards";
+import { useFolders } from "@/lib/hooks/use-bookmarks";
+import { useTimeline } from "@/lib/hooks/use-timeline";
+import {
+  LinkBreakIcon,
+  LinkSimpleIcon,
+  ShareFatIcon,
+  TrashIcon,
+  UsersIcon,
+} from "@phosphor-icons/react";
+import { ArrowLeft, MoreVertical } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const BoardDetailPage = () => {
   const params = useParams();
@@ -143,10 +144,25 @@ const BoardDetailPage = () => {
 
   if (!board) {
     return (
-      <div className="mx-auto flex min-h-[90vh] max-w-[86rem] flex-col items-center justify-center px-5 text-center">
-        <div className="max-w-md">
-          <div className="text-muted-foreground border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
-          <p className="text-muted-foreground">Loading board...</p>
+      <div className="relative min-h-screen space-y-4 pt-2">
+        <div className="absolute top-[24%] z-10 h-60 w-full bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
+        {/* Header Skeleton */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </div>
+
+        {/* Timeline Skeleton */}
+        <div className="mt-8 space-y-4">
+          <Skeleton className="h-12 w-1/4" />
+          <Skeleton className="h-32 w-3/4" />
+          <Skeleton className="h-32 w-full" />
         </div>
       </div>
     );

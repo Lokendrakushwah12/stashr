@@ -5,8 +5,10 @@ import BookmarkCard from "@/components/bookmark/BookmarkCard";
 import EditBookmarkDialog from "@/components/bookmark/EditBookmarkDialog";
 import CollaboratorDialog from "@/components/folder/CollaboratorDialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import ColorPicker from "@/components/ui/color-picker";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -188,7 +190,7 @@ const BookmarkFolderDetailPage = () => {
               disabled={!canEdit}
               maxLength={100}
               allowEmpty={false}
-              className="tracking-tight font-display"
+              className="font-display tracking-tight"
             />
           </div>
         </div>
@@ -281,9 +283,22 @@ const BookmarkFolderDetailPage = () => {
 
       {/* Bookmarks List */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <RefreshCw className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
-          <p className="text-muted-foreground">Loading your bookmarks...</p>
+        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="absolute inset-0 z-10 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="overflow-hidden p-1">
+              <CardContent className="p-0">
+                <div className="mb-2 flex w-full items-center gap-1 pt-1 pl-1">
+                  <Skeleton className="h-8 w-9 rounded-md" />
+                  <div className="flex w-full flex-col gap-1">
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </div>
+                </div>
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : folder.bookmarks?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">

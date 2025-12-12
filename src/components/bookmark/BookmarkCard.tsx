@@ -131,7 +131,7 @@ const BookmarkCard = ({
 
   return (
     <>
-      <Card className="bg-secondary/20 hover:bg-accent/50 group relative z-10 mb-2 overflow-hidden rounded-2xl transition-all">
+      <Card className="dark:bg-card group relative z-10 mb-2 overflow-hidden rounded-2xl bg-white p-0 transition-all">
         <CardContent className="w-full p-1">
           <div className="flex w-full items-center p-1 pb-0 sm:p-2 sm:pb-0">
             <Link
