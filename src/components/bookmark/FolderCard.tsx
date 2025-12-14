@@ -23,7 +23,7 @@ const FolderCard = ({ folder, collaboratorCount = 0 }: FolderCardProps) => {
       <Card
         className="group relative h-32 cursor-pointer overflow-hidden rounded-2xl p-0 shadow-[0_-1px_--theme(--color-white/12%)] transition-all duration-200 ease-out"
         style={{
-          background: `${folder.color}2A`,
+          background: `linear-gradient(180deg, ${folder.color}40 0%, ${folder.color}30 100%)`,
           borderColor: `${folder.color}0A`,
         }}
         onClick={handleCardClick}

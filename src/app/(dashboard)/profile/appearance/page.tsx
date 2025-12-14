@@ -4,6 +4,7 @@ import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Logout2 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { LogOut, Monitor, Moon, Palette, Save, Sun } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -217,7 +218,7 @@ export default function AppearancePage() {
                 onClick={handleLogout}
                 className="gap-2"
               >
-                <LogOut className="h-4 w-4" />
+                <Logout2 className="h-4 w-4" />
                 Sign Out
               </Button>
             </div>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Logout2 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { Eye, EyeOff, Key, LogOut, Save, Shield } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
@@ -113,7 +114,7 @@ export default function SecurityPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                   disabled
                 >
                   <Eye className="h-4 w-4" />
@@ -134,7 +135,7 @@ export default function SecurityPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                   disabled
                 >
                   <Eye className="h-4 w-4" />
@@ -155,7 +156,7 @@ export default function SecurityPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                   disabled
                 >
                   <Eye className="h-4 w-4" />
@@ -213,7 +214,7 @@ export default function SecurityPage() {
                 onClick={handleLogout}
                 className="gap-2"
               >
-                <LogOut className="h-4 w-4" />
+                <Logout2 className="h-4 w-4" />
                 Sign Out
               </Button>
             </div>

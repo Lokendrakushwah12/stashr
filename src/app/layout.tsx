@@ -1,8 +1,8 @@
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Toaster } from "sonner";
@@ -10,8 +10,17 @@ import { displayFont } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Stashr - Turn scattered inspiration into organized thinking",
-  description: " Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
-  keywords: ["bookmarks", "organizer", "web", "folders", "management", "nextjs", "typescript"],
+  description:
+    " Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
+  keywords: [
+    "bookmarks",
+    "organizer",
+    "web",
+    "folders",
+    "management",
+    "nextjs",
+    "typescript",
+  ],
   authors: [{ name: "Lokendra" }],
   creator: "Lokendra",
   publisher: "Stashr",
@@ -29,7 +38,8 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://stashr.in",
     title: "Stashr - Turn scattered inspiration into organized thinking",
-    description: "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
+    description:
+      "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
     siteName: "Stashr",
     images: [
       {
@@ -43,7 +53,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Stashr - Turn scattered inspiration into organized thinking",
-    description: "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
+    description:
+      "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
     images: ["/og.png"],
     creator: "@lokendratwt",
   },
@@ -62,9 +73,11 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.ico" },
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
     shortcut: ["/favicon.ico"],
   },
   manifest: "/manifest.json",
@@ -74,10 +87,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} ${displayFont.variable} font-sans antialiased`}
       >

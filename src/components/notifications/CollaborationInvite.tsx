@@ -12,10 +12,13 @@ import type {
 import {
   BookmarksIcon,
   CheckIcon,
-  FolderOpenIcon,
   SparkleIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import {
+  FolderOpen,
+  Stars,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -156,9 +159,9 @@ export default function CollaborationInvite({
             {isAccepted ? (
               <Button size="sm" onClick={handleGoToResource} className="h-8">
                 {isBoard ? (
-                  <SparkleIcon weight="duotone" className="h-4 w-4" />
+                  <Stars className="h-4 w-4" />
                 ) : (
-                  <FolderOpenIcon weight="duotone" className="h-4 w-4" />
+                  <FolderOpen className="h-4 w-4" />
                 )}
                 Go to {isBoard ? "Board" : "Folder"}
               </Button>

@@ -13,7 +13,15 @@ interface SidebarItemProps {
     onClick?: () => void;
     badge?: {
       count: number;
-      variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "gray";
+      variant?:
+        | "default"
+        | "secondary"
+        | "destructive"
+        | "outline"
+        | "success"
+        | "warning"
+        | "info"
+        | "gray";
     };
     active?: boolean;
     disabled?: boolean;
@@ -23,10 +31,15 @@ interface SidebarItemProps {
   isCollapsed?: boolean;
 }
 
-export default function SidebarItem({ item, onClick, className, isCollapsed }: SidebarItemProps) {
+export default function SidebarItem({
+  item,
+  onClick,
+  className,
+  isCollapsed,
+}: SidebarItemProps) {
   const handleClick = () => {
     if (item.disabled) return;
-    
+
     if (item.onClick) {
       item.onClick();
     } else if (onClick) {
@@ -40,20 +53,43 @@ export default function SidebarItem({ item, onClick, className, isCollapsed }: S
     <Button
       variant={item.active ? "secondary" : "ghost"}
       className={cn(
-        "relative justify-center gap-1 h-auto p-2",
-        item.disabled && "opacity-50 cursor-not-allowed",
+        "group relative h-auto justify-center gap-1 p-2",
+        item.disabled && "cursor-not-allowed opacity-50",
         isCollapsed ? "size-8 rounded-md!" : "w-full",
         // Mobile specific styles
         "md:justify-start md:gap-2",
-        className
+        className,
       )}
       onClick={handleClick}
       disabled={item.disabled}
     >
-      {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
-      <span className={cn("text-left truncate hidden md:block", isCollapsed && "hidden")}>{item.label}</span>
+      {Icon && (
+        <Icon
+          className={cn(
+            "size-4 shrink-0",
+            item.active
+              ? "text-foreground"
+              : "text-muted-foreground group-hover:text-foreground",
+          )}
+        />
+      )}
+      <span
+        className={cn(
+          "hidden truncate text-left md:block",
+          isCollapsed && "hidden",
+        )}
+      >
+        {item.label}
+      </span>
       {item.badge && item.badge.count > 0 && (
-        <Badge variant={item.badge.variant ?? "default"} className={cn("text-xs text-white", isCollapsed && "absolute size-4 p-1 rounded-sm right-0 top-0 -translate-y-1/4 translate-x-1/4")}>
+        <Badge
+          variant={item.badge.variant ?? "default"}
+          className={cn(
+            "text-xs text-white",
+            isCollapsed &&
+              "absolute top-0 right-0 size-4 translate-x-1/4 -translate-y-1/4 rounded-sm p-1",
+          )}
+        >
           {item.badge.count}
         </Badge>
       )}

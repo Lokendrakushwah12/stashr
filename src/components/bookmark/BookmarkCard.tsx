@@ -10,12 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Bookmark } from "@/types";
-import {
-  CopyIcon,
-  PencilSimpleLineIcon,
-  TrashIcon,
-} from "@phosphor-icons/react";
 import { DotsVerticalIcon } from "@radix-ui/react-icons";
+import {
+  Copy,
+  Pen,
+  TrashBinTrash,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -179,27 +179,21 @@ const BookmarkCard = ({
                     onClick={handleEdit}
                     className="cursor-pointer rounded-lg"
                   >
-                    <PencilSimpleLineIcon
-                      weight="duotone"
-                      className="h-4 w-4"
-                    />
+                    <Pen className="h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleCopyLink}
                     className="cursor-pointer rounded-lg"
                   >
-                    <CopyIcon weight="duotone" className="h-4 w-4" />
+                    <Copy className="h-4 w-4" />
                     Copy Link
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleDelete}
                     className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                   >
-                    <TrashIcon
-                      weight="duotone"
-                      className="text-destructive h-4 w-4"
-                    />
+                    <TrashBinTrash className="text-destructive h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>

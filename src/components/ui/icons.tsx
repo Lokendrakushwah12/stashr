@@ -183,6 +183,7 @@ export function StashrLogo(props: SVGProps<SVGSVGElement>) {
       <path
         d="M3.6945 3.50488C2.45661 3.50488 1.4541 4.50858 1.4541 5.74528V6.64144C1.4541 7.87933 2.4578 8.88184 3.6945 8.88184H24.3062C25.5429 8.88184 26.5466 7.87814 26.5466 6.64144V5.74528C26.5466 4.50739 25.5429 3.50488 24.3062 3.50488H3.6945Z"
         fill="currentColor"
+        opacity="0.5"
       />
       <path
         d="M24.0034 21.1204C23.9498 22.0331 23.5495 22.8915 22.8843 23.5188C22.2191 24.1459 21.3394 24.4953 20.4253 24.4954H7.57178C6.65787 24.4948 5.7785 24.145 5.11377 23.5178C4.44903 22.8906 4.04922 22.0327 3.99561 21.1204L3.3501 10.1565H24.6499L24.0034 21.1204ZM10.814 13.7415C9.75821 13.7415 8.90202 14.5969 8.90186 15.6526C8.90186 16.7084 9.7581 17.5647 10.814 17.5647C11.8698 17.5647 12.7261 16.7084 12.7261 15.6526C12.7259 14.5969 11.8697 13.7415 10.814 13.7415ZM17.187 13.7415C16.1313 13.7415 15.2751 14.5969 15.2749 15.6526C15.2749 16.7084 16.1312 17.5647 17.187 17.5647C18.2427 17.5645 19.0981 16.7083 19.0981 15.6526C19.098 14.597 18.2426 13.7417 17.187 13.7415Z"
@@ -192,32 +193,31 @@ export function StashrLogo(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-export function ThemeToggleIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="size-4.5"
-      opacity="1"
-      filter="none"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-      <path d="M12 3l0 18"></path>
-      <path d="M12 9l4.65 -4.65"></path>
-      <path d="M12 14.3l7.37 -7.37"></path>
-      <path d="M12 19.6l8.85 -8.85"></path>
-    </svg>
-  );
-}
+export const ThemeToggleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="128"
+    height="128"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+    role="img"
+    color="currentColor"
+    {...props}
+  >
+    <path
+      opacity="0.4"
+      d="M12 1.25C6.06294 1.25 1.25 6.06294 1.25 12C1.25 17.9371 6.06294 22.75 12 22.75C17.9371 22.75 22.75 17.9371 22.75 12C22.75 6.06294 17.9371 1.25 12 1.25Z"
+      fill="currentColor"
+    ></path>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M6.27734 18.678C7.81572 19.9977 9.81533 20.7951 12.0012 20.7951C12.2137 20.7951 12.4245 20.7876 12.6333 20.7727L7.92901 16.9024L6.27734 18.678ZM15.1178 20.2269C16.1918 19.8199 17.1652 19.2086 17.9908 18.4405L11.657 12.8948L9.29372 15.4353L15.1178 20.2269ZM19.2918 16.9213C19.9005 16.0213 20.347 15.0026 20.5892 13.9071L15.0356 9.26271L13.0198 11.4297L19.2918 16.9213ZM20.7803 11.4598C20.6471 9.2601 19.7055 7.27863 18.2487 5.80859L16.3997 7.79628L20.7803 11.4598Z"
+      fill="currentColor"
+    ></path>
+  </svg>
+);
 
 export function SiShadcnIcon(props: SVGProps<SVGSVGElement>) {
   return (

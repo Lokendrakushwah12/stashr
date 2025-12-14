@@ -2,12 +2,12 @@
 
 import { StashrLogo } from "@/components/ui/icons";
 import type { Folder, FolderCollaboration } from "@/types";
+import { UserIcon } from "@phosphor-icons/react";
 import {
-  BookmarksIcon,
-  EnvelopeIcon,
-  SparkleIcon,
-  UserIcon,
-} from "@phosphor-icons/react";
+  BookmarkSquare,
+  ClipboardText,
+  InboxLine,
+} from "@solar-icons/react-perf/BoldDuotone";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import type { SidebarConfig } from "../types";
@@ -62,21 +62,21 @@ export function useBookmarkSidebarConfig({
           {
             id: "boards",
             label: "All Boards",
-            icon: SparkleIcon,
+            icon: ClipboardText,
             href: "/board",
             active: currentPath.startsWith("/board"),
           },
           {
             id: "bookmarks",
             label: "All Bookmarks",
-            icon: BookmarksIcon,
+            icon: BookmarkSquare,
             href: "/bookmarks",
             active: currentPath.startsWith("/bookmarks"),
           },
           {
             id: "inbox",
             label: "Inbox",
-            icon: EnvelopeIcon,
+            icon: InboxLine,
             href: "/inbox",
             active: currentPath.startsWith("/inbox"),
             badge:

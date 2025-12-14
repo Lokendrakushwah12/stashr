@@ -5,15 +5,18 @@ import FolderCard from "@/components/bookmark/FolderCard";
 import ImportExportDialog from "@/components/bookmark/ImportExportDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFolders } from "@/lib/hooks/use-bookmarks";
 import {
-  BookmarksIcon,
-  FolderOpenIcon,
-  FoldersIcon,
-  PlusIcon,
-} from "@phosphor-icons/react";
-import { Loader, Plus, Upload } from "lucide-react";
+  AddSquare,
+  BookmarkSquare,
+  FolderOpen,
+  Library,
+  Upload,
+} from "@solar-icons/react-perf/BoldDuotone";
+import { Magnifer } from "@solar-icons/react-perf/Outline";
+import { Loader, Plus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,13 +27,14 @@ export default function AllBookmarksPage() {
   const router = useRouter();
   const [showAddFolder, setShowAddFolder] = useState(false);
   const [showImportExport, setShowImportExport] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Use React Query for data fetching
+  // Use React Query for data fetching with search
   const {
     data: foldersResponse,
     isLoading,
     refetch: originalRefetch,
-  } = useFolders();
+  } = useFolders(searchQuery || undefined);
 
   // Custom refetch with toast notification
   const handleRefetch = async () => {
@@ -43,6 +47,10 @@ export default function AllBookmarksPage() {
   };
 
   const folders = foldersResponse?.data?.folders ?? [];
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {
@@ -72,6 +80,24 @@ export default function AllBookmarksPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative">
+              <Magnifer className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                placeholder="Search bookmarks, folders, or URLs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-background pr-9 pl-9"
+              />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
             <Button
               onClick={() => setShowImportExport(true)}
               variant="outline"
@@ -81,7 +107,7 @@ export default function AllBookmarksPage() {
               Import/Export
             </Button>
             <Button onClick={() => setShowAddFolder(true)}>
-              <PlusIcon weight="duotone" className="h-4 w-4" />
+              <AddSquare className="h-4 w-4" />
               Add Folder
             </Button>
           </div>
@@ -101,11 +127,7 @@ export default function AllBookmarksPage() {
               <div className="text-muted-foreground text-sm">Total Folders</div>
             </div>
             <div className="bg-muted/30 bg-lines-diag flex h-full items-center justify-center px-9">
-              <FoldersIcon
-                weight="duotone"
-                strokeWidth={1}
-                className="text-muted-foreground size-10"
-              />
+              <Library size={64} color="var(--color-muted-foreground)" />
             </div>
           </div>
           <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
@@ -125,11 +147,7 @@ export default function AllBookmarksPage() {
               </div>
             </div>
             <div className="bg-muted/30 bg-lines-diag flex h-full items-center justify-center px-9">
-              <BookmarksIcon
-                weight="duotone"
-                strokeWidth={1}
-                className="thin-stroke text-muted-foreground size-10"
-              />
+              <BookmarkSquare size={64} color="var(--color-muted-foreground)" />
             </div>
           </div>
         </div>
@@ -156,10 +174,7 @@ export default function AllBookmarksPage() {
         ) : folders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex items-center justify-center">
-              <FolderOpenIcon
-                weight="duotone"
-                className="text-muted-foreground h-16 w-16"
-              />
+              <FolderOpen className="text-muted-foreground h-16 w-16" />
             </div>
             <h3 className="mb-2 text-2xl font-medium">
               You don&apos;t have any folders yet

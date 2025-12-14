@@ -2,10 +2,20 @@
 
 import CollaborationInvite from "@/components/notifications/CollaborationInvite";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { FolderCollaboration, Folder, BoardCollaboration, Board } from "@/types";
-import { ArrowsClockwiseIcon, EnvelopeIcon } from "@phosphor-icons/react";
-import { Loader, RefreshCw } from "lucide-react";
+import type {
+  Board,
+  BoardCollaboration,
+  Folder,
+  FolderCollaboration,
+} from "@/types";
+import {
+  InboxIn,
+  InboxLine,
+  Refresh,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { Loader } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,31 +24,39 @@ import { toast } from "sonner";
 export default function InboxPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [folderInvitations, setFolderInvitations] = useState<(FolderCollaboration & { folder?: Folder })[]>([]);
-  const [boardInvitations, setBoardInvitations] = useState<(BoardCollaboration & { board?: Board })[]>([]);
+  const [folderInvitations, setFolderInvitations] = useState<
+    (FolderCollaboration & { folder?: Folder })[]
+  >([]);
+  const [boardInvitations, setBoardInvitations] = useState<
+    (BoardCollaboration & { board?: Board })[]
+  >([]);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
 
   const fetchPendingInvitations = async () => {
     if (!session?.user?.id) return;
-    
+
     setLoadingInvitations(true);
     try {
       // Fetch folder collaborations
-      const folderResponse = await fetch('/api/collaborations/pending');
+      const folderResponse = await fetch("/api/collaborations/pending");
       if (folderResponse.ok) {
-        const folderData = await folderResponse.json() as { invitations: (FolderCollaboration & { folder?: Folder })[] };
+        const folderData = (await folderResponse.json()) as {
+          invitations: (FolderCollaboration & { folder?: Folder })[];
+        };
         setFolderInvitations(folderData.invitations ?? []);
       }
 
       // Fetch board collaborations
-      const boardResponse = await fetch('/api/boards/collaborations/pending');
+      const boardResponse = await fetch("/api/boards/collaborations/pending");
       if (boardResponse.ok) {
-        const boardData = await boardResponse.json() as { invitations: (BoardCollaboration & { board?: Board })[] };
+        const boardData = (await boardResponse.json()) as {
+          invitations: (BoardCollaboration & { board?: Board })[];
+        };
         setBoardInvitations(boardData.invitations ?? []);
       }
     } catch (error) {
-      console.error('Error fetching invitations:', error);
-      toast.error('Failed to load invitations');
+      console.error("Error fetching invitations:", error);
+      toast.error("Failed to load invitations");
     } finally {
       setLoadingInvitations(false);
     }
@@ -46,51 +64,59 @@ export default function InboxPage() {
 
   const pendingInvitations = [...folderInvitations, ...boardInvitations];
 
-  const handleAcceptInvitation = async (collaborationId: string, type: 'folder' | 'board') => {
+  const handleAcceptInvitation = async (
+    collaborationId: string,
+    type: "folder" | "board",
+  ) => {
     try {
-      const endpoint = type === 'board' 
-        ? `/api/boards/collaborations/${collaborationId}`
-        : `/api/collaborations/${collaborationId}`;
-        
+      const endpoint =
+        type === "board"
+          ? `/api/boards/collaborations/${collaborationId}`
+          : `/api/collaborations/${collaborationId}`;
+
       const response = await fetch(endpoint, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: 'accepted' }),
+        body: JSON.stringify({ status: "accepted" }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to accept invitation');
+        throw new Error("Failed to accept invitation");
       }
 
       void fetchPendingInvitations();
-      toast.success('Invitation accepted!');
+      toast.success("Invitation accepted!");
     } catch (error) {
-      console.error('Error accepting invitation:', error);
-      toast.error('Failed to accept invitation');
+      console.error("Error accepting invitation:", error);
+      toast.error("Failed to accept invitation");
     }
   };
 
-  const handleDeclineInvitation = async (collaborationId: string, type: 'folder' | 'board') => {
+  const handleDeclineInvitation = async (
+    collaborationId: string,
+    type: "folder" | "board",
+  ) => {
     try {
-      const endpoint = type === 'board'
-        ? `/api/boards/collaborations/${collaborationId}`
-        : `/api/collaborations/${collaborationId}`;
-        
+      const endpoint =
+        type === "board"
+          ? `/api/boards/collaborations/${collaborationId}`
+          : `/api/collaborations/${collaborationId}`;
+
       const response = await fetch(endpoint, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to decline invitation');
+        throw new Error("Failed to decline invitation");
       }
 
       void fetchPendingInvitations();
-      toast.success('Invitation declined');
+      toast.success("Invitation declined");
     } catch (error) {
-      console.error('Error declining invitation:', error);
-      toast.error('Failed to decline invitation');
+      console.error("Error declining invitation:", error);
+      toast.error("Failed to decline invitation");
     }
   };
 
@@ -109,16 +135,16 @@ export default function InboxPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 min-h-screen">
+    <div className="min-h-screen space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-3xl tracking-tight">Inbox</h1>
           <p className="text-muted-foreground">
@@ -132,9 +158,8 @@ export default function InboxPage() {
             size="sm"
             disabled={loadingInvitations}
           >
-            <ArrowsClockwiseIcon 
-              weight="duotone" 
-              className={`h-4 w-4 ${loadingInvitations ? "animate-spin" : ""}`} 
+            <Refresh
+              className={`h-4 w-4 ${loadingInvitations ? "animate-spin" : ""}`}
             />
             Refresh
           </Button>
@@ -142,48 +167,88 @@ export default function InboxPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
-          <div className="flex flex-col w-full justify-center items-start p-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
+          <div className="flex w-full flex-col items-start justify-center p-4">
             {loadingInvitations ? (
-              <Skeleton className="h-9 w-16 mb-1" />
+              <Skeleton className="mb-1 h-9 w-16" />
             ) : (
-              <div className="text-3xl font-mono font-semibold">{pendingInvitations.filter(inv => inv.status === 'pending').length}</div>
-            )}
-            <div className="text-sm text-muted-foreground">Pending Invitations</div>
-          </div>
-          <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
-            <EnvelopeIcon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
-          </div>
-        </div>
-        <div className="border flex relative rounded-2xl bg-secondary/20 overflow-hidden">
-          <div className="flex flex-col w-full justify-center items-start p-4">
-            {loadingInvitations ? (
-              <Skeleton className="h-9 w-16 mb-1" />
-            ) : (
-              <div className="text-3xl font-mono font-semibold">
-                {pendingInvitations.filter(inv => inv.status === 'accepted').length}
+              <div className="font-mono text-3xl font-semibold">
+                {
+                  pendingInvitations.filter((inv) => inv.status === "pending")
+                    .length
+                }
               </div>
             )}
-            <div className="text-sm text-muted-foreground">Accepted Invitations</div>
+            <div className="text-muted-foreground text-sm">
+              Pending Invitations
+            </div>
           </div>
-          <div className="flex justify-center items-center px-9 h-full bg-muted/30 bg-lines-diag">
-            <EnvelopeIcon weight="duotone" strokeWidth={1} className="size-10 text-muted-foreground" />
+          <div className="bg-muted/30 bg-lines-diag flex h-full items-center justify-center px-9">
+            <InboxIn
+              strokeWidth={1}
+              className="text-muted-foreground size-10"
+            />
+          </div>
+        </div>
+        <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
+          <div className="flex w-full flex-col items-start justify-center p-4">
+            {loadingInvitations ? (
+              <Skeleton className="mb-1 h-9 w-16" />
+            ) : (
+              <div className="font-mono text-3xl font-semibold">
+                {
+                  pendingInvitations.filter((inv) => inv.status === "accepted")
+                    .length
+                }
+              </div>
+            )}
+            <div className="text-muted-foreground text-sm">
+              Accepted Invitations
+            </div>
+          </div>
+          <div className="bg-muted/30 bg-lines-diag flex h-full items-center justify-center px-9">
+            <InboxLine
+              strokeWidth={1}
+              className="text-muted-foreground size-10"
+            />
           </div>
         </div>
       </div>
 
       {/* Invitations */}
       {loadingInvitations ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Loading invitations...</p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-6 w-8 rounded-full" />
+          </div>
+          <div className="relative space-y-3">
+            <div className="absolute inset-0 z-10 -mb-1 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="rounded-lg border p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-9 w-20" />
+                    <Skeleton className="h-9 w-20" />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       ) : pendingInvitations.length > 0 ? (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">Collaboration Invitations</h2>
-            <div className="px-2 py-1 bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full text-xs font-medium">
+            <h2 className="text-xl font-medium tracking-tight">
+              Collaboration Invitations
+            </h2>
+            <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
               {pendingInvitations.length}
             </div>
           </div>
@@ -200,13 +265,13 @@ export default function InboxPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <EnvelopeIcon className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-2">No invitations</h3>
+          <InboxLine className="text-muted-foreground mb-4 h-16 w-16 opacity-50" />
+          <h3 className="mb-2 text-lg font-medium">No invitations</h3>
           <p className="text-muted-foreground mb-4">
             You don&apos;t have any collaboration invitations at the moment.
           </p>
           <Button onClick={fetchPendingInvitations} variant="outline">
-            <ArrowsClockwiseIcon weight="duotone" className="h-4 w-4 mr-2" />
+            <Refresh className="mr-2 h-4 w-4" />
             Refresh
           </Button>
         </div>

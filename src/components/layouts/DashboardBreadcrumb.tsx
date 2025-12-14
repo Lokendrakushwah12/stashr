@@ -17,6 +17,7 @@ import { SidebarIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { SidebarMinimalistic } from "@solar-icons/react-perf/category/style/BoldDuotone";
 
 export default function DashboardBreadcrumb() {
   const pathname = usePathname();
@@ -26,18 +27,23 @@ export default function DashboardBreadcrumb() {
 
   // Fetch board/folder data if we're on a specific board or bookmark page
   const shouldFetchBoard = !!boardId && pathname?.includes(`/board/${boardId}`);
-  const shouldFetchBookmark = !!boardId && pathname?.includes(`/bookmarks/${boardId}`);
-  
-  const { data: boardResponse } = useBoard(shouldFetchBoard ? boardId ?? "" : "");
-  const { data: folderResponse } = useFolder(shouldFetchBookmark ? boardId ?? "" : "");
-  
+  const shouldFetchBookmark =
+    !!boardId && pathname?.includes(`/bookmarks/${boardId}`);
+
+  const { data: boardResponse } = useBoard(
+    shouldFetchBoard ? (boardId ?? "") : "",
+  );
+  const { data: folderResponse } = useFolder(
+    shouldFetchBookmark ? (boardId ?? "") : "",
+  );
+
   const board = shouldFetchBoard ? boardResponse?.data?.board : null;
   const folder = shouldFetchBookmark ? folderResponse?.data?.folder : null;
 
   // Generate breadcrumb segments dynamically
   const segments = useMemo(() => {
     const dynamicData: Record<string, unknown> = {};
-    
+
     // Add dynamic data based on the current route
     if (shouldFetchBoard && board?.name) {
       dynamicData.boardName = board.name;
@@ -45,9 +51,20 @@ export default function DashboardBreadcrumb() {
     if (shouldFetchBookmark && folder?.name) {
       dynamicData.folderName = folder.name;
     }
-    
-    return getBreadcrumbSegments(pathname, params as Record<string, string>, dynamicData);
-  }, [pathname, params, board?.name, folder?.name, shouldFetchBoard, shouldFetchBookmark]);
+
+    return getBreadcrumbSegments(
+      pathname,
+      params as Record<string, string>,
+      dynamicData,
+    );
+  }, [
+    pathname,
+    params,
+    board?.name,
+    folder?.name,
+    shouldFetchBoard,
+    shouldFetchBookmark,
+  ]);
 
   // Don't render if no segments
   if (segments.length === 0) {
@@ -55,15 +72,15 @@ export default function DashboardBreadcrumb() {
   }
 
   return (
-    <div className="flex items-center gap-3 mb-2">
+    <div className="mb-2 flex items-center gap-3">
       {/* Sidebar Toggle */}
       <Button
         variant="outline"
         size="sm"
-        className="hidden md:flex size-7 bg-accent border border-border rounded-sm hover:bg-accent/80"
+        className="bg-accent border-border hover:bg-accent/80 hidden size-7 rounded-sm border md:flex"
         onClick={toggleCollapsed}
       >
-        <SidebarIcon weight="duotone" className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+        <SidebarMinimalistic className="text-muted-foreground hover:text-foreground h-4 w-4" />
       </Button>
 
       {/* Breadcrumb */}
@@ -71,7 +88,7 @@ export default function DashboardBreadcrumb() {
         <BreadcrumbList className="gap-1 sm:gap-1">
           {segments.map((segment, index) => {
             const isLast = index === segments.length - 1;
-            
+
             return (
               <div key={`${segment.label}-${index}`} className="contents">
                 <BreadcrumbItem>
@@ -83,7 +100,7 @@ export default function DashboardBreadcrumb() {
                     <BreadcrumbPage>{segment.label}</BreadcrumbPage>
                   )}
                 </BreadcrumbItem>
-                
+
                 {!isLast && <BreadcrumbSeparator />}
               </div>
             );

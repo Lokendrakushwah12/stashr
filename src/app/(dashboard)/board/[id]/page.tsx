@@ -27,12 +27,12 @@ import {
 import { useFolders } from "@/lib/hooks/use-bookmarks";
 import { useTimeline } from "@/lib/hooks/use-timeline";
 import {
-  LinkBreakIcon,
-  LinkSimpleIcon,
-  ShareFatIcon,
-  TrashIcon,
-  UsersIcon,
-} from "@phosphor-icons/react";
+  LinkBrokenMinimalistic,
+  LinkMinimalistic2,
+  Share,
+  TrashBinTrash,
+  UserPlus,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -203,7 +203,7 @@ const BoardDetailPage = () => {
                     }}
                     className="cursor-pointer rounded-lg"
                   >
-                    <ShareFatIcon weight="duotone" className="h-4 w-4" />
+                    <Share className="h-4 w-4" />
                     Share Public Link
                   </DropdownMenuItem>
                   {board.userRole === "owner" && (
@@ -214,7 +214,7 @@ const BoardDetailPage = () => {
                       }}
                       className="cursor-pointer rounded-lg text-nowrap"
                     >
-                      <UsersIcon weight="duotone" className="h-4 w-4" />
+                      <UserPlus className="h-4 w-4" />
                       Manage Collaborators
                     </DropdownMenuItem>
                   )}
@@ -223,10 +223,7 @@ const BoardDetailPage = () => {
                       onClick={handleDeleteFolder}
                       className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                     >
-                      <TrashIcon
-                        weight="duotone"
-                        className="text-destructive h-4 w-4"
-                      />
+                      <TrashBinTrash className="text-destructive h-4 w-4" />
                       Delete Board
                     </DropdownMenuItem>
                   )}
@@ -254,10 +251,7 @@ const BoardDetailPage = () => {
       <div className="mt-4">
         {canEdit ? (
           <div className="flex items-center gap-3">
-            <LinkSimpleIcon
-              weight="duotone"
-              className="text-muted-foreground h-5 w-5"
-            />
+            <LinkMinimalistic2 className="text-muted-foreground h-5 w-5" />
             <div className="flex flex-1 items-center gap-2">
               {board?.linkedFolder ? (
                 // Show linked folder with option to change
@@ -275,7 +269,7 @@ const BoardDetailPage = () => {
                     onClick={() => handleLinkFolder(null)}
                     className="text-destructive hover:text-destructive h-7 gap-1 rounded-sm px-2 text-xs"
                   >
-                    <LinkBreakIcon weight="duotone" className="size-3" />
+                    <LinkBrokenMinimalistic className="size-3" />
                     Unlink
                   </Button>
                 </div>
@@ -318,7 +312,7 @@ const BoardDetailPage = () => {
                   }
                   className="gap-2"
                 >
-                  <LinkSimpleIcon weight="duotone" className="h-4 w-4" />
+                  <LinkMinimalistic2 className="h-4 w-4" />
                   Open Folder
                 </Button>
               )}
@@ -326,10 +320,7 @@ const BoardDetailPage = () => {
           </div>
         ) : board?.linkedFolder ? (
           <div className="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
-            <LinkSimpleIcon
-              weight="duotone"
-              className="text-muted-foreground h-5 w-5"
-            />
+            <LinkMinimalistic2 className="text-muted-foreground h-5 w-5" />
             <div className="flex flex-1 items-center gap-2">
               <div
                 className="h-3 w-3 rounded-sm"
@@ -347,7 +338,7 @@ const BoardDetailPage = () => {
               }
               className="gap-2"
             >
-              <LinkSimpleIcon weight="duotone" className="h-4 w-4" />
+              <LinkMinimalistic2 className="h-4 w-4" />
               Open Folder
             </Button>
           </div>

@@ -12,11 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBoards } from "@/lib/hooks/use-boards";
-import { PlusIcon, SparkleIcon } from "@phosphor-icons/react";
-import { Loader, Plus, Search, X } from "lucide-react";
+import {
+  AddFolder,
+  Stars,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { Magnifer } from "@solar-icons/react-perf/Outline";
+import { Loader, Plus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -119,7 +123,7 @@ export default function BoardsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button onClick={() => setShowAddBoard(true)}>
-              <PlusIcon weight="duotone" className="h-4 w-4" />
+              <AddFolder className="h-4 w-4" />
               Add Board
             </Button>
           </div>
@@ -129,12 +133,12 @@ export default function BoardsPage() {
         <div className="flex flex-col gap-3 sm:flex-row">
           {/* Search */}
           <div className="relative flex-1">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <Magnifer className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search boards..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-9 pl-9"
+              className="bg-background pr-9 pl-9"
             />
             {searchQuery && (
               <button
@@ -232,7 +236,8 @@ export default function BoardsPage() {
 
         {/* Boards Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="relative grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="absolute inset-0 z-10 -mb-1 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex w-full items-center justify-center">
                 <div className="group relative w-full perspective-midrange">
@@ -248,10 +253,7 @@ export default function BoardsPage() {
         ) : boards.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex items-center justify-center">
-              <SparkleIcon
-                weight="duotone"
-                className="text-muted-foreground h-16 w-16"
-              />
+              <Stars className="text-muted-foreground h-16 w-16" />
             </div>
             <h3 className="mb-2 text-2xl font-medium">
               You don&apos;t have any boards yet
@@ -267,7 +269,7 @@ export default function BoardsPage() {
         ) : filteredBoards.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex items-center justify-center">
-              <Search className="text-muted-foreground h-16 w-16" />
+              <Magnifer className="text-muted-foreground h-16 w-16" />
             </div>
             <h3 className="mb-2 text-2xl font-medium">No boards found</h3>
             <p className="text-muted-foreground mb-6 max-w-md">
@@ -286,7 +288,7 @@ export default function BoardsPage() {
             </Button>
           </div>
         ) : (
-          <div className="mt-12 grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredBoards.map((board) => (
               <FolderListCard
                 key={board._id}

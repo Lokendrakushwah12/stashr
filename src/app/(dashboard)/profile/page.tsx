@@ -1,23 +1,16 @@
 "use client";
 
+import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { Logout2 } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { LogOut, Save, User } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  User,
-  Save,
-  LogOut,
-  Shield,
-  Settings,
-  Bell,
-  Palette,
-} from "lucide-react";
-import { ImageUpload } from "@/components/ui/image-upload";
-import ProfileMobileNav from "@/components/profile/ProfileMobileNav";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -45,9 +38,9 @@ export default function ProfilePage() {
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: name.trim(),
-          ...(image && { image })
+          ...(image && { image }),
         }),
       });
 
@@ -56,9 +49,9 @@ export default function ProfilePage() {
       }
 
       // Update session
-      await update({ 
+      await update({
         name: name.trim(),
-        ...(image && { image })
+        ...(image && { image }),
       });
       toast.success("Profile updated successfully");
     } catch (error) {
@@ -77,9 +70,9 @@ export default function ProfilePage() {
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: name.trim(),
-          image: url
+          image: url,
         }),
       });
 
@@ -88,9 +81,9 @@ export default function ProfilePage() {
       }
 
       // Update session
-      await update({ 
+      await update({
         name: name.trim(),
-        image: url
+        image: url,
       });
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -108,9 +101,9 @@ export default function ProfilePage() {
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: name.trim(),
-          image: null
+          image: null,
         }),
       });
 
@@ -119,9 +112,9 @@ export default function ProfilePage() {
       }
 
       // Update session
-      await update({ 
+      await update({
         name: name.trim(),
-        image: null
+        image: null,
       });
       toast.success("Image removed successfully");
     } catch (error) {
@@ -166,7 +159,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Mobile Navigation - Only visible on mobile */}
-      <div className="md:hidden mt-4">
+      <div className="mt-4 md:hidden">
         <ProfileMobileNav />
 
         <div className="grid gap-6">
@@ -227,9 +220,7 @@ export default function ProfilePage() {
           {/* Danger Zone */}
           <Card className="border-destructive/20">
             <CardHeader>
-              <CardTitle className="text-destructive">
-                Danger Zone
-              </CardTitle>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="border-destructive/20 flex items-center justify-between rounded-lg border p-4">
@@ -244,7 +235,7 @@ export default function ProfilePage() {
                   onClick={handleLogout}
                   className="gap-2"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <Logout2 className="h-4 w-4" />
                   Sign Out
                 </Button>
               </div>
@@ -328,7 +319,7 @@ export default function ProfilePage() {
                   onClick={handleLogout}
                   className="gap-2"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <Logout2 className="h-4 w-4" />
                   Sign Out
                 </Button>
               </div>

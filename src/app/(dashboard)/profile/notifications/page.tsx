@@ -5,17 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Logout2 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { LogOut, Mail, Monitor, Save, Smartphone } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 export default function NotificationsPage() {
-
   const handleLogout = async () => {
     void signOut({ callbackUrl: "/auth/signin" });
   };
 
   return (
-    <div className="space-y-6 ">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
               <Switch disabled />
             </div>
 
-            <div className="space-y-4 pl-4 border-l-2 border-muted">
+            <div className="border-muted space-y-4 border-l-2 pl-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>New bookmarks</Label>
@@ -121,7 +121,7 @@ export default function NotificationsPage() {
               <Switch disabled />
             </div>
 
-            <div className="space-y-4 pl-4 border-l-2 border-muted">
+            <div className="border-muted space-y-4 border-l-2 pl-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>New bookmarks</Label>
@@ -174,7 +174,7 @@ export default function NotificationsPage() {
               <Switch disabled />
             </div>
 
-            <div className="space-y-4 pl-4 border-l-2 border-muted">
+            <div className="border-muted space-y-4 border-l-2 pl-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>New bookmarks</Label>
@@ -233,7 +233,7 @@ export default function NotificationsPage() {
                 onClick={handleLogout}
                 className="gap-2"
               >
-                <LogOut className="h-4 w-4" />
+                <Logout2 className="h-4 w-4" />
                 Sign Out
               </Button>
             </div>

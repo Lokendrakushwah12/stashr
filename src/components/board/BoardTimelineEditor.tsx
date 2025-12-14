@@ -15,13 +15,13 @@ import {
 import { useUploadThing } from "@/lib/uploadthing";
 import { cn, formatExactDate, getRelativeTime } from "@/lib/utils";
 import type { BoardTimelineEntry } from "@/types";
+import { DiamondIcon, PlusIcon } from "@phosphor-icons/react";
 import {
-  ArrowCircleUpIcon,
-  DiamondIcon,
-  PencilSimpleLineIcon,
-  PlusIcon,
-} from "@phosphor-icons/react";
-import { ChevronLeft, ChevronRight, ImageIcon, X } from "lucide-react";
+  ArrowToTopLeft,
+  GalleryAdd,
+  Pen,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -430,7 +430,7 @@ export default function BoardTimelineEditor({
                     {editDragActive && (
                       <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
                         <div className="text-center">
-                          <ImageIcon className="text-primary mx-auto mb-2 h-8 w-8" />
+                          <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
                           <p className="text-primary text-sm font-medium">
                             Drop images here
                           </p>
@@ -456,7 +456,7 @@ export default function BoardTimelineEditor({
                         disabled={disabled || isUploadingEditImages}
                         className="h-8 text-xs"
                       >
-                        <ImageIcon className="h-3.5 w-3.5" />
+                        <GalleryAdd className="h-3.5 w-3.5" />
                         Add Images
                       </Button>
                       {editingImages.length > 0 && (
@@ -488,7 +488,7 @@ export default function BoardTimelineEditor({
                         }
                         className="size-8 p-0"
                       >
-                        <ArrowCircleUpIcon weight="light" className="size-4" />
+                        <ArrowToTopLeft className="size-4" />
                       </Button>
                     </div>
                   </div>
@@ -541,7 +541,7 @@ export default function BoardTimelineEditor({
                           disabled={disabled}
                           className="h-8 text-xs"
                         >
-                          <PencilSimpleLineIcon className="h-3.5 w-3.5" />
+                          <Pen size={14} className="text-muted-foreground" />
                           Edit
                         </Button>
                       </div>
@@ -632,7 +632,7 @@ export default function BoardTimelineEditor({
                   {dragActive && (
                     <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
                       <div className="text-center">
-                        <ImageIcon className="text-primary mx-auto mb-2 h-8 w-8" />
+                        <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
                         <p className="text-primary text-sm font-medium">
                           Drop images here
                         </p>
@@ -658,7 +658,7 @@ export default function BoardTimelineEditor({
                       disabled={disabled || isUploadingImages}
                       className="h-7 gap-1.5 text-xs"
                     >
-                      <ImageIcon className="h-3.5 w-3.5" />
+                      <GalleryAdd className="h-3.5 w-3.5" />
                       Add Images
                     </Button>
                     {uploadedImages.length > 0 && (
@@ -679,7 +679,7 @@ export default function BoardTimelineEditor({
                     }
                     className="size-8 p-0"
                   >
-                    <ArrowCircleUpIcon weight="light" className="size-4" />
+                    <ArrowToTopLeft className="size-4" />
                   </Button>
                 </div>
               </div>

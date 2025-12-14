@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ColorPicker from "@/components/ui/color-picker";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import InlineEdit from "@/components/ui/inline-edit";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useDeleteBookmark,
   useDeleteFolder,
@@ -23,14 +23,14 @@ import {
   useUpdateFolder,
 } from "@/lib/hooks/use-bookmarks";
 import type { Bookmark } from "@/types";
+import { PlusIcon } from "@phosphor-icons/react";
 import {
-  ArrowsClockwiseIcon,
-  PlusIcon,
-  ShareFatIcon,
-  TrashIcon,
-  UsersIcon,
-} from "@phosphor-icons/react";
-import { ArrowLeft, MoreVertical, Plus, RefreshCw } from "lucide-react";
+  Refresh,
+  Share,
+  TrashBinTrash,
+  UserPlus,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { ArrowLeft, MoreVertical, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -154,7 +154,7 @@ const BookmarkFolderDetailPage = () => {
     return (
       <div className="mx-auto flex min-h-[90vh] max-w-[86rem] flex-col items-center justify-center px-5 text-center">
         <div className="max-w-md">
-          <RefreshCw className="text-muted-foreground mx-auto mb-4 h-8 w-8 animate-spin" />
+          <Refresh className="text-muted-foreground mx-auto mb-4 h-8 w-8 animate-spin" />
           <p className="text-muted-foreground">Loading bookmark folder...</p>
         </div>
       </div>
@@ -201,10 +201,7 @@ const BookmarkFolderDetailPage = () => {
             size="sm"
             disabled={isLoading}
           >
-            <ArrowsClockwiseIcon
-              weight="duotone"
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
+            <Refresh className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
 
@@ -233,7 +230,7 @@ const BookmarkFolderDetailPage = () => {
                   }}
                   className="cursor-pointer rounded-lg"
                 >
-                  <ShareFatIcon weight="duotone" className="h-4 w-4" />
+                  <Share className="h-4 w-4" />
                   Share Public Link
                 </DropdownMenuItem>
                 {userRole === "owner" && (
@@ -244,7 +241,7 @@ const BookmarkFolderDetailPage = () => {
                     }}
                     className="cursor-pointer rounded-lg text-nowrap"
                   >
-                    <UsersIcon weight="duotone" className="h-4 w-4" />
+                    <UserPlus className="h-4 w-4" />
                     Manage Collaborators
                   </DropdownMenuItem>
                 )}
@@ -253,10 +250,7 @@ const BookmarkFolderDetailPage = () => {
                     onClick={handleDeleteFolder}
                     className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                   >
-                    <TrashIcon
-                      weight="duotone"
-                      className="text-destructive h-4 w-4"
-                    />
+                    <TrashBinTrash className="text-destructive h-4 w-4" />
                     {deleteFolderMutation.isPending
                       ? "Deleting..."
                       : "Delete Folder"}

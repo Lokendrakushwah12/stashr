@@ -2,26 +2,33 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useAdminStatus } from "@/lib/hooks/use-admin";
 import { cn } from "@/lib/utils";
-import {
-  GearIcon,
-  Shield,
-  SignOutIcon
-} from "@phosphor-icons/react";
+import { GearIcon, Shield, SignOutIcon } from "@phosphor-icons/react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ThemeToggle } from "../theme-toggle";
+import {
+  Logout2,
+  Settings,
+  ShieldUser,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 
 interface AccountPopoverProps {
   className?: string;
 }
 
-export default function AccountPopover({ className = "" }: AccountPopoverProps) {
+export default function AccountPopover({
+  className = "",
+}: AccountPopoverProps) {
   const { data: session } = useSession();
   const { isAdmin } = useAdminStatus();
   const router = useRouter();
@@ -50,24 +57,29 @@ export default function AccountPopover({ className = "" }: AccountPopoverProps) 
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start gap-3 p-2 h-auto hover:bg-muted/70 bg-muted/40",
-            className
+            "hover:bg-muted/70 bg-muted/40 h-auto w-full justify-start gap-3 p-2",
+            className,
           )}
         >
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Avatar className="size-5 rounded-md sm:size-8">
-            <AvatarImage src={session.user.image ?? ""} alt={session.user.name ?? ""} />
-            <AvatarFallback>
-              {session.user.name?.charAt(0) ?? session.user.email?.charAt(0) ?? "U"}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="bg-primary/10 flex size-8 flex-shrink-0 items-center justify-center rounded-full">
+              <Avatar className="size-5 rounded-md sm:size-8">
+                <AvatarImage
+                  src={session.user.image ?? ""}
+                  alt={session.user.name ?? ""}
+                />
+                <AvatarFallback>
+                  {session.user.name?.charAt(0) ??
+                    session.user.email?.charAt(0) ??
+                    "U"}
+                </AvatarFallback>
+              </Avatar>
             </div>
-            <div className="flex-1 min-w-0 text-left">
-              <div className="text-sm font-medium truncate">
+            <div className="min-w-0 flex-1 text-left">
+              <div className="truncate text-sm font-medium">
                 {session.user.name ?? session.user.email}
               </div>
-              <div className="text-xs text-muted-foreground truncate">
+              <div className="text-muted-foreground truncate text-xs">
                 {session.user.email}
               </div>
             </div>
@@ -77,32 +89,41 @@ export default function AccountPopover({ className = "" }: AccountPopoverProps) 
       <PopoverContent className="w-64" align="start">
         <div>
           {/* User Info */}
-          <div className="flex justify-start items-center gap-0 px-3">
-          <Avatar className="size-5 rounded-md sm:size-8">
-            <AvatarImage src={session.user.image ?? ""} alt={session.user.name ?? ""} />
-            <AvatarFallback>
-              {session.user.name?.charAt(0) ?? session.user.email?.charAt(0) ?? "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="p-2">
-            <div className="text-sm font-medium">{session.user.name ?? "User"}</div>
-            <div className="text-xs text-muted-foreground">{session.user.email}</div>
+          <div className="flex items-center justify-start gap-0 px-3">
+            <Avatar className="size-5 rounded-md sm:size-8">
+              <AvatarImage
+                src={session.user.image ?? ""}
+                alt={session.user.name ?? ""}
+              />
+              <AvatarFallback>
+                {session.user.name?.charAt(0) ??
+                  session.user.email?.charAt(0) ??
+                  "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="p-2">
+              <div className="text-sm font-medium">
+                {session.user.name ?? "User"}
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {session.user.email}
+              </div>
+            </div>
           </div>
-          </div>
-          
+
           <Separator />
-          
+
           {/* Profile */}
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 mt-2"
+            className="mt-2 w-full justify-start gap-2"
             onClick={handleProfile}
           >
-            <GearIcon className="h-4 w-4" />
+            <Settings className="text-muted-foreground h-4 w-4" />
             Profile Settings
           </Button>
-          
+
           {/* Theme Selection */}
           <ThemeToggle className="w-full" title="Toggle theme" />
 
@@ -113,7 +134,7 @@ export default function AccountPopover({ className = "" }: AccountPopoverProps) 
               className="w-full justify-start gap-2"
               onClick={() => router.push("/admin")}
             >
-              <Shield className="h-4 w-4" />
+              <ShieldUser className="text-muted-foreground h-4 w-4" />
               Admin
             </Button>
           )}
@@ -122,10 +143,10 @@ export default function AccountPopover({ className = "" }: AccountPopoverProps) 
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive w-full justify-start gap-2"
             onClick={handleSignOut}
           >
-            <SignOutIcon className="h-4 w-4" />
+            <Logout2 className="text-muted-foreground h-4 w-4" />
             Sign Out
           </Button>
         </div>

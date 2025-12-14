@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { PencilSimpleLineIcon } from "@phosphor-icons/react";
+import { Pen } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useEffect, useRef, useState } from "react";
 
 interface InlineEditProps {
@@ -49,7 +49,7 @@ export default function InlineEdit({
       const range = document.createRange();
       const selection = window.getSelection();
       const contentLength = editableRef.current.textContent?.length ?? 0;
-      
+
       if (editableRef.current.firstChild && contentLength > 0) {
         range.setStart(editableRef.current.firstChild, contentLength);
         range.collapse(true);
@@ -61,7 +61,7 @@ export default function InlineEdit({
 
   const handleSave = async () => {
     const currentValue = editableRef.current?.textContent?.trim() ?? "";
-    
+
     if (currentValue === initialValueRef.current.trim()) {
       setIsEditing(false);
       return;
@@ -70,8 +70,11 @@ export default function InlineEdit({
     // If allowEmpty is false and current value is empty, revert to original value
     if (!allowEmpty && currentValue === "") {
       if (editableRef.current) {
-        const isEmpty = !initialValueRef.current || initialValueRef.current.trim() === "";
-        editableRef.current.textContent = isEmpty ? placeholder : initialValueRef.current;
+        const isEmpty =
+          !initialValueRef.current || initialValueRef.current.trim() === "";
+        editableRef.current.textContent = isEmpty
+          ? placeholder
+          : initialValueRef.current;
       }
       setIsEditing(false);
       return;
@@ -85,8 +88,11 @@ export default function InlineEdit({
     } catch (error) {
       console.error("Failed to save:", error);
       if (editableRef.current) {
-        const isEmpty = !initialValueRef.current || initialValueRef.current.trim() === "";
-        editableRef.current.textContent = isEmpty ? placeholder : initialValueRef.current;
+        const isEmpty =
+          !initialValueRef.current || initialValueRef.current.trim() === "";
+        editableRef.current.textContent = isEmpty
+          ? placeholder
+          : initialValueRef.current;
       }
       setIsEditing(false);
     } finally {
@@ -96,8 +102,11 @@ export default function InlineEdit({
 
   const handleCancel = () => {
     if (editableRef.current) {
-      const isEmpty = !initialValueRef.current || initialValueRef.current.trim() === "";
-      editableRef.current.textContent = isEmpty ? placeholder : initialValueRef.current;
+      const isEmpty =
+        !initialValueRef.current || initialValueRef.current.trim() === "";
+      editableRef.current.textContent = isEmpty
+        ? placeholder
+        : initialValueRef.current;
     }
     setIsEditing(false);
   };
@@ -106,7 +115,12 @@ export default function InlineEdit({
     // Check max length
     if (maxLength && editableRef.current) {
       const currentLength = editableRef.current.textContent?.length ?? 0;
-      if (currentLength >= maxLength && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      if (
+        currentLength >= maxLength &&
+        e.key.length === 1 &&
+        !e.ctrlKey &&
+        !e.metaKey
+      ) {
         e.preventDefault();
         return;
       }
@@ -152,9 +166,9 @@ export default function InlineEdit({
     <div
       className={cn(
         "group relative cursor-text rounded-md transition-all",
-        "px-2 py-1 -ml-2",
+        "-ml-2 px-2 py-1",
         disabled && "cursor-not-allowed opacity-50",
-        className
+        className,
       )}
       onClick={handleClick}
     >
@@ -172,25 +186,25 @@ export default function InlineEdit({
         className={cn(
           "w-full bg-transparent outline-none",
           "focus:outline-none",
-          "whitespace-pre-wrap break-words",
+          "break-words whitespace-pre-wrap",
           fontSizeClasses[fontSize],
           fontWeightClasses[fontWeight],
           isEmpty && !isEditing && "text-muted-foreground",
-          !multiline && "whitespace-nowrap overflow-hidden text-ellipsis"
+          !multiline && "overflow-hidden text-ellipsis whitespace-nowrap",
         )}
       >
-        {isEmpty && !isEditing ? placeholder : (value || "")}
+        {isEmpty && !isEditing ? placeholder : value || ""}
       </div>
-      
+
       {!disabled && !isEditing && (
-        <div className="pointer-events-none absolute -right-3 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
-          <PencilSimpleLineIcon weight="duotone" className="h-4 w-4 text-muted-foreground" />
+        <div className="pointer-events-none absolute top-1/2 -right-3 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
+          <Pen className="text-muted-foreground h-4 w-4" />
         </div>
       )}
-      
+
       {isSaving && (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <div className="absolute top-1/2 right-2 -translate-y-1/2">
+          <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
         </div>
       )}
     </div>
