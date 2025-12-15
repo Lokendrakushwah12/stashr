@@ -145,7 +145,7 @@ const BoardDetailPage = () => {
   if (!board) {
     return (
       <div className="relative min-h-screen space-y-4 pt-2">
-        <div className="absolute top-[24%] z-10 h-60 w-full bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
+        <div className="absolute top-[33%] z-10 h-60 w-full bg-linear-to-b from-transparent to-[#fafafa] sm:top-[26%] dark:to-[#0f0f11]" />
         {/* Header Skeleton */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 space-y-2">

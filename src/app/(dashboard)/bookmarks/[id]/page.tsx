@@ -151,10 +151,42 @@ const BookmarkFolderDetailPage = () => {
 
   if (!folder) {
     return (
-      <div className="mx-auto flex min-h-[90vh] max-w-[86rem] flex-col items-center justify-center px-5 text-center">
-        <div className="max-w-md">
-          <Refresh className="text-muted-foreground mx-auto mb-4 h-8 w-8 animate-spin" />
-          <p className="text-muted-foreground">Loading bookmark folder...</p>
+      <div className="min-h-screen space-y-6 pt-2">
+        {/* Header Skeleton */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="size-5 rounded-sm" />
+              <Skeleton className="h-9 w-64" />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-9" />
+          </div>
+        </div>
+
+        {/* Description Skeleton */}
+        <Skeleton className="h-6 w-3/4" />
+
+        {/* Bookmarks Grid Skeleton */}
+        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="absolute inset-0 z-10 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="overflow-hidden p-1">
+              <CardContent className="p-0">
+                <div className="mb-2 flex w-full items-center gap-1 pt-1 pl-1">
+                  <Skeleton className="h-8 w-9 rounded-md" />
+                  <div className="flex w-full flex-col gap-1">
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </div>
+                </div>
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
