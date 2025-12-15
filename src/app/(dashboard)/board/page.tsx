@@ -1,6 +1,7 @@
 "use client";
 
 import AddBoardDialog from "@/components/board/AddBoardDialog";
+import FolderClip from "@/components/board/BoardFolder/FolderClip";
 import FolderListCard from "@/components/board/BoardFolder/FolderListCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -239,16 +240,18 @@ export default function BoardsPage() {
 
         {/* Boards Grid */}
         {isLoading ? (
-          <div className="relative grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="relative grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <div className="absolute inset-0 z-10 -mb-1 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex w-full items-center justify-center">
-                <div className="group relative w-full perspective-midrange">
-                  <div className="h8 relative flex flex-row items-start justify-start">
-                    <Skeleton className="bg-border! h-6 w-32 rounded-tl-md rounded-br-none rounded-bl-none" />
-                    <div className="bg-border absolute top-full left-0 h-3 w-2 animate-pulse rounded-br-lg" />
+                <div className="group relative w-full animate-pulse perspective-midrange">
+                  <div className="relative flex h-8 flex-row items-start justify-start overflow-hidden">
+                    <div className="bg-border h-8 w-32 rounded-tl-md rounded-tr-none rounded-br-none rounded-bl-none" />
+                    <FolderClip className="text-border -z-10" />
                   </div>
-                  <Skeleton className="bg-sidebar-ring! h-[135px] w-full rounded-lg sm:w-[300px]" />
+                  <div className="bg-border absolute top-8 left-0 h-3 w-2 rounded-br-lg" />
+                  <div className="absolute z-50 h-1/4 w-full rounded-t-lg bg-[repeating-linear-gradient(45deg,var(--primary-foreground)_0px,var(--primary-foreground)_2px,transparent_2px,transparent_5.5px)] opacity-40 sm:w-[250px] dark:opacity-10" />
+                  <Skeleton className="bg-sidebar-ring/50! h-[135px] w-full rounded-lg backdrop-blur-2xl sm:w-[250px]" />
                 </div>
               </div>
             ))}

@@ -4,12 +4,7 @@ import CollaborationInvite from "@/components/notifications/CollaborationInvite"
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type {
-  Board,
-  BoardCollaboration,
-  Folder,
-  FolderCollaboration,
-} from "@/types";
+import { useInbox } from "@/lib/hooks/use-inbox";
 import {
   InboxIn,
   InboxLine,
@@ -18,51 +13,18 @@ import {
 import { Loader } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function InboxPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [folderInvitations, setFolderInvitations] = useState<
-    (FolderCollaboration & { folder?: Folder })[]
-  >([]);
-  const [boardInvitations, setBoardInvitations] = useState<
-    (BoardCollaboration & { board?: Board })[]
-  >([]);
-  const [loadingInvitations, setLoadingInvitations] = useState(false);
 
-  const fetchPendingInvitations = async () => {
-    if (!session?.user?.id) return;
+  const { data, isLoading, isFetching, refetch } = useInbox(session?.user?.id);
 
-    setLoadingInvitations(true);
-    try {
-      // Fetch folder collaborations
-      const folderResponse = await fetch("/api/collaborations/pending");
-      if (folderResponse.ok) {
-        const folderData = (await folderResponse.json()) as {
-          invitations: (FolderCollaboration & { folder?: Folder })[];
-        };
-        setFolderInvitations(folderData.invitations ?? []);
-      }
-
-      // Fetch board collaborations
-      const boardResponse = await fetch("/api/boards/collaborations/pending");
-      if (boardResponse.ok) {
-        const boardData = (await boardResponse.json()) as {
-          invitations: (BoardCollaboration & { board?: Board })[];
-        };
-        setBoardInvitations(boardData.invitations ?? []);
-      }
-    } catch (error) {
-      console.error("Error fetching invitations:", error);
-      toast.error("Failed to load invitations");
-    } finally {
-      setLoadingInvitations(false);
-    }
-  };
-
+  const folderInvitations = data?.folderInvitations ?? [];
+  const boardInvitations = data?.boardInvitations ?? [];
   const pendingInvitations = [...folderInvitations, ...boardInvitations];
+  const loadingInvitations = isLoading || isFetching;
 
   const handleAcceptInvitation = async (
     collaborationId: string,
@@ -86,7 +48,7 @@ export default function InboxPage() {
         throw new Error("Failed to accept invitation");
       }
 
-      void fetchPendingInvitations();
+      void refetch();
       toast.success("Invitation accepted!");
     } catch (error) {
       console.error("Error accepting invitation:", error);
@@ -112,20 +74,13 @@ export default function InboxPage() {
         throw new Error("Failed to decline invitation");
       }
 
-      void fetchPendingInvitations();
+      void refetch();
       toast.success("Invitation declined");
     } catch (error) {
       console.error("Error declining invitation:", error);
       toast.error("Failed to decline invitation");
     }
   };
-
-  useEffect(() => {
-    if (session?.user?.id) {
-      void fetchPendingInvitations();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {
@@ -153,7 +108,9 @@ export default function InboxPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            onClick={fetchPendingInvitations}
+            onClick={() => {
+              void refetch();
+            }}
             variant="outline"
             size="sm"
             disabled={loadingInvitations}
@@ -270,7 +227,12 @@ export default function InboxPage() {
           <p className="text-muted-foreground mb-4">
             You don&apos;t have any collaboration invitations at the moment.
           </p>
-          <Button onClick={fetchPendingInvitations} variant="outline">
+          <Button
+            onClick={() => {
+              void refetch();
+            }}
+            variant="outline"
+          >
             <Refresh className="mr-2 h-4 w-4" />
             Refresh
           </Button>

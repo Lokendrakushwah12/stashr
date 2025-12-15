@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     siteName: "Stashr",
     images: [
       {
-        url: "/og.png",
+        url: "/meta-image.png",
         width: 1200,
         height: 630,
         alt: "Stashr - Organize Your Bookmarks",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: "Stashr - Turn scattered inspiration into organized thinking",
     description:
       "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
-    images: ["/og.png"],
+    images: ["/meta-image.png"],
     creator: "@lokendratwt",
   },
   robots: {
