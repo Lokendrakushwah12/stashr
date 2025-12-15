@@ -6,21 +6,15 @@ import {
   ArrowRight,
   Lightning,
   LinkMinimalistic,
-  Star,
   User,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
 
 const Hero = () => {
   return (
-    <section className="mx-auto flex min-h-[60vh] max-w-[86rem] flex-col items-center justify-center px-5 pt-28 pb-8 text-center">
+    <section className="mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center px-5 pt-28 pb-8 text-center">
       <div className="mx-auto max-w-7xl">
         <PixelBlastClient />
-        <div className="bg-primary/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium">
-          <Star className="size-3" />
-          Where ideas take shape
-        </div>
-
         <h1 className="font-display mx-auto mb-6 max-w-2xl text-4xl font-[600] tracking-tight md:text-6xl">
           Turn scattered inspiration into{" "}
           <span className="text-primary">organized thinking</span>
@@ -46,8 +40,8 @@ const Hero = () => {
 
         {/* dashboard image */}
         <div className="relative mx-auto max-w-7xl">
-          <div className="pointer-events-none absolute bottom-0 z-30 h-60 w-full bg-gradient-to-t from-[#f6f6f6] to-transparent dark:from-[#101010]" />
-          <div className="border-border/50 relative aspect-[16/9] overflow-hidden rounded-sm border border-b-0 bg-[#fff] select-none lg:rounded-t-2xl dark:bg-[#09090b]">
+          <div className="from-background pointer-events-none absolute bottom-0 z-30 h-60 w-full bg-linear-to-t to-transparent" />
+          <div className="border-border/50 bg-background relative aspect-video overflow-hidden rounded-sm border border-b-0 select-none lg:rounded-t-2xl">
             <img
               src="/og.png"
               alt="Stashr Dashboard Preview"

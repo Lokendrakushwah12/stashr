@@ -1,12 +1,12 @@
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import { displayFont } from "@/lib/fonts";
 import "@/styles/globals.css";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { Toaster } from "sonner";
-import { displayFont } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Stashr - Turn scattered inspiration into organized thinking",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     siteName: "Stashr",
     images: [
       {
-        url: "/meta-image.png",
+        url: "/meta-image.png?v=1.0.0",
         width: 1200,
         height: 630,
         alt: "Stashr - Organize Your Bookmarks",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: "Stashr - Turn scattered inspiration into organized thinking",
     description:
       "Stashr is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.",
-    images: ["/meta-image.png"],
+    images: ["/meta-image.png?v=1.0.0"],
     creator: "@lokendratwt",
   },
   robots: {

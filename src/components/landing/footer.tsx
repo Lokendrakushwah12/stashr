@@ -1,25 +1,37 @@
+"use client";
 import { XLogoIcon } from "@phosphor-icons/react/dist/ssr";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ThemeToggle } from "../layouts/theme-toggle";
 import { Button } from "../ui/button";
+import { StashrLogo } from "../ui/icons";
 
 const Footer = () => {
+  const { data: session } = useSession();
   return (
-    <footer className="bg-background mx-auto w-full space-y-4 border-t border-dashed py-4">
-      {/* <hr className="w-full" /> */}
-      <div className="relative mx-auto flex w-full max-w-[86rem] items-center justify-between px-5">
-        <p className="text-muted-foreground text-sm font-[400]">
-          Built by&nbsp;
+    <footer className="bg-background mx-auto w-full space-y-4">
+      <div className="relative mx-auto flex w-full max-w-7xl items-center justify-between border-t border-dashed px-5 py-4">
+        <div className="flex flex-col items-start justify-start gap-2">
           <Link
-            target="_blank"
-            rel="noreferrer"
-            href="https://x.com/lokendratwt"
-            className="text-muted-foreground hover:text-secondary-foreground font-[500]"
+            href={session ? "/board" : "/"}
+            className="text-foreground flex items-center justify-center gap-2 text-lg font-semibold"
           >
-            Lokendra.
+            <StashrLogo width={24} className="text-primary" />
+            <span className="text-base font-medium">Stashr</span>
           </Link>
-        </p>
+          <p className="text-muted-foreground text-sm font-normal">
+            Built by&nbsp;
+            <Link
+              target="_blank"
+              rel="noreferrer"
+              href="https://x.com/lokendratwt"
+              className="text-muted-foreground hover:text-secondary-foreground font-medium"
+            >
+              Lokendra.
+            </Link>
+          </p>
+        </div>
         <div className="flex items-center">
           <Button
             data-slot="button"
