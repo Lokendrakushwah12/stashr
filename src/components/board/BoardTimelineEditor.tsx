@@ -15,13 +15,12 @@ import {
 import { useUploadThing } from "@/lib/uploadthing";
 import { cn, formatExactDate, getRelativeTime } from "@/lib/utils";
 import type { BoardTimelineEntry } from "@/types";
-import { DiamondIcon, PlusIcon } from "@phosphor-icons/react";
 import {
   ArrowToTopLeft,
   GalleryAdd,
   Pen,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, DiamondPlus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -695,11 +694,10 @@ export default function BoardTimelineEditor({
               disabled={disabled}
               className="relative flex size-5 cursor-pointer items-center justify-center transition-all ease-out hover:opacity-80 active:scale-97 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <DiamondIcon
-                weight="light"
-                className="text-foreground/60 size-5"
+              <DiamondPlus
+                strokeWidth={1}
+                className="text-muted-foreground size-5"
               />
-              <PlusIcon className="text-muted-foreground absolute size-2.5" />
             </button>
           </div>
         )}

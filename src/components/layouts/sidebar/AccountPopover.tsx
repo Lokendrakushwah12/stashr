@@ -10,17 +10,16 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAdminStatus } from "@/lib/hooks/use-admin";
 import { cn } from "@/lib/utils";
-import { GearIcon, Shield, SignOutIcon } from "@phosphor-icons/react";
-import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ThemeToggle } from "../theme-toggle";
 import {
   Logout2,
   Settings,
   ShieldUser,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ThemeToggle } from "../theme-toggle";
 
 interface AccountPopoverProps {
   className?: string;

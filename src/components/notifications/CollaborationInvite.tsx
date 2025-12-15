@@ -10,15 +10,10 @@ import type {
   FolderCollaboration,
 } from "@/types";
 import {
-  BookmarksIcon,
-  CheckIcon,
-  SparkleIcon,
-  XIcon,
-} from "@phosphor-icons/react";
-import {
   FolderOpen,
   Stars,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { Bookmark, CheckIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -97,15 +92,9 @@ export default function CollaborationInvite({
           <div className="flex-1">
             <div className="mb-2 flex items-center gap-2">
               {isBoard ? (
-                <SparkleIcon
-                  weight="duotone"
-                  className="h-5 w-5 text-purple-500"
-                />
+                <Stars className="h-5 w-5 text-purple-500" />
               ) : (
-                <BookmarksIcon
-                  weight="duotone"
-                  className="h-5 w-5 text-blue-500"
-                />
+                <Bookmark className="h-5 w-5 text-blue-500" />
               )}
               <h4 className="font-medium">
                 {isAccepted
@@ -173,7 +162,7 @@ export default function CollaborationInvite({
                   disabled={isProcessing}
                   className="h-8"
                 >
-                  <CheckIcon weight="duotone" className="h-4 w-4" />
+                  <CheckIcon className="h-4 w-4" />
                   Accept
                 </Button>
                 <Button
@@ -183,7 +172,7 @@ export default function CollaborationInvite({
                   disabled={isProcessing}
                   className="h-8"
                 >
-                  <XIcon weight="duotone" className="h-4 w-4" />
+                  <XIcon className="h-4 w-4" />
                   Decline
                 </Button>
               </>

@@ -2,22 +2,21 @@
 
 import {
   Breadcrumb,
-  BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
+  BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useFolder } from "@/lib/hooks/use-bookmarks";
-import { useBoard } from "@/lib/hooks/use-boards";
 import { getBreadcrumbSegments } from "@/lib/breadcrumb-config";
 import { useSidebar } from "@/lib/contexts/sidebar-context";
-import { SidebarIcon } from "@phosphor-icons/react";
+import { useBoard } from "@/lib/hooks/use-boards";
+import { useFolder } from "@/lib/hooks/use-bookmarks";
+import { SidebarMinimalistic } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { SidebarMinimalistic } from "@solar-icons/react-perf/category/style/BoldDuotone";
 
 export default function DashboardBreadcrumb() {
   const pathname = usePathname();

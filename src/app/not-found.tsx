@@ -1,17 +1,17 @@
 import Footer from "@/components/landing/footer";
 import Navbar from "@/components/landing/navbar";
-import { WarningIcon } from "@phosphor-icons/react/dist/ssr";
+import { SadSquare } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
 
 const PageNotFound = () => {
   return (
     <>
       <Navbar />
-      <div className="flex min-h-[83vh] lg:min-h-[84vh] flex-col items-center justify-center gap-12 text-center">
-        <WarningIcon weight="duotone" strokeWidth={1.5} className="h-16 w-16 text-rose-600" />
+      <div className="flex min-h-[83vh] flex-col items-center justify-center gap-12 text-center lg:min-h-[84vh]">
+        <SadSquare className="h-16 w-16 text-rose-600/50" />
         <div>
           <h1 className="text-4xl font-semibold">404 - Page Not Found</h1>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="text-muted-foreground mt-4 text-lg">
             Sorry, the page you are looking for does not exist.
           </p>
         </div>

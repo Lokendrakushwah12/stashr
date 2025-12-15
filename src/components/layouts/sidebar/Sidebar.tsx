@@ -1,19 +1,24 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import SidebarSection from "./SidebarSection";
-import SidebarItem from "./SidebarItem";
-import AccountPopover from "./AccountPopover";
-import type { SidebarProps, SidebarItem as SidebarItemType } from "./types";
 import { useSidebar } from "@/lib/contexts/sidebar-context";
-import { BookmarksIcon, EnvelopeIcon, SparkleIcon, UserIcon } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
+import {
+  BookmarkSquare,
+  ClipboardText,
+  InboxLine,
+  User,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import AccountPopover from "./AccountPopover";
+import SidebarItem from "./SidebarItem";
+import SidebarSection from "./SidebarSection";
+import type { SidebarItem as SidebarItemType, SidebarProps } from "./types";
 
-export default function Sidebar({ 
-  config, 
-  className = "", 
+export default function Sidebar({
+  config,
+  className = "",
   width = "w-80",
 }: SidebarProps) {
   const router = useRouter();
@@ -37,16 +42,18 @@ export default function Sidebar({
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
-      <div className={cn(
-        "bg-background relative flex flex-col h-full items-start transition-all duration-200",
-        width,
-        className
-      )}>
-        <div className="p-2 space-y-6 w-full">
+      <div
+        className={cn(
+          "bg-background relative flex h-full flex-col items-start transition-all duration-200",
+          width,
+          className,
+        )}
+      >
+        <div className="w-full space-y-6 p-2">
           <div className="animate-pulse space-y-2">
-            <div className="h-8 bg-muted rounded" />
-            <div className="h-8 bg-muted rounded" />
-            <div className="h-8 bg-muted rounded" />
+            <div className="bg-muted h-8 rounded" />
+            <div className="bg-muted h-8 rounded" />
+            <div className="bg-muted h-8 rounded" />
           </div>
         </div>
       </div>
@@ -56,22 +63,26 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className={cn(
-        "bg-background transition-all relative duration-200 hidden md:flex md:flex-col md:items-start md:h-full",
-        width,
-        isCollapsed && "md:w-14 md:items-center",
-        className
-      )}>
+      <div
+        className={cn(
+          "bg-background relative hidden transition-all duration-200 md:flex md:h-full md:flex-col md:items-start",
+          width,
+          isCollapsed && "md:w-14 md:items-center",
+          className,
+        )}
+      >
         {/* Header */}
         {config.header && (
-          <div className="px-3 mt-6.5">
+          <div className="mt-6.5 px-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {config.header.icon && (
-                  <config.header.icon className="h-6 w-6 text-primary flex-shrink-0" />
+                  <config.header.icon className="text-primary h-6 w-6 shrink-0" />
                 )}
                 {!isCollapsed && (
-                  <h2 className="text-lg font-semibold">{config.header.title}</h2>
+                  <h2 className="text-lg font-semibold">
+                    {config.header.title}
+                  </h2>
                 )}
               </div>
             </div>
@@ -79,8 +90,8 @@ export default function Sidebar({
         )}
 
         {/* Main Content */}
-        <ScrollArea className="flex-1 w-full">
-          <div className="p-2 space-y-6 w-full">
+        <ScrollArea className="w-full flex-1">
+          <div className="w-full space-y-6 p-2">
             {config.sections.map((section) => (
               <SidebarSection
                 key={section.id}
@@ -94,26 +105,28 @@ export default function Sidebar({
 
         {/* Account Section */}
         {config.account?.showAccountInfo && (
-          <div className={cn("p-2 w-full", isCollapsed && "px-1")}>
+          <div className={cn("w-full p-2", isCollapsed && "px-1")}>
             <AccountPopover />
           </div>
         )}
       </div>
 
       {/* Mobile Bottom Sidebar */}
-      <div className={cn(
-        "bg-background transition-all duration-200 md:hidden flex flex-row items-center h-16 w-full border-t border-border fixed bottom-0 left-0 right-0 z-50",
-        className
-      )}>
+      <div
+        className={cn(
+          "bg-background border-border fixed right-0 bottom-0 left-0 z-50 flex h-16 w-full flex-row items-center border-t transition-all duration-200 md:hidden",
+          className,
+        )}
+      >
         {/* Mobile Navigation - Always show main navigation items */}
-        <div className="flex flex-1 items-center justify-around px-2 bg-background">
+        <div className="bg-background flex flex-1 items-center justify-around px-2">
           {/* Main navigation items - always visible on mobile */}
           <SidebarItem
             key="board"
             item={{
               id: "board",
               label: "Boards",
-              icon: SparkleIcon,
+              icon: ClipboardText,
               href: "/board",
               active: pathname === "/board",
             }}
@@ -124,9 +137,9 @@ export default function Sidebar({
           <SidebarItem
             key="bookmarks"
             item={{
-              id: "bookmarks", 
+              id: "bookmarks",
               label: "Bookmarks",
-              icon: BookmarksIcon,
+              icon: BookmarkSquare,
               href: "/bookmarks",
               active: pathname === "/bookmarks",
             }}
@@ -138,8 +151,8 @@ export default function Sidebar({
             key="inbox"
             item={{
               id: "inbox",
-              label: "Inbox", 
-              icon: EnvelopeIcon,
+              label: "Inbox",
+              icon: InboxLine,
               href: "/inbox",
               active: pathname === "/inbox",
             }}
@@ -152,7 +165,7 @@ export default function Sidebar({
             item={{
               id: "profile",
               label: "Profile",
-              icon: UserIcon,
+              icon: User,
               href: "/profile",
               active: pathname === "/profile",
             }}

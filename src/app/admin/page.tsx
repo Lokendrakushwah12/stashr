@@ -11,22 +11,15 @@ import {
   useAdminUsers,
 } from "@/lib/hooks/use-admin";
 import {
-  ActivityIcon,
-  BookmarkIcon,
-  FolderIcon,
-  UsersIcon,
-  type IconProps,
-} from "@phosphor-icons/react";
-import { Refresh } from "@solar-icons/react-perf/category/style/BoldDuotone";
-import {
-  Activity,
-  AlertTriangle,
-  BarChart3,
   Bookmark,
-  Loader,
+  Folder,
+  PieChart2,
+  Refresh,
   Shield,
-  Users,
-} from "lucide-react";
+  ShieldWarning,
+  SliderMinimalisticHorizontal,
+  UsersGroupTwoRounded,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -53,7 +46,7 @@ export default function AdminPage() {
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader className="text-muted-foreground h-8 w-8 animate-spin" />
+        <Refresh className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -93,11 +86,11 @@ export default function AdminPage() {
       <Tabs defaultValue="analytics" className="w-full" variant="bordered">
         <TabsList className="mb-4 grid w-fit grid-cols-3">
           <TabsTrigger value="analytics">
-            <BarChart3 className="h-4 w-4" />
+            <PieChart2 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
           <TabsTrigger value="users">
-            <Users className="h-4 w-4" />
+            <UsersGroupTwoRounded className="h-4 w-4" />
             Users
           </TabsTrigger>
         </TabsList>
@@ -121,7 +114,7 @@ function AnalyticsTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader className="text-muted-foreground h-8 w-8 animate-spin" />
+        <Refresh className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -129,7 +122,7 @@ function AnalyticsTab() {
   if (error) {
     return (
       <div className="py-16 text-center">
-        <AlertTriangle className="text-destructive mx-auto mb-4 h-12 w-12" />
+        <ShieldWarning className="text-destructive mx-auto mb-4 h-12 w-12" />
         <p className="text-destructive mb-4">Failed to load statistics</p>
         <Button onClick={() => refetch()} variant="outline">
           <Refresh className="h-4 w-4" />
@@ -147,22 +140,22 @@ function AnalyticsTab() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           value={statsData?.totalUsers?.toString() ?? "0"}
-          icon={UsersIcon}
+          icon={UsersGroupTwoRounded}
           description="Total users"
         />
         <StatsCard
           value={statsData?.totalFolders?.toString() ?? "0"}
-          icon={FolderIcon}
+          icon={Folder}
           description="Total folders"
         />
         <StatsCard
           value={statsData?.totalBookmarks?.toString() ?? "0"}
-          icon={BookmarkIcon}
+          icon={Bookmark}
           description="Total bookmarks"
         />
         <StatsCard
           value={statsData?.activeUsers?.toString() ?? "0"}
-          icon={ActivityIcon}
+          icon={SliderMinimalisticHorizontal}
           description="Active users"
         />
       </div>
@@ -172,7 +165,7 @@ function AnalyticsTab() {
         <Card className="bg-secondary/20 relative overflow-hidden rounded-2xl border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+              <SliderMinimalisticHorizontal className="h-5 w-5" />
               User Engagement
             </CardTitle>
           </CardHeader>
@@ -251,7 +244,7 @@ function AnalyticsTab() {
         <Card className="bg-secondary/20 relative overflow-hidden rounded-2xl border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+              <PieChart2 className="h-5 w-5" />
               Platform Summary
             </CardTitle>
           </CardHeader>
@@ -287,7 +280,7 @@ function UsersTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader className="text-muted-foreground h-8 w-8 animate-spin" />
+        <Refresh className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -295,7 +288,7 @@ function UsersTab() {
   if (error) {
     return (
       <div className="py-16 text-center">
-        <AlertTriangle className="text-destructive mx-auto mb-4 h-12 w-12" />
+        <ShieldWarning className="text-destructive mx-auto mb-4 h-12 w-12" />
         <p className="text-destructive mb-4">Failed to load users</p>
         <Button onClick={() => refetch()} variant="outline">
           <Refresh className="h-4 w-4" />
@@ -312,14 +305,14 @@ function UsersTab() {
       <Card className="bg-secondary/20 relative overflow-hidden rounded-2xl border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+            <UsersGroupTwoRounded className="h-5 w-5" />
             User Statistics ({users.length} users)
           </CardTitle>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
             <div className="text-muted-foreground py-8 text-center">
-              <Users className="mx-auto mb-4 h-12 w-12" />
+              <UsersGroupTwoRounded className="mx-auto mb-4 h-12 w-12" />
               <p>No users found</p>
             </div>
           ) : (
@@ -394,11 +387,11 @@ function StatsCard({
   description,
 }: {
   value: string;
-  icon: React.ComponentType<IconProps>;
+  icon: React.ElementType;
   description: string;
 }) {
   return (
-    <Card className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
+    <Card className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border p-0">
       <CardContent className="flex w-full justify-between p-0">
         <div className="flex w-full flex-col items-start justify-center p-4">
           <div className="text-3xl font-semibold">{value}</div>
@@ -423,7 +416,7 @@ function AdminStats() {
   if (isLoading) {
     return (
       <Button variant="outline" size="sm" disabled>
-        <Loader className="h-4 w-4 animate-spin" />
+        <Refresh className="h-4 w-4 animate-spin" />
         Loading...
       </Button>
     );

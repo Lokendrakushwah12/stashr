@@ -23,7 +23,6 @@ import {
   useUpdateFolder,
 } from "@/lib/hooks/use-bookmarks";
 import type { Bookmark } from "@/types";
-import { PlusIcon } from "@phosphor-icons/react";
 import {
   Refresh,
   Share,
@@ -207,7 +206,7 @@ const BookmarkFolderDetailPage = () => {
 
           {canEdit && (
             <Button onClick={() => setShowAddBookmark(true)}>
-              <PlusIcon weight="duotone" className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
               Add Bookmark
             </Button>
           )}

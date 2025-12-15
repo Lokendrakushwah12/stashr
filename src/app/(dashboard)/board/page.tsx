@@ -19,7 +19,7 @@ import {
   AddFolder,
   Stars,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
-import { Magnifer } from "@solar-icons/react-perf/Outline";
+import { Magnifer, Sort } from "@solar-icons/react-perf/Outline";
 import { Loader, Plus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -209,7 +209,10 @@ export default function BoardsPage() {
           </Tabs>
           {/* Sort By */}
           <Select value={sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectTrigger
+              icon={<Sort className="h-4 w-4" />}
+              className="w-full sm:w-[166px]"
+            >
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>

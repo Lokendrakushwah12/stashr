@@ -6,16 +6,16 @@ import { Button } from "../ui/button";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-background mx-auto space-y-4 py-4 border-t border-dashed">
+    <footer className="bg-background mx-auto w-full space-y-4 border-t border-dashed py-4">
       {/* <hr className="w-full" /> */}
-      <div className="relative flex items-center w-full justify-between max-w-[86rem] px-5 mx-auto">
-        <p className="text-sm font-[400] text-muted-foreground">
+      <div className="relative mx-auto flex w-full max-w-[86rem] items-center justify-between px-5">
+        <p className="text-muted-foreground text-sm font-[400]">
           Built by&nbsp;
           <Link
             target="_blank"
             rel="noreferrer"
             href="https://x.com/lokendratwt"
-            className="font-[500] text-muted-foreground hover:text-secondary-foreground"
+            className="text-muted-foreground hover:text-secondary-foreground font-[500]"
           >
             Lokendra.
           </Link>
@@ -34,7 +34,7 @@ const Footer = () => {
               rel="noreferrer"
               href="https://x.com/lokendratwt"
             >
-              <XLogoIcon weight="duotone" className="h-5 w-5 text-foreground" />
+              <XLogoIcon weight="duotone" className="text-foreground h-5 w-5" />
             </Link>
           </Button>
           <Button
@@ -50,10 +50,10 @@ const Footer = () => {
               rel="noreferrer"
               href="https://github.com/lokendrakushwah12"
             >
-              <GitHubLogoIcon className="h-5 w-5 text-foreground" />
+              <GitHubLogoIcon className="text-foreground h-5 w-5" />
             </Link>
           </Button>
-          <ThemeToggle />
+          <ThemeToggle className="flex size-9 items-center justify-center px-2.5" />
         </div>
       </div>
     </footer>

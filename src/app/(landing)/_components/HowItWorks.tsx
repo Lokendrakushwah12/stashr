@@ -3,11 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  ArrowRightIcon,
-  BookOpenIcon,
-  LightbulbIcon,
-  ShareIcon
-} from "@phosphor-icons/react";
+  ArrowRight,
+  BookMinimalistic,
+  Lightbulb,
+  Share,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
 
 const HowItWorks = () => {
@@ -29,10 +29,7 @@ const HowItWorks = () => {
           <Card className="bg-background/50 border-0 backdrop-blur-sm">
             <CardContent className="p-6 text-center">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/20">
-                <BookOpenIcon
-                  weight="duotone"
-                  className="h-6 w-6 text-blue-600 dark:text-blue-400"
-                />
+                <BookMinimalistic className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="font-display mb-2 text-2xl md:text-3xl">
                 1. Collect
@@ -47,10 +44,7 @@ const HowItWorks = () => {
           <Card className="bg-background/50 border-0 backdrop-blur-sm">
             <CardContent className="p-6 text-center">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/20">
-                <LightbulbIcon
-                  weight="duotone"
-                  className="h-6 w-6 text-purple-600 dark:text-purple-400"
-                />
+                <Lightbulb className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="font-display mb-2 text-2xl md:text-3xl">
                 2. Cluster
@@ -65,10 +59,7 @@ const HowItWorks = () => {
           <Card className="bg-background/50 border-0 backdrop-blur-sm">
             <CardContent className="p-6 text-center">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/20">
-                <ShareIcon
-                  weight="duotone"
-                  className="h-6 w-6 text-green-600 dark:text-green-400"
-                />
+                <Share className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="font-display mb-2 text-2xl md:text-3xl">
                 3. Collaborate
@@ -91,10 +82,7 @@ const HowItWorks = () => {
           <Button size="sm" asChild className="group">
             <Link href="/auth/signin">
               Start Your First Board
-              <ArrowRightIcon
-                weight="duotone"
-                className="h-4 w-4 transition-transform group-hover:translate-x-1"
-              />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
         </div>

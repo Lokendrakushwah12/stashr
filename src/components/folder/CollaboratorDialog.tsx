@@ -20,7 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { FolderCollaboration } from "@/types";
-import { UserPlusIcon, UsersIcon, XIcon } from "@phosphor-icons/react";
+import {
+  UserPlus,
+  UsersGroupRounded,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { XIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -33,7 +37,7 @@ interface CollaboratorDialogProps {
 
 interface CollaboratorFormData {
   email: string;
-  role: 'editor' | 'viewer';
+  role: "editor" | "viewer";
 }
 
 export default function CollaboratorDialog({
@@ -46,8 +50,8 @@ export default function CollaboratorDialog({
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [formData, setFormData] = useState<CollaboratorFormData>({
-    email: '',
-    role: 'editor',
+    email: "",
+    role: "editor",
   });
 
   const fetchCollaborators = useCallback(async () => {
@@ -55,15 +59,17 @@ export default function CollaboratorDialog({
     try {
       const response = await fetch(`/api/folders/${folderId}/collaborators`);
       if (!response.ok) {
-        const errorData = await response.json() as { error?: string };
-        throw new Error(errorData.error ?? 'Failed to fetch collaborators');
+        const errorData = (await response.json()) as { error?: string };
+        throw new Error(errorData.error ?? "Failed to fetch collaborators");
       }
-      
-      const data = await response.json() as { collaborators?: FolderCollaboration[] };
+
+      const data = (await response.json()) as {
+        collaborators?: FolderCollaboration[];
+      };
       setCollaborators(data.collaborators ?? []);
     } catch (error) {
-      console.error('Error fetching collaborators:', error);
-      toast.error('Failed to load collaborators');
+      console.error("Error fetching collaborators:", error);
+      toast.error("Failed to load collaborators");
     } finally {
       setLoading(false);
     }
@@ -78,18 +84,18 @@ export default function CollaboratorDialog({
 
   const handleAddCollaborator = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email.trim()) {
-      toast.error('Please enter an email address');
+      toast.error("Please enter an email address");
       return;
     }
 
     setAdding(true);
     try {
       const response = await fetch(`/api/folders/${folderId}/collaborators`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: formData.email.trim(),
@@ -98,17 +104,21 @@ export default function CollaboratorDialog({
       });
 
       if (!response.ok) {
-        const error = await response.json() as { error?: string };
-        throw new Error(error.error ?? 'Failed to add collaborator');
+        const error = (await response.json()) as { error?: string };
+        throw new Error(error.error ?? "Failed to add collaborator");
       }
 
-      const data = await response.json() as { collaboration: FolderCollaboration };
-      setCollaborators(prev => [...prev, data.collaboration]);
-      setFormData({ email: '', role: 'editor' });
-      toast.success('Collaborator added successfully');
+      const data = (await response.json()) as {
+        collaboration: FolderCollaboration;
+      };
+      setCollaborators((prev) => [...prev, data.collaboration]);
+      setFormData({ email: "", role: "editor" });
+      toast.success("Collaborator added successfully");
     } catch (error) {
-      console.error('Error adding collaborator:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to add collaborator');
+      console.error("Error adding collaborator:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add collaborator",
+      );
     } finally {
       setAdding(false);
     }
@@ -116,30 +126,39 @@ export default function CollaboratorDialog({
 
   const handleRemoveCollaborator = async (collaborationId: string) => {
     try {
-      const response = await fetch(`/api/folders/${folderId}/collaborators?collaboratorId=${collaborationId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/folders/${folderId}/collaborators?collaboratorId=${collaborationId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
-        const error = await response.json() as { error?: string };
-        throw new Error(error.error ?? 'Failed to remove collaborator');
+        const error = (await response.json()) as { error?: string };
+        throw new Error(error.error ?? "Failed to remove collaborator");
       }
 
-      setCollaborators(prev => prev.filter(c => c._id !== collaborationId));
-      toast.success('Collaborator removed successfully');
+      setCollaborators((prev) => prev.filter((c) => c._id !== collaborationId));
+      toast.success("Collaborator removed successfully");
     } catch (error) {
-      console.error('Error removing collaborator:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to remove collaborator');
+      console.error("Error removing collaborator:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to remove collaborator",
+      );
     }
   };
 
-  const handleUpdateRole = async (collabId: string, newRole: 'editor' | 'viewer') => {
+  const handleUpdateRole = async (
+    collabId: string,
+    newRole: "editor" | "viewer",
+  ) => {
     try {
-      
       const response = await fetch(`/api/folders/${folderId}/collaborators`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           collaboratorId: collabId,
@@ -148,27 +167,30 @@ export default function CollaboratorDialog({
       });
 
       if (!response.ok) {
-        const error = await response.json() as { error?: string };
-        throw new Error(error.error ?? 'Failed to update collaborator role');
+        const error = (await response.json()) as { error?: string };
+        throw new Error(error.error ?? "Failed to update collaborator role");
       }
 
-      setCollaborators(prev => prev.map(c => 
-        c._id === collabId ? { ...c, role: newRole } : c
-      ));
-      toast.success('Collaborator role updated successfully');
+      setCollaborators((prev) =>
+        prev.map((c) => (c._id === collabId ? { ...c, role: newRole } : c)),
+      );
+      toast.success("Collaborator role updated successfully");
     } catch (error) {
-      console.error('Error updating collaborator role:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update collaborator role');
+      console.error("Error updating collaborator role:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update collaborator role",
+      );
     }
   };
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UsersIcon weight="duotone" className="h-5 w-5" />
+            <UsersGroupRounded className="h-5 w-5" />
             Manage Collaborators
           </DialogTitle>
           <DialogDescription>
@@ -176,11 +198,17 @@ export default function CollaboratorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 p-3 bg-background border border-border/70 rounded-xl">
+        <div className="bg-background border-border/70 space-y-6 rounded-xl border p-3">
           {/* Add Collaborator Form - Single Line */}
-          <form onSubmit={handleAddCollaborator} className="flex items-end gap-3">
+          <form
+            onSubmit={handleAddCollaborator}
+            className="flex items-end gap-3"
+          >
             <div className="flex-1">
-              <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">
+              <Label
+                htmlFor="email"
+                className="text-muted-foreground text-sm font-medium"
+              >
                 Email Address
               </Label>
               <Input
@@ -188,32 +216,37 @@ export default function CollaboratorDialog({
                 type="email"
                 placeholder="Enter collaborator's email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
                 required
                 className="mt-1"
               />
             </div>
-            
+
             <div className="w-40">
-              <Label htmlFor="role" className="text-sm font-medium text-muted-foreground">
+              <Label
+                htmlFor="role"
+                className="text-muted-foreground text-sm font-medium"
+              >
                 Role
               </Label>
               <Select
                 value={formData.role}
-                onValueChange={(value: 'editor' | 'viewer') => 
-                  setFormData(prev => ({ ...prev, role: value }))
+                onValueChange={(value: "editor" | "viewer") =>
+                  setFormData((prev) => ({ ...prev, role: value }))
                 }
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue>
-                    {formData.role === 'editor' ? 'Editor' : 'Viewer'}
+                    {formData.role === "editor" ? "Editor" : "Viewer"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="editor">
                     <div className="flex flex-col">
                       <span className="font-medium">Editor</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         Can add, edit, and delete bookmarks
                       </span>
                     </div>
@@ -221,7 +254,7 @@ export default function CollaboratorDialog({
                   <SelectItem value="viewer">
                     <div className="flex flex-col">
                       <span className="font-medium">Viewer</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         Can only view bookmarks
                       </span>
                     </div>
@@ -232,12 +265,10 @@ export default function CollaboratorDialog({
 
             <Button type="submit" disabled={adding} className="h-10">
               {adding ? (
-                <>
-                  Adding...
-                </>
+                <>Adding...</>
               ) : (
                 <>
-                  <UserPlusIcon weight="duotone" className="h-4 w-4" />
+                  <UserPlus className="h-4 w-4" />
                   Add
                 </>
               )}
@@ -247,20 +278,22 @@ export default function CollaboratorDialog({
           {/* Collaborators List */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">
+              <h3 className="text-muted-foreground text-sm font-medium">
                 Collaborators ({collaborators.length})
               </h3>
             </div>
 
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
               </div>
             ) : collaborators.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <UsersIcon weight="duotone" className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <div className="text-muted-foreground py-8 text-center">
+                <UsersGroupRounded className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No collaborators yet</p>
-                <p className="text-sm">Add collaborators to allow others to contribute to this folder</p>
+                <p className="text-sm">
+                  Add collaborators to allow others to contribute to this folder
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -270,27 +303,41 @@ export default function CollaboratorDialog({
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
                               <span className="text-sm font-medium">
                                 {collaborator.email.charAt(0).toUpperCase()}
                               </span>
                             </div>
                             <div className="flex-1">
-                              <p className="font-medium">{collaborator.email}</p>
-                              <div className="flex items-center gap-2 mt-1">
+                              <p className="font-medium">
+                                {collaborator.email}
+                              </p>
+                              <div className="mt-1 flex items-center gap-2">
                                 <Select
                                   value={collaborator.role}
-                                  onValueChange={(value: 'editor' | 'viewer') => {
+                                  onValueChange={(
+                                    value: "editor" | "viewer",
+                                  ) => {
                                     if (collaborator._id) {
-                                      void handleUpdateRole(collaborator._id, value);
+                                      void handleUpdateRole(
+                                        collaborator._id,
+                                        value,
+                                      );
                                     } else {
-                                      toast.error('Collaborator ID not found');
+                                      toast.error("Collaborator ID not found");
                                     }
                                   }}
                                 >
-                                  <SelectTrigger className="w-24 h-6 text-xs">
+                                  <SelectTrigger className="h-6 w-24 text-xs">
                                     <SelectValue>
-                                      <Badge variant={collaborator.role === 'editor' ? 'info' : 'gray'} className="text-xs px-1 py-0">
+                                      <Badge
+                                        variant={
+                                          collaborator.role === "editor"
+                                            ? "info"
+                                            : "gray"
+                                        }
+                                        className="px-1 py-0 text-xs"
+                                      >
                                         {collaborator.role}
                                       </Badge>
                                     </SelectValue>
@@ -298,21 +345,36 @@ export default function CollaboratorDialog({
                                   <SelectContent>
                                     <SelectItem value="editor">
                                       <div className="flex items-center gap-2">
-                                        <Badge variant="info" className="text-xs">Editor</Badge>
+                                        <Badge
+                                          variant="info"
+                                          className="text-xs"
+                                        >
+                                          Editor
+                                        </Badge>
                                       </div>
                                     </SelectItem>
                                     <SelectItem value="viewer">
                                       <div className="flex items-center gap-2">
-                                        <Badge variant="gray" className="text-xs">Viewer</Badge>
+                                        <Badge
+                                          variant="gray"
+                                          className="text-xs"
+                                        >
+                                          Viewer
+                                        </Badge>
                                       </div>
                                     </SelectItem>
                                   </SelectContent>
                                 </Select>
-                                <Badge variant={
-                                  collaborator.status === 'accepted' ? 'success' : 
-                                  collaborator.status === 'pending' ? 'warning' : 
-                                  'destructive'
-                                } className="text-xs">
+                                <Badge
+                                  variant={
+                                    collaborator.status === "accepted"
+                                      ? "success"
+                                      : collaborator.status === "pending"
+                                        ? "warning"
+                                        : "destructive"
+                                  }
+                                  className="text-xs"
+                                >
                                   {collaborator.status}
                                 </Badge>
                               </div>
@@ -322,10 +384,12 @@ export default function CollaboratorDialog({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleRemoveCollaborator(collaborator._id!)}
+                          onClick={() =>
+                            handleRemoveCollaborator(collaborator._id!)
+                          }
                           className="text-destructive hover:text-destructive h-8 w-8 p-0"
                         >
-                          <XIcon weight="duotone" className="h-4 w-4" />
+                          <XIcon className="h-4 w-4" />
                         </Button>
                       </div>
                     </CardContent>

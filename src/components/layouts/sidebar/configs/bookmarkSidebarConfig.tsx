@@ -2,12 +2,12 @@
 
 import { StashrLogo } from "@/components/ui/icons";
 import type { Folder, FolderCollaboration } from "@/types";
-import { UserIcon } from "@phosphor-icons/react";
 import {
   BookmarkSquare,
   ClipboardText,
   InboxLine,
 } from "@solar-icons/react-perf/BoldDuotone";
+import { User } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import type { SidebarConfig } from "../types";
@@ -90,7 +90,7 @@ export function useBookmarkSidebarConfig({
           {
             id: "profile",
             label: "Profile",
-            icon: UserIcon,
+            icon: User,
             href: "/profile",
             active: currentPath.startsWith("/profile"),
             mobileOnly: true,
