@@ -10,18 +10,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Logout2 } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import {
+  Logout2,
+  User,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function UserMenu() {
   const { data: session } = useSession();
-
+  const router = useRouter();
   if (!session?.user) {
     return null;
   }
 
   const handleSignOut = () => {
     void signOut({ callbackUrl: "/auth/signin" });
+  };
+
+  const handleProfile = () => {
+    router.push("/profile");
   };
 
   return (
@@ -56,10 +64,11 @@ export default function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer rounded-xl"
-          onClick={handleSignOut}
-        >
+        <DropdownMenuItem onClick={handleProfile}>
+          <User className="mr-2 h-4 w-4" />
+          <span>Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
           <Logout2 className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

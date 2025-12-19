@@ -77,8 +77,9 @@ const ConfirmationDialog = ({
               variant={variant}
               onClick={handleConfirm}
               disabled={isLoading}
+              isLoading={isLoading}
             >
-              {isLoading ? "Deleting..." : confirmText}
+              {confirmText}
             </Button>
           </DialogFooter>
         </div>

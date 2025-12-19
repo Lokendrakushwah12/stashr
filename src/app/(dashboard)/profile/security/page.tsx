@@ -81,7 +81,7 @@ export default function SecurityPage() {
         </div>
         <Button
           onClick={handleLogout}
-          variant="outline"
+          variant="destructive"
           className="hidden gap-2 md:flex"
         >
           <LogOut className="h-4 w-4" />

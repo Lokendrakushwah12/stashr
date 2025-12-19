@@ -21,15 +21,19 @@ interface AddBoardDialogProps {
   onSuccess?: () => void;
 }
 
-export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoardDialogProps) {
+export default function AddBoardDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: AddBoardDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  
+
   const createBoardMutation = useCreateBoard();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) return;
 
     try {
@@ -37,11 +41,11 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
         name: name.trim(),
         description: description.trim() || undefined,
       });
-      
+
       // Reset form
       setName("");
       setDescription("");
-      
+
       onSuccess?.();
     } catch (error) {
       // Error is handled by the mutation
@@ -66,8 +70,11 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
             Create a new board to organize your ideas and concepts.
           </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-background border-border/70 space-y-4 rounded-xl border p-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">Board Name</Label>
             <Input
@@ -79,7 +86,7 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
               maxLength={100}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
@@ -91,21 +98,21 @@ export default function AddBoardDialog({ open, onOpenChange, onSuccess }: AddBoa
               rows={3}
             />
           </div>
-          
+
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={createBoardMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={!name.trim() || createBoardMutation.isPending}
+              disabled={!name.trim()}
+              isLoading={createBoardMutation.isPending}
             >
-              {createBoardMutation.isPending ? "Creating..." : "Create Board"}
+              Create Board
             </Button>
           </DialogFooter>
         </form>

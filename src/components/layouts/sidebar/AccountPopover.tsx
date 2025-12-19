@@ -140,12 +140,12 @@ export default function AccountPopover({
 
           {/* Sign Out */}
           <Button
-            variant="ghost"
+            variant="destructiveSecondary"
             size="sm"
-            className="text-destructive hover:text-destructive w-full justify-start gap-2"
+            className="w-full justify-start"
             onClick={handleSignOut}
           >
-            <Logout2 className="text-muted-foreground h-4 w-4" />
+            <Logout2 className="h-4 w-4" />
             Sign Out
           </Button>
         </div>

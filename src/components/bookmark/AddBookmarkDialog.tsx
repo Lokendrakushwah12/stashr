@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateBookmark } from '@/lib/hooks/use-bookmarks';
+import { useCreateBookmark } from "@/lib/hooks/use-bookmarks";
 import { useState } from "react";
 
 interface AddBookmarkDialogProps {
@@ -22,10 +22,15 @@ interface AddBookmarkDialogProps {
   onSuccess: () => void;
 }
 
-const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookmarkDialogProps) => {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [description, setDescription] = useState('');
+const AddBookmarkDialog = ({
+  open,
+  onOpenChange,
+  folderId,
+  onSuccess,
+}: AddBookmarkDialogProps) => {
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
 
   // Use React Query mutation
   const createBookmarkMutation = useCreateBookmark();
@@ -44,24 +49,24 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
       await createBookmarkMutation.mutateAsync(bookmarkData);
 
       // Reset form
-      setTitle('');
-      setUrl('');
-      setDescription('');
+      setTitle("");
+      setUrl("");
+      setDescription("");
 
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
     } catch (error) {
       // Error is handled by React Query
-      console.error('Failed to create bookmark:', error);
+      console.error("Failed to create bookmark:", error);
     }
   };
 
   const handleClose = () => {
     if (!createBookmarkMutation.isPending) {
-      setTitle('');
-      setUrl('');
-      setDescription('');
+      setTitle("");
+      setUrl("");
+      setDescription("");
       onOpenChange(false);
     }
   };
@@ -74,7 +79,7 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
       try {
         // Try to extract title from URL for better UX
         const urlObj = new URL(newUrl.trim());
-        const domain = urlObj.hostname.replace('www.', '');
+        const domain = urlObj.hostname.replace("www.", "");
         setTitle(domain);
       } catch {
         // Invalid URL, ignore
@@ -88,10 +93,14 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
         <DialogHeader>
           <DialogTitle>Add New Bookmark</DialogTitle>
           <DialogDescription>
-            Add a new bookmark to your folder. Enter the title, URL, and optional description.
+            Add a new bookmark to your folder. Enter the title, URL, and
+            optional description.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-background border-border/70 space-y-4 rounded-xl border p-4"
+        >
           <div className="space-y-2">
             <div className="space-y-2">
               <Label htmlFor="url">URL *</Label>
@@ -116,7 +125,6 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
             />
           </div>
 
-
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -130,22 +138,22 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
           </div>
 
           {createBookmarkMutation.error && (
-            <p className="text-sm text-destructive">
-              {createBookmarkMutation.error.message || 'Failed to create bookmark'}
+            <p className="text-destructive text-sm">
+              {createBookmarkMutation.error.message ||
+                "Failed to create bookmark"}
             </p>
           )}
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={createBookmarkMutation.isPending}
-            >
+            <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createBookmarkMutation.isPending || !title.trim() || !url.trim()}>
-              {createBookmarkMutation.isPending ? 'Creating...' : 'Create Bookmark'}
+            <Button
+              type="submit"
+              disabled={!title.trim() || !url.trim()}
+              isLoading={createBookmarkMutation.isPending}
+            >
+              Create Bookmark
             </Button>
           </DialogFooter>
         </form>
@@ -154,4 +162,4 @@ const AddBookmarkDialog = ({ open, onOpenChange, folderId, onSuccess }: AddBookm
   );
 };
 
-export default AddBookmarkDialog; 
+export default AddBookmarkDialog;

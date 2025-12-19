@@ -90,6 +90,7 @@ export default function PublicFolderPage() {
                   onEdit={() => undefined}
                   onDelete={() => undefined}
                   showDropdown={false}
+                  isLoading={false}
                 />
               ))}
             </div>

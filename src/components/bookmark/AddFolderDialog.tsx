@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateFolder } from '@/lib/hooks/use-bookmarks';
+import { useCreateFolder } from "@/lib/hooks/use-bookmarks";
 import { useState } from "react";
 
 interface AddFolderDialogProps {
@@ -22,20 +22,24 @@ interface AddFolderDialogProps {
 }
 
 const predefinedColors = [
-  '#3B82F6', // Blue
-  '#EF4444', // Red
-  '#10B981', // Green
-  '#F59E0B', // Yellow
-  '#8B5CF6', // Purple
-  '#EC4899', // Pink
-  '#06B6D4', // Cyan
-  '#84CC16', // Lime
+  "#3B82F6", // Blue
+  "#EF4444", // Red
+  "#10B981", // Green
+  "#F59E0B", // Yellow
+  "#8B5CF6", // Purple
+  "#EC4899", // Pink
+  "#06B6D4", // Cyan
+  "#84CC16", // Lime
 ];
 
-const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#3B82F6');
+const AddFolderDialog = ({
+  open,
+  onOpenChange,
+  onSuccess,
+}: AddFolderDialogProps) => {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [color, setColor] = useState("#3B82F6");
 
   // Use React Query mutation
   const createFolderMutation = useCreateFolder();
@@ -53,24 +57,24 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
       await createFolderMutation.mutateAsync(folderData);
 
       // Reset form
-      setName('');
-      setDescription('');
-      setColor('#3B82F6');
+      setName("");
+      setDescription("");
+      setColor("#3B82F6");
 
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
     } catch (error) {
       // Error is handled by React Query
-      console.error('Failed to create folder:', error);
+      console.error("Failed to create folder:", error);
     }
   };
 
   const handleClose = () => {
     if (!createFolderMutation.isPending) {
-      setName('');
-      setDescription('');
-      setColor('#3B82F6');
+      setName("");
+      setDescription("");
+      setColor("#3B82F6");
       onOpenChange(false);
     }
   };
@@ -81,10 +85,14 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
         <DialogHeader>
           <DialogTitle>Add New Folder</DialogTitle>
           <DialogDescription>
-            Create a new folder to organize your bookmarks. You can customize the name, description, and color.
+            Create a new folder to organize your bookmarks. You can customize
+            the name, description, and color.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-background border-border/70 space-y-4 rounded-xl border p-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -111,13 +119,16 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
 
           <div className="space-y-2">
             <Label>Color</Label>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-2">
               {predefinedColors.map((colorOption) => (
                 <button
                   key={colorOption}
                   type="button"
-                  className={`w-8 h-8 rounded-xl border-2 ${color === colorOption ? 'border-foreground' : 'border-transparent'
-                    }`}
+                  className={`h-8 w-8 rounded-xl border-2 ${
+                    color === colorOption
+                      ? "border-foreground"
+                      : "border-transparent"
+                  }`}
                   style={{ backgroundColor: colorOption }}
                   onClick={() => setColor(colorOption)}
                   disabled={createFolderMutation.isPending}
@@ -127,8 +138,8 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
           </div>
 
           {createFolderMutation.error && (
-            <p className="text-sm text-destructive">
-              {createFolderMutation.error.message || 'Failed to create folder'}
+            <p className="text-destructive text-sm">
+              {createFolderMutation.error.message || "Failed to create folder"}
             </p>
           )}
 
@@ -141,8 +152,12 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createFolderMutation.isPending || !name.trim()}>
-              {createFolderMutation.isPending ? 'Creating...' : 'Create Folder'}
+            <Button
+              type="submit"
+              disabled={!name.trim()}
+              isLoading={createFolderMutation.isPending}
+            >
+              Create Folder
             </Button>
           </DialogFooter>
         </form>
@@ -151,4 +166,4 @@ const AddFolderDialog = ({ open, onOpenChange, onSuccess }: AddFolderDialogProps
   );
 };
 
-export default AddFolderDialog; 
+export default AddFolderDialog;

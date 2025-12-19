@@ -1,4 +1,5 @@
 "use client";
+import { getRelativeTime } from "@/lib/utils";
 import type { Board } from "@/types";
 import { useRouter } from "next/navigation";
 import FolderClip from "./FolderClip";
@@ -31,6 +32,11 @@ export default function FolderListCard({ board }: BoardCardProps) {
         </div>
         <div className="relative h-[135px] w-full origin-bottom transition-transform duration-300 group-hover:transform-[rotateX(-24deg)] sm:w-[250px]">
           <div className="bg-sidebar-ring/40 absolute inset-0 h-[135px] w-full overflow-hidden rounded-lg shadow-xs backdrop-blur-2xl sm:w-[250px]">
+            {board.updatedAt && (
+              <span className="text-muted-foreground absolute inset-x-0 bottom-0 p-2 text-right font-mono text-xs leading-none tracking-tight">
+                Last edited {getRelativeTime(board.updatedAt)}
+              </span>
+            )}
             <div className="h-1/4 bg-[repeating-linear-gradient(45deg,var(--primary-foreground)_0px,var(--primary-foreground)_2px,transparent_2px,transparent_5.5px)] opacity-40 dark:opacity-10" />
           </div>
         </div>

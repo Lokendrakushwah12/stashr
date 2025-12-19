@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import Hero from "./_components/Hero";
 import HowItWorks from "./_components/HowItWorks";
 
-export default function LandingPage() {
+export default function HomePage() {
   const { data: session } = useSession();
   const router = useRouter();
 

@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateFolder } from '@/lib/hooks/use-bookmarks';
-import type { Folder } from '@/types';
+import { useUpdateFolder } from "@/lib/hooks/use-bookmarks";
+import type { Folder } from "@/types";
 import { useEffect, useState } from "react";
 
 interface EditFolderDialogProps {
@@ -24,20 +24,25 @@ interface EditFolderDialogProps {
 }
 
 const predefinedColors = [
-  '#3B82F6', // Blue
-  '#EF4444', // Red
-  '#10B981', // Green
-  '#F59E0B', // Yellow
-  '#8B5CF6', // Purple
-  '#EC4899', // Pink
-  '#06B6D4', // Cyan
-  '#84CC16', // Lime
+  "#3B82F6", // Blue
+  "#EF4444", // Red
+  "#10B981", // Green
+  "#F59E0B", // Yellow
+  "#8B5CF6", // Purple
+  "#EC4899", // Pink
+  "#06B6D4", // Cyan
+  "#84CC16", // Lime
 ];
 
-const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderDialogProps) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#3B82F6');
+const EditFolderDialog = ({
+  open,
+  onOpenChange,
+  folder,
+  onSuccess,
+}: EditFolderDialogProps) => {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [color, setColor] = useState("#3B82F6");
 
   // Use React Query mutation
   const updateFolderMutation = useUpdateFolder();
@@ -45,8 +50,8 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
   useEffect(() => {
     if (open && folder) {
       setName(folder.name);
-      setDescription(folder.description ?? '');
-      setColor(folder.color ?? '#3B82F6');
+      setDescription(folder.description ?? "");
+      setColor(folder.color ?? "#3B82F6");
     }
   }, [open, folder]);
 
@@ -60,14 +65,17 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
         color,
       };
 
-      await updateFolderMutation.mutateAsync({ id: folder._id!, data: folderData });
+      await updateFolderMutation.mutateAsync({
+        id: folder._id!,
+        data: folderData,
+      });
 
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
     } catch (error) {
       // Error is handled by React Query
-      console.error('Failed to update folder:', error);
+      console.error("Failed to update folder:", error);
     }
   };
 
@@ -86,7 +94,10 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
             Update your folder&apos;s name, description, and color.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-background border-border/70 space-y-4 rounded-xl border p-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -113,13 +124,16 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
 
           <div className="space-y-2">
             <Label>Color</Label>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-2">
               {predefinedColors.map((colorOption) => (
                 <button
                   key={colorOption}
                   type="button"
-                  className={`w-8 h-8 rounded-xl border-2 ${color === colorOption ? 'border-foreground' : 'border-transparent'
-                    }`}
+                  className={`h-8 w-8 rounded-xl border-2 ${
+                    color === colorOption
+                      ? "border-foreground"
+                      : "border-transparent"
+                  }`}
                   style={{ backgroundColor: colorOption }}
                   onClick={() => setColor(colorOption)}
                   disabled={updateFolderMutation.isPending}
@@ -129,8 +143,8 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
           </div>
 
           {updateFolderMutation.error && (
-            <p className="text-sm text-destructive">
-              {updateFolderMutation.error.message || 'Failed to update folder'}
+            <p className="text-destructive text-sm">
+              {updateFolderMutation.error.message || "Failed to update folder"}
             </p>
           )}
 
@@ -143,8 +157,12 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={updateFolderMutation.isPending || !name.trim()}>
-              {updateFolderMutation.isPending ? 'Updating...' : 'Update Folder'}
+            <Button
+              type="submit"
+              disabled={!name.trim()}
+              isLoading={updateFolderMutation.isPending}
+            >
+              Update Folder
             </Button>
           </DialogFooter>
         </form>
@@ -153,4 +171,4 @@ const EditFolderDialog = ({ open, onOpenChange, folder, onSuccess }: EditFolderD
   );
 };
 
-export default EditFolderDialog; 
+export default EditFolderDialog;

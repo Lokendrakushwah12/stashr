@@ -220,10 +220,10 @@ const BoardDetailPage = () => {
                   )}
                   {board.userRole === "owner" && (
                     <DropdownMenuItem
+                      variant="destructive"
                       onClick={handleDeleteFolder}
-                      className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                     >
-                      <TrashBinTrash className="text-destructive h-4 w-4" />
+                      <TrashBinTrash className="h-4 w-4" />
                       Delete Board
                     </DropdownMenuItem>
                   )}
@@ -373,7 +373,7 @@ const BoardDetailPage = () => {
         cancelText="Cancel"
         variant="destructive"
         onConfirm={confirmDeleteBoard}
-        isLoading={false}
+        isLoading={deleteBoardMutation.isPending}
       />
     </div>
   );

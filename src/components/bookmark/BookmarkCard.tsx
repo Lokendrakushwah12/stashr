@@ -38,6 +38,7 @@ interface BookmarkCardProps {
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (bookmarkId: string) => void;
   showDropdown?: boolean;
+  isLoading?: boolean;
 }
 
 const BookmarkCard = ({
@@ -45,12 +46,12 @@ const BookmarkCard = ({
   onEdit,
   onDelete,
   showDropdown = true,
+  isLoading = false,
 }: BookmarkCardProps) => {
   const [metaImageUrl, setMetaImageUrl] = useState<string>("");
   const [isExtracting, setIsExtracting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   // Initialize with stored meta image or fallback, then try to extract if needed
   useEffect(() => {
     let isCancelled = false;
@@ -190,10 +191,10 @@ const BookmarkCard = ({
                     Copy Link
                   </DropdownMenuItem>
                   <DropdownMenuItem
+                    variant="destructive"
                     onClick={handleDelete}
-                    className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                   >
-                    <TrashBinTrash className="text-destructive h-4 w-4" />
+                    <TrashBinTrash className="h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -264,6 +265,7 @@ const BookmarkCard = ({
         cancelText="Cancel"
         variant="destructive"
         onConfirm={confirmDelete}
+        isLoading={isLoading}
       />
     </>
   );

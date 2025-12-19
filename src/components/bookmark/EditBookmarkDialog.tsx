@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateBookmark } from '@/lib/hooks/use-bookmarks';
-import type { Bookmark } from '@/types';
+import { useUpdateBookmark } from "@/lib/hooks/use-bookmarks";
+import type { Bookmark } from "@/types";
 import { useEffect, useState } from "react";
 
 interface EditBookmarkDialogProps {
@@ -23,10 +23,15 @@ interface EditBookmarkDialogProps {
   onSuccess: () => void;
 }
 
-const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBookmarkDialogProps) => {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [description, setDescription] = useState('');
+const EditBookmarkDialog = ({
+  open,
+  onOpenChange,
+  bookmark,
+  onSuccess,
+}: EditBookmarkDialogProps) => {
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
 
   // Use React Query mutation
   const updateBookmarkMutation = useUpdateBookmark();
@@ -35,7 +40,7 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
     if (open && bookmark) {
       setTitle(bookmark.title);
       setUrl(bookmark.url);
-      setDescription(bookmark.description ?? '');
+      setDescription(bookmark.description ?? "");
     }
   }, [open, bookmark]);
 
@@ -43,11 +48,11 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
   useEffect(() => {
     return () => {
       // Cleanup any remaining dialog overlays when component unmounts
-      const overlays = document.querySelectorAll('[data-radix-dialog-overlay]');
-      overlays.forEach(overlay => {
+      const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
+      overlays.forEach((overlay) => {
         if (overlay instanceof HTMLElement) {
-          overlay.style.display = 'none';
-          overlay.style.pointerEvents = 'none';
+          overlay.style.display = "none";
+          overlay.style.pointerEvents = "none";
         }
       });
     };
@@ -63,14 +68,17 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
         description: description.trim(),
       };
 
-      await updateBookmarkMutation.mutateAsync({ id: bookmark._id!, data: bookmarkData });
+      await updateBookmarkMutation.mutateAsync({
+        id: bookmark._id!,
+        data: bookmarkData,
+      });
 
       // Close dialog and call success callback
       onOpenChange(false);
       onSuccess();
     } catch (error) {
       // Error is handled by React Query
-      console.error('Failed to update bookmark:', error);
+      console.error("Failed to update bookmark:", error);
     }
   };
 
@@ -89,7 +97,10 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
             Update your bookmark&apos;s title, URL, and description.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-background border border-border/70 p-4 rounded-xl">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-background border-border/70 space-y-4 rounded-xl border p-4"
+        >
           <div className="space-y-2">
             <div className="space-y-2">
               <Label htmlFor="url">URL *</Label>
@@ -114,7 +125,6 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
             />
           </div>
 
-
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -128,8 +138,9 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
           </div>
 
           {updateBookmarkMutation.error && (
-            <p className="text-sm text-destructive">
-              {updateBookmarkMutation.error.message || 'Failed to update bookmark'}
+            <p className="text-destructive text-sm">
+              {updateBookmarkMutation.error.message ||
+                "Failed to update bookmark"}
             </p>
           )}
 
@@ -142,8 +153,12 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={updateBookmarkMutation.isPending || !title.trim() || !url.trim()}>
-              {updateBookmarkMutation.isPending ? 'Updating...' : 'Update Bookmark'}
+            <Button
+              type="submit"
+              disabled={!title.trim() || !url.trim()}
+              isLoading={updateBookmarkMutation.isPending}
+            >
+              Update Bookmark
             </Button>
           </DialogFooter>
         </form>
@@ -152,4 +167,4 @@ const EditBookmarkDialog = ({ open, onOpenChange, bookmark, onSuccess }: EditBoo
   );
 };
 
-export default EditBookmarkDialog; 
+export default EditBookmarkDialog;

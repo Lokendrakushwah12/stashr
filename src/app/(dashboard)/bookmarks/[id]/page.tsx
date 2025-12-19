@@ -278,10 +278,10 @@ const BookmarkFolderDetailPage = () => {
                 )}
                 {userRole === "owner" && (
                   <DropdownMenuItem
+                    variant="destructive"
                     onClick={handleDeleteFolder}
-                    className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                   >
-                    <TrashBinTrash className="text-destructive h-4 w-4" />
+                    <TrashBinTrash className="h-4 w-4" />
                     {deleteFolderMutation.isPending
                       ? "Deleting..."
                       : "Delete Folder"}
@@ -328,7 +328,7 @@ const BookmarkFolderDetailPage = () => {
       ) : folder.bookmarks?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="relative h-32 w-full sm:w-[25rem]">
-            <div className="from-background absolute bottom-0 z-[99] h-16 w-full bg-gradient-to-t to-transparent" />
+            <div className="absolute bottom-0 z-40 h-16 w-full bg-gradient-to-t from-[#fafafa] to-transparent dark:from-[#0f0f11]" />
             <div className="dark:bg-muted/60 absolute bottom-0 z-20 h-[60%] w-full rounded-t-2xl border border-[#ddd] bg-white/60 p-2 backdrop-blur-2xl dark:border-white/10">
               <div className="mb-2 h-[50%] w-[50%] rounded-lg bg-black/5 dark:bg-white/10" />
               <div className="h-[50%] w-full rounded-lg bg-black/5 dark:bg-white/10" />
@@ -362,6 +362,7 @@ const BookmarkFolderDetailPage = () => {
               onEdit={canEdit ? setEditingBookmark : noOpEdit}
               onDelete={canEdit ? handleDeleteBookmark : noOpDelete}
               showDropdown={canEdit}
+              isLoading={deleteBookmarkMutation.isPending}
             />
           ))}
         </div>
