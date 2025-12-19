@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import {
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export default function UserMenu() {
+export default function UserMenu({ className = "" }: { className?: string }) {
   const { data: session } = useSession();
   const router = useRouter();
   if (!session?.user) {
@@ -37,7 +38,7 @@ export default function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative size-5 rounded-full sm:size-8"
+          className={cn("relative size-5 rounded-full sm:size-8", className)}
         >
           <Avatar className="size-5 rounded-md sm:size-8">
             <AvatarImage

@@ -36,7 +36,7 @@ const Navbar = () => {
           <StashrLogo width={24} className="text-primary" />
           <span className="text-base font-medium">Stashr</span>
         </Link>
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center">
           {/* Use cases */}
           <Button variant="ghost" size="sm" asChild>
             <Link href="#use-cases" className="text-muted-foreground">
@@ -48,13 +48,20 @@ const Navbar = () => {
               Features
             </Link>
           </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="#about" className="text-muted-foreground">
+              About
+            </Link>
+          </Button>
           {status === "loading" ? (
             <div className="bg-secondary h-8 w-8 animate-pulse rounded-full"></div>
           ) : session ? (
-            <UserMenu />
+            <UserMenu className="ml-2" />
           ) : (
             <Button size="sm" asChild>
-              <Link href="/auth/signin">Try Stashr</Link>
+              <Link href="/auth/signin" className="ml-2">
+                Try Stashr
+              </Link>
             </Button>
           )}
         </div>

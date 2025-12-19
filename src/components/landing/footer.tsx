@@ -11,7 +11,7 @@ const Footer = () => {
   const { data: session } = useSession();
   return (
     <footer className="bg-background mx-auto w-full space-y-4">
-      <div className="relative mx-auto flex w-full max-w-7xl items-center justify-between border-t border-dashed px-5 py-4">
+      <div className="relative mx-auto flex w-full max-w-7xl items-center justify-between border-t border-dashed px-5 py-8">
         <div className="flex flex-col items-start justify-start gap-2">
           <Link
             href={session ? "/board" : "/"}
@@ -20,7 +20,11 @@ const Footer = () => {
             <StashrLogo width={24} className="text-primary" />
             <span className="text-base font-medium">Stashr</span>
           </Link>
-          <p className="text-muted-foreground text-sm font-normal">
+          <p className="text-muted-foreground max-w-md text-sm font-normal">
+            Stash your open tabs, bookmarks, and scattered ideas into one place
+            - so you can sort, structure, and collaborate on them.
+          </p>
+          <p className="text-muted-foreground mt-4 text-xs font-normal">
             Built by&nbsp;
             <Link
               target="_blank"

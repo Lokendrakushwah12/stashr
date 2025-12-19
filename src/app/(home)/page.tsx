@@ -1,10 +1,10 @@
 "use client";
 
+import Hero from "@/components/landing/home/Hero";
+import HowItWorks from "@/components/landing/home/HowItWorks";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Hero from "./_components/Hero";
-import HowItWorks from "./_components/HowItWorks";
 
 export default function HomePage() {
   const { data: session } = useSession();

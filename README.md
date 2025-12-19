@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://stashr.in/favicon.svg" alt="Stashr Logo" width="80" height="80">
   <h1>Stashr</h1>
-  <p><strong>Turn scattered inspiration into organized thinking</strong></p>
+  <p><strong>Turn tab chaos into organized, collaborative Boards</strong></p>
 </div>
 
 <br>
@@ -12,27 +12,20 @@
 
 <br>
 
-**Stashr** is where ideas take shape—before they become projects. Collect links, cluster concepts, and collaborate on Boards that evolve into actionable plans.
+**Stashr** gives your open tabs a home. Stash your open tabs, bookmarks, and scattered ideas into one place - so you can sort, structure, and collaborate on them. Organize them into visual Boards you can share, shape, and evolve into real projects.
 
 ## 🚀 Live Demo
 
 **[Try Stashr Now →](https://stashr.in)**
 
-## ✨ Features
+### Core Functionality
 
-- **🔐 User Authentication**: Secure login with Google OAuth using NextAuth.js
-- **📁 Folder Organization**: Create and manage bookmark folders with custom colors
-- **🔖 Smart Bookmarks**: Automatic favicon detection and URL validation
-- **🎨 Beautiful UI**: Modern, responsive design with dark/light theme support
-- **⚡ Fast Performance**: Built with Next.js 15 and optimized for speed
-- **📱 Mobile Friendly**: Responsive design that works on all devices
-- **🔍 Easy Search**: Quick access to your organized bookmarks
-- **🔄 Real-time Updates**: Instant feedback when adding or editing bookmarks
-- **🔒 Data Privacy**: Each user's bookmarks are completely isolated
-- **🌙 Dark/Light Mode**: Seamless theme switching with system preference detection
-- **📱 PWA Ready**: Install as a progressive web app for native-like experience
-- **🔗 Shareable Links**: Direct links to specific folders and bookmarks
-- **⚡ Instant Loading**: Optimized for fast page loads and smooth interactions
+- **📑 Stash Your Tabs**: Collect the links you've been hoarding for days. Save them directly into Boards instead of drowning your browser
+- **🎯 See the Big Picture**: Cluster related tabs and ideas in one place. Patterns emerge. Research becomes insight
+- **👥 Work Together Early**: Share Boards with teammates to explore ideas before they turn into tasks, tickets, or documentation
+- **💡 Boards**: Use Boards as your pre-project workspace—then graduate your thinking into your project tools when you're ready
+
+### Technical Features
 
 ## 🚀 Tech Stack
 

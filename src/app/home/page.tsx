@@ -1,7 +1,7 @@
 "use client";
 
-import Hero from "./_components/Hero";
-import HowItWorks from "./_components/HowItWorks";
+import Hero from "../../components/landing/home/Hero";
+import HowItWorks from "../../components/landing/home/HowItWorks";
 
 export default function HomePage() {
   return (

@@ -68,8 +68,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || isLoading}
         {...props}
       >
-        {isLoading && <DefaultSpinner size="sm" />}
-        {children}
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <DefaultSpinner size="sm" /> {children}
+          </span>
+        ) : (
+          children
+        )}
       </Comp>
     );
   },
