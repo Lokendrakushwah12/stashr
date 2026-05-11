@@ -16,7 +16,6 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { cn, formatExactDate, getRelativeTime } from "@/lib/utils";
 import type { BoardTimelineEntry } from "@/types";
 import {
-  ArrowToTopLeft,
   GalleryAdd,
   Pen,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
@@ -25,6 +24,8 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import MarkdownComposer from "./MarkdownComposer";
+import { MarkdownPreview } from "./MarkdownPreview";
 
 interface BoardTimelineEditorProps {
   boardId: string;
@@ -48,6 +49,8 @@ export default function BoardTimelineEditor({
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [editingImages, setEditingImages] = useState<string[]>([]);
+  const [editingShowSource, setEditingShowSource] = useState(false);
+  const [editingWysiwygActive, setEditingWysiwygActive] = useState(false);
   const [isUploadingEditImages, setIsUploadingEditImages] = useState(false);
   const [editDragActive, setEditDragActive] = useState(false);
   const [viewingImages, setViewingImages] = useState<string[]>([]);
@@ -185,6 +188,9 @@ export default function BoardTimelineEditor({
     setEditingEntryId(entry._id);
     setEditingContent(entry.content);
     setEditingImages(entry.images ?? []);
+    // start in preview-only, and immediately activate WYSIWYG so users never see raw markdown
+    setEditingShowSource(false);
+    setEditingWysiwygActive(true);
   };
 
   const handleCancelEdit = () => {
@@ -337,7 +343,7 @@ export default function BoardTimelineEditor({
         {timelineEntries.map((entry, index) => (
           <div key={entry._id} className="relative flex gap-4 pb-6 last:pb-0">
             {/* Avatar */}
-            <div className="relative z-10 flex-shrink-0">
+            <div className="relative z-10 shrink-0">
               <Avatar
                 className={cn(
                   "border-background size-8 rounded-lg p-0.5",
@@ -384,120 +390,87 @@ export default function BoardTimelineEditor({
                   onDragLeave={handleEditDrag}
                   onDragOver={handleEditDrag}
                   onDrop={handleEditDrop}
-                  className={cn(
-                    "border-border bg-card rounded-lg border",
-                    editDragActive && "border-primary border-2",
-                    isUploadingEditImages && "opacity-50",
-                  )}
                 >
-                  <div className="space-y-3 p-4">
-                    <textarea
-                      value={editingContent}
-                      onChange={(e) => setEditingContent(e.target.value)}
-                      placeholder="Add a comment or update..."
-                      disabled={disabled || isUploadingEditImages}
-                      className="placeholder:text-muted-foreground min-h-[100px] w-full resize-none border-none bg-transparent text-sm outline-none"
-                      autoFocus
+                  <MarkdownComposer
+                    value={editingContent}
+                    onChange={setEditingContent}
+                    onSubmit={() => void handleSaveEdit()}
+                    placeholder="Add a comment or update..."
+                    disabled={disabled || isUploadingEditImages}
+                    className={cn(
+                      editDragActive && "border-primary border-2",
+                      isUploadingEditImages && "opacity-50",
+                    )}
+                    submitDisabled={
+                      (!editingContent.trim() && editingImages.length === 0) ||
+                      updateTimelineEntry.isPending ||
+                      isUploadingEditImages
+                    }
+                    onCancel={handleCancelEdit}
+                    onAttachImages={() => editFileInputRef.current?.click()}
+                    imageCount={editingImages.length}
+                    previewOnly={!editingShowSource}
+                    onToggleSource={() => setEditingShowSource((v) => !v)}
+                    onStartWysiwyg={() => setEditingWysiwygActive(true)}
+                    onCommitWysiwyg={() => setEditingWysiwygActive(true)}
+                    wysiwygActive={editingWysiwygActive}
+                  >
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleEditFileInputChange}
+                      className="hidden"
                     />
-
-                    {/* Editing images preview */}
-                    {editingImages.length > 0 && (
-                      <div className="grid grid-cols-2 gap-2">
-                        {editingImages.map((imageUrl, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
-                          >
-                            <img
-                              src={imageUrl}
-                              alt={`Edit ${idx + 1}`}
-                              className="h-full w-full object-cover"
-                            />
-                            <button
-                              onClick={() => removeEditImage(idx)}
-                              className="bg-destructive text-destructive-foreground absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                              type="button"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Drag overlay */}
-                    {editDragActive && (
-                      <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
-                        <div className="text-center">
-                          <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
-                          <p className="text-primary text-sm font-medium">
-                            Drop images here
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="border-border bg-muted/30 flex items-center justify-between gap-2 border-t p-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        ref={editFileInputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleEditFileInputChange}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => editFileInputRef.current?.click()}
-                        disabled={disabled || isUploadingEditImages}
-                        className="h-8 text-xs"
-                      >
-                        <GalleryAdd className="h-3.5 w-3.5" />
-                        Add Images
-                      </Button>
+                    <div className="relative">
                       {editingImages.length > 0 && (
-                        <span className="text-muted-foreground text-xs">
-                          {editingImages.length} image
-                          {editingImages.length > 1 ? "s" : ""}
-                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                          {editingImages.map((imageUrl, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
+                            >
+                              <img
+                                src={imageUrl}
+                                alt={`Edit ${idx + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeEditImage(idx)}
+                                className="bg-destructive text-destructive-foreground absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {editDragActive && (
+                        <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
+                          <div className="text-center">
+                            <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
+                            <p className="text-primary text-sm font-medium">
+                              Drop images here
+                            </p>
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="secondary"
-                        onClick={handleCancelEdit}
-                        disabled={isUploadingEditImages}
-                        className="h-8 text-xs"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSaveEdit}
-                        disabled={
-                          (!editingContent.trim() &&
-                            editingImages.length === 0) ||
-                          updateTimelineEntry.isPending ||
-                          isUploadingEditImages
-                        }
-                        className="size-8 p-0"
-                      >
-                        <ArrowToTopLeft className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  </MarkdownComposer>
                 </div>
               ) : (
                 <div className="border-border bg-card overflow-hidden rounded-lg border">
                   <div className="space-y-0 p-4">
-                    <div className="text-foreground prose prose-sm max-w-none text-sm whitespace-pre-wrap">
-                      {entry.content}
-                    </div>
+                    <MarkdownPreview
+                      content={entry.content}
+                      className="text-foreground wrap-break-word"
+                      emptyState=""
+                    />
 
                     {/* Images */}
                     {entry.images &&
@@ -556,7 +529,7 @@ export default function BoardTimelineEditor({
         {showNewEntry && (
           <div className="relative flex gap-4 pb-6">
             {/* Avatar */}
-            <div className="relative z-10 flex-shrink-0">
+            <div className="relative z-10 shrink-0">
               <Avatar className="border-background size-8 rounded-md border-2">
                 <AvatarImage
                   src={session?.user?.image ?? ""}
@@ -586,101 +559,72 @@ export default function BoardTimelineEditor({
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={cn(
-                  "border-border bg-card rounded-lg border",
-                  dragActive && "border-primary border-2",
-                  isUploadingImages && "opacity-50",
-                )}
               >
-                <div className="space-y-3 p-4">
-                  <textarea
-                    value={newEntryContent}
-                    onChange={(e) => setNewEntryContent(e.target.value)}
-                    placeholder="Add a comment or update..."
-                    disabled={disabled || isUploadingImages}
-                    className="placeholder:text-muted-foreground min-h-[100px] w-full resize-none border-none bg-transparent text-sm outline-none"
-                    autoFocus
+                <MarkdownComposer
+                  value={newEntryContent}
+                  onChange={setNewEntryContent}
+                  onSubmit={() => void handleSaveNewEntry(newEntryContent)}
+                  placeholder="Add a comment or update..."
+                  disabled={disabled || isUploadingImages}
+                  className={cn(
+                    dragActive && "border-primary border-2",
+                    isUploadingImages && "opacity-50",
+                  )}
+                  submitDisabled={
+                    (!newEntryContent.trim() && uploadedImages.length === 0) ||
+                    createTimelineEntry.isPending ||
+                    isUploadingImages
+                  }
+                  onAttachImages={() => fileInputRef.current?.click()}
+                  imageCount={uploadedImages.length}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileInputChange}
+                    className="hidden"
                   />
-
-                  {/* Uploaded images preview */}
-                  {uploadedImages.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
-                      {uploadedImages.map((imageUrl, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
-                        >
-                          <img
-                            src={imageUrl}
-                            alt={`Uploaded ${idx + 1}`}
-                            className="h-full w-full object-cover"
-                          />
-                          <button
-                            onClick={() => removeImage(idx)}
-                            className="bg-destructive text-destructive-foreground absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                            type="button"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Drag overlay */}
-                  {dragActive && (
-                    <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
-                      <div className="text-center">
-                        <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
-                        <p className="text-primary text-sm font-medium">
-                          Drop images here
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="border-border bg-muted/30 flex items-center justify-between gap-2 border-t p-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleFileInputChange}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={disabled || isUploadingImages}
-                      className="h-7 gap-1.5 text-xs"
-                    >
-                      <GalleryAdd className="h-3.5 w-3.5" />
-                      Add Images
-                    </Button>
+                  <div className="relative">
                     {uploadedImages.length > 0 && (
-                      <span className="text-muted-foreground text-xs">
-                        {uploadedImages.length} image
-                        {uploadedImages.length > 1 ? "s" : ""}
-                      </span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {uploadedImages.map((imageUrl, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Uploaded ${idx + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeImage(idx)}
+                              className="bg-destructive text-destructive-foreground absolute top-1 right-1 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {dragActive && (
+                      <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
+                        <div className="text-center">
+                          <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
+                          <p className="text-primary text-sm font-medium">
+                            Drop images here
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleSaveNewEntry(newEntryContent)}
-                    disabled={
-                      (!newEntryContent.trim() &&
-                        uploadedImages.length === 0) ||
-                      createTimelineEntry.isPending ||
-                      isUploadingImages
-                    }
-                    className="size-8 p-0"
-                  >
-                    <ArrowToTopLeft className="size-4" />
-                  </Button>
-                </div>
+                </MarkdownComposer>
               </div>
             </div>
           </div>
@@ -689,7 +633,9 @@ export default function BoardTimelineEditor({
         {/* Add new entry button at bottom */}
         {!showNewEntry && (
           <div className="relative flex justify-start pl-[6.5px]">
-            <button
+            <Button
+              type="button"
+              variant="ghost"
               onClick={handleAddNewEntry}
               disabled={disabled}
               className="relative flex size-5 cursor-pointer items-center justify-center transition-all ease-out hover:opacity-80 active:scale-97 disabled:cursor-not-allowed disabled:opacity-50"
@@ -698,7 +644,7 @@ export default function BoardTimelineEditor({
                 strokeWidth={1}
                 className="text-muted-foreground size-5"
               />
-            </button>
+            </Button>
           </div>
         )}
       </div>
