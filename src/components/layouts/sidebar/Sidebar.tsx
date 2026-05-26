@@ -72,18 +72,28 @@ export default function Sidebar({
         )}
       >
         {/* Header */}
-        {config.header && (
-          <div className="mt-6.5 px-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                {config.header.icon && (
-                  <config.header.icon className="text-primary h-6 w-6 shrink-0" />
-                )}
-                {!isCollapsed && (
-                  <h2 className="text-lg font-medium">{config.header.title}</h2>
-                )}
+        {(config.headerSlot ?? config.header) && (
+          <div className="mt-4 w-full px-2">
+            {config.headerSlot ? (
+              isCollapsed ? (
+                (config.collapsedHeaderSlot ?? config.headerSlot)
+              ) : (
+                config.headerSlot
+              )
+            ) : config.header ? (
+              <div className="flex items-center justify-between gap-2 px-1">
+                <div className="flex items-center gap-2">
+                  {config.header.icon && (
+                    <config.header.icon className="text-primary h-6 w-6 shrink-0" />
+                  )}
+                  {!isCollapsed && (
+                    <h2 className="text-lg font-medium">
+                      {config.header.title}
+                    </h2>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
         )}
 

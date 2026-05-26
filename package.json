@@ -40,6 +40,7 @@
     "@tanstack/react-query-devtools": "^5.91.1",
     "@types/mongoose": "^5.11.97",
     "@uploadthing/react": "^7.3.3",
+    "boring-avatars": "^2.0.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.25",

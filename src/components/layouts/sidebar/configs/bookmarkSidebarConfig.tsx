@@ -1,11 +1,12 @@
 "use client";
 
-import { StashrLogo } from "@/components/ui/icons";
+import { TeamSwitcher } from "@/components/team/TeamSwitcher";
 import type { Folder, FolderCollaboration } from "@/types";
 import {
   BookmarkSquare,
   ClipboardText,
   InboxLine,
+  Settings,
 } from "@solar-icons/react-perf/BoldDuotone";
 import { User } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useSession } from "next-auth/react";
@@ -50,10 +51,8 @@ export function useBookmarkSidebarConfig({
   }, [session?.user?.id]);
 
   const config: SidebarConfig = {
-    header: {
-      title: "Stashr",
-      icon: StashrLogo,
-    },
+    headerSlot: <TeamSwitcher />,
+    collapsedHeaderSlot: <TeamSwitcher compact />,
     sections: [
       {
         id: "navigation",
@@ -86,6 +85,13 @@ export function useBookmarkSidebarConfig({
                     variant: "destructive" as const,
                   }
                 : undefined,
+          },
+          {
+            id: "settings",
+            label: "Settings",
+            icon: Settings,
+            href: "/settings",
+            active: currentPath.startsWith("/settings"),
           },
           {
             id: "profile",

@@ -1,47 +1,78 @@
-import { registerModels } from '@/models';
-import connectDB from '@/lib/mongodb';
-import mongoose from 'mongoose';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import type { BookmarkDocument } from '@/types/database';
-import { extractImageUrl } from '@/lib/meta-image-extractor';
+import { getRequestContext } from "@/lib/api-team";
+import { extractImageUrl } from "@/lib/meta-image-extractor";
+import connectDB from "@/lib/mongodb";
+import { canWrite } from "@/lib/team-service";
+import { registerModels } from "@/models";
+import type { BookmarkDocument } from "@/types/database";
+import mongoose from "mongoose";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-// PUT /api/bookmarks/[id] - Update a bookmark for the authenticated user
+async function canMutateBookmark(opts: {
+  bookmarkId: string;
+  userId: string;
+  userEmail: string;
+  teamId: string;
+  teamRole: "owner" | "admin" | "editor" | "viewer";
+}) {
+  const { Bookmark, FolderCollaboration } = await registerModels();
+  const bookmark = await Bookmark.findById(opts.bookmarkId).exec();
+  if (!bookmark) return { bookmark: null, canEdit: false };
+
+  // Same team
+  if (bookmark.teamId && String(bookmark.teamId) === opts.teamId) {
+    return { bookmark, canEdit: canWrite(opts.teamRole) };
+  }
+
+  // Legacy: original owner
+  if (bookmark.userId === opts.userId) {
+    return { bookmark, canEdit: true };
+  }
+
+  // External collaboration on parent folder
+  const collaboration = await FolderCollaboration.findOne({
+    folderId: bookmark.folderId,
+    $or: [{ userId: opts.userId }, { email: opts.userEmail }],
+    status: "accepted",
+    role: "editor",
+  }).exec();
+  if (collaboration) return { bookmark, canEdit: true };
+
+  return { bookmark, canEdit: false };
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
+
+    const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Invalid bookmark ID" },
+        { status: 400 },
       );
     }
 
-    const resolvedParams = await params;
     await connectDB();
-    const { Bookmark, FolderCollaboration } = await registerModels();
+    const { Bookmark } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json({ error: "Invalid bookmark ID" }, { status: 400 });
-    }
-
-    const body = await request.json() as { title?: string; url?: string; description?: string };
+    const body = (await request.json()) as {
+      title?: string;
+      url?: string;
+      description?: string;
+    };
     const { title, url, description } = body;
 
-    // Validate input
-    if (title && !title.trim()) {
+    if (title !== undefined && !title.trim()) {
       return NextResponse.json(
         { error: "Bookmark title cannot be empty" },
         { status: 400 },
       );
     }
-
     if (url) {
       try {
         new URL(url.trim());
@@ -53,155 +84,101 @@ export async function PUT(
       }
     }
 
-    // Build update data
-    const updateData: Partial<Pick<BookmarkDocument, 'title' | 'url' | 'description' | 'favicon' | 'metaImage'>> = {};
+    const { bookmark, canEdit } = await canMutateBookmark({
+      bookmarkId: id,
+      userId: ctx.userId,
+      userEmail: ctx.userEmail,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
+    });
+    if (!bookmark) {
+      return NextResponse.json(
+        { error: "Bookmark not found" },
+        { status: 404 },
+      );
+    }
+    if (!canEdit) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const updateData: Partial<
+      Pick<
+        BookmarkDocument,
+        "title" | "url" | "description" | "favicon" | "metaImage"
+      >
+    > = {};
     if (title) updateData.title = title.trim();
     if (url) updateData.url = url.trim();
-    if (description !== undefined) updateData.description = description?.trim() || '';
-
-    // Try to get favicon and meta image from URL if updated
+    if (description !== undefined)
+      updateData.description = description?.trim() || "";
     if (url) {
       try {
         const urlObj = new URL(url.trim());
         updateData.favicon = `${urlObj.protocol}//${urlObj.hostname}/favicon.ico`;
-        
-        // Extract meta image for the new URL using metascraper
-        console.log(`🔍 Updating bookmark: Extracting meta image for ${url.trim()}`);
         const metaImage = await extractImageUrl(url.trim());
         updateData.metaImage = metaImage;
-        console.log(`✅ Bookmark update: Meta image extracted: ${metaImage}`);
       } catch (error) {
-        console.error('❌ Bookmark update: Error extracting meta image:', error);
+        console.error("Meta image extraction failed:", error);
       }
     }
 
-    // First, find the bookmark to check permissions
-    const existingBookmark = await Bookmark.findById(resolvedParams.id).exec();
-    
-    if (!existingBookmark) {
-      return NextResponse.json(
-        { error: "Bookmark not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if user owns the bookmark or is an editor collaborator on the folder
-    let canEdit = existingBookmark.userId === session.user.id;
-    
-    if (!canEdit) {
-      // Check if user is an editor collaborator on the folder
-      const collaboration = await FolderCollaboration.findOne({
-        folderId: existingBookmark.folderId,
-        $or: [
-          { userId: session.user.id },
-          { email: session.user.email }
-        ],
-        status: 'accepted',
-        role: 'editor'
-      }).exec();
-      
-      if (collaboration) {
-        canEdit = true;
-      }
-    }
-
-    if (!canEdit) {
-      return NextResponse.json(
-        { error: "Bookmark not found" },
-        { status: 404 }
-      );
-    }
-
-    // Update the bookmark
-    const bookmark = await Bookmark.findByIdAndUpdate(
-      resolvedParams.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).exec();
-
+    const updated = await Bookmark.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).exec();
     return NextResponse.json(
-      { bookmark: bookmark?.toObject() },
-      { status: 200 }
+      { bookmark: updated?.toObject() },
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error updating bookmark:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to update bookmark: ${error.message}` },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to update bookmark" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-// DELETE /api/bookmarks/[id] - Delete a bookmark for the authenticated user
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
+
+    const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Invalid bookmark ID" },
+        { status: 400 },
       );
     }
 
-    const resolvedParams = await params;
     await connectDB();
-    const { Bookmark, Folder, FolderCollaboration } = await registerModels();
+    const { Bookmark, Folder } = await registerModels();
 
-    if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json({ error: "Invalid bookmark ID" }, { status: 400 });
-    }
-
-    // First, find the bookmark to check permissions
-    const bookmark = await Bookmark.findById(resolvedParams.id).exec();
-    
+    const { bookmark, canEdit } = await canMutateBookmark({
+      bookmarkId: id,
+      userId: ctx.userId,
+      userEmail: ctx.userEmail,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
+    });
     if (!bookmark) {
-      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Bookmark not found" },
+        { status: 404 },
+      );
+    }
+    if (!canEdit) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Check if user owns the bookmark or is an editor collaborator on the folder
-    let canDelete = bookmark.userId === session.user.id;
-    
-    if (!canDelete) {
-      // Check if user is an editor collaborator on the folder
-      const collaboration = await FolderCollaboration.findOne({
-        folderId: bookmark.folderId,
-        $or: [
-          { userId: session.user.id },
-          { email: session.user.email }
-        ],
-        status: 'accepted',
-        role: 'editor'
-      }).exec();
-      
-      if (collaboration) {
-        canDelete = true;
-      }
-    }
-
-    if (!canDelete) {
-      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
-    }
-
-    // Remove bookmark from folder
-    await Folder.findByIdAndUpdate(
-      bookmark.folderId,
-      { $pull: { bookmarks: bookmark._id } }
-    ).exec();
-
-    // Delete the bookmark
-    await Bookmark.findByIdAndDelete(resolvedParams.id).exec();
+    await Folder.findByIdAndUpdate(bookmark.folderId, {
+      $pull: { bookmarks: bookmark._id },
+    }).exec();
+    await Bookmark.findByIdAndDelete(id).exec();
 
     return NextResponse.json(
       { message: "Bookmark deleted successfully" },
@@ -209,14 +186,6 @@ export async function DELETE(
     );
   } catch (error) {
     console.error("Error deleting bookmark:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to delete bookmark: ${error.message}` },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to delete bookmark" },
       { status: 500 },

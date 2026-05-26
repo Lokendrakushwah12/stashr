@@ -1,77 +1,104 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
-import { registerModels } from '@/models';
+import { getRequestContext } from "@/lib/api-team";
+import connectDB from "@/lib/mongodb";
+import { canWrite } from "@/lib/team-service";
+import { registerModels } from "@/models";
+import mongoose from "mongoose";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+type BoardRole = "owner" | "editor" | "viewer";
+
+async function loadAccessibleBoard(opts: {
+  boardId: string;
+  userId: string;
+  teamId: string;
+  teamRole: "owner" | "admin" | "editor" | "viewer";
+}) {
+  const models = await registerModels();
+  const board = await models.Board.findById(opts.boardId);
+  if (!board) return { board: null, userRole: null as BoardRole | null };
+
+  // Same team
+  if (board.teamId && String(board.teamId) === opts.teamId) {
+    const userRole: BoardRole =
+      opts.teamRole === "owner" || opts.teamRole === "admin"
+        ? "owner"
+        : opts.teamRole === "editor"
+          ? "editor"
+          : "viewer";
+    return { board, userRole };
+  }
+
+  // Legacy ownership
+  if (board.userId === opts.userId) {
+    return { board, userRole: "owner" as BoardRole };
+  }
+
+  // Per-board collaboration (external)
+  const collaboration = await models.BoardCollaboration.findOne({
+    boardId: opts.boardId,
+    userId: opts.userId,
+    status: "accepted",
+  });
+  if (collaboration) {
+    return { board, userRole: (collaboration.role ?? "viewer") as BoardRole };
+  }
+
+  return { board: null, userRole: null };
+}
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
+
+    const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid board ID" }, { status: 400 });
     }
 
     await connectDB();
     const models = await registerModels();
-    const resolvedParams = await params;
-    const boardId = resolvedParams.id;
-
-    // Check if user owns the board
-    let board = await models.Board.findOne({ _id: boardId, userId: session.user.id });
-    let userRole: 'owner' | 'editor' | 'viewer' = 'owner';
-
-    // If not owner, check if user is a collaborator
+    const { board, userRole } = await loadAccessibleBoard({
+      boardId: id,
+      userId: ctx.userId,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
+    });
     if (!board) {
-      const collaboration = await models.BoardCollaboration.findOne({
-        boardId,
-        userId: session.user.id,
-        status: 'accepted',
-      });
-
-      if (collaboration) {
-        board = await models.Board.findById(boardId);
-        userRole = collaboration.role;
-      }
+      return NextResponse.json({ error: "Board not found" }, { status: 404 });
     }
 
-    if (!board) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 });
-    }
-
-    // Get cards for this board
-    const cards = await models.BoardCard.find({ boardId });
-    
-    // Add linked folder information for cards that have linkedFolderId
+    const cards = await models.BoardCard.find({ boardId: id });
     const cardsWithLinkedFolders = await Promise.all(
       cards.map(async (card) => {
         const cardObject = card.toObject ? card.toObject() : card;
         if (cardObject.linkedFolderId) {
-          const linkedFolder = await models.Folder.findOne({ 
-            _id: cardObject.linkedFolderId 
+          const linkedFolder = await models.Folder.findOne({
+            _id: cardObject.linkedFolderId,
           });
           if (linkedFolder) {
-            const folderObject = linkedFolder.toObject ? linkedFolder.toObject() : linkedFolder;
+            const folderObject = linkedFolder.toObject
+              ? linkedFolder.toObject()
+              : linkedFolder;
             return {
               ...cardObject,
               linkedFolder: {
                 id: folderObject._id?.toString() ?? String(folderObject._id),
                 name: folderObject.name,
-                color: folderObject.color ?? '#3b82f6',
+                color: folderObject.color ?? "#3b82f6",
               },
             };
           }
         }
         return cardObject;
-      })
+      }),
     );
 
     const boardObject = board.toObject ? board.toObject() : board;
-    
-    // Fetch linked folder if it exists
     let linkedFolder = null;
     if (boardObject.linkedFolderId) {
       const folder = await models.Folder.findById(boardObject.linkedFolderId);
@@ -80,117 +107,94 @@ export async function GET(
         linkedFolder = {
           id: folderObject._id?.toString() ?? String(folderObject._id),
           name: folderObject.name,
-          color: folderObject.color ?? '#3b82f6',
+          color: folderObject.color ?? "#3b82f6",
         };
       }
     }
 
-    const boardWithCards = {
-      ...boardObject,
-      cards: cardsWithLinkedFolders,
-      cardCount: cardsWithLinkedFolders.length,
-      userRole,
-      linkedFolder,
-    };
-
-    return NextResponse.json({ board: boardWithCards });
+    return NextResponse.json({
+      board: {
+        ...boardObject,
+        cards: cardsWithLinkedFolders,
+        cardCount: cardsWithLinkedFolders.length,
+        userRole,
+        linkedFolder,
+      },
+    });
   } catch (error) {
-    console.error('Error fetching board:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error fetching board:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
     const body = await request.json();
     const { name, description, content, linkedFolderId } = body;
-    const resolvedParams = await params;
-    const boardId = resolvedParams.id;
+    const { id } = await params;
 
     await connectDB();
     const models = await registerModels();
-
-    // Check if board exists and user owns it
-    let existingBoard = await models.Board.findOne({ 
-      _id: boardId,
-      userId: session.user.id 
+    const { board, userRole } = await loadAccessibleBoard({
+      boardId: id,
+      userId: ctx.userId,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
     });
-
-    let canEdit = !!existingBoard;
-
-    // If not owner, check if user is an editor collaborator
-    if (!existingBoard) {
-      const collaboration = await models.BoardCollaboration.findOne({
-        boardId,
-        userId: session.user.id,
-        status: 'accepted',
-        role: 'editor',
-      });
-
-      if (collaboration) {
-        existingBoard = await models.Board.findById(boardId);
-        canEdit = true;
-      }
+    if (!board) {
+      return NextResponse.json({ error: "Board not found" }, { status: 404 });
     }
-
-    if (!existingBoard || !canEdit) {
-      return NextResponse.json({ error: 'Board not found or insufficient permissions' }, { status: 404 });
+    const canEdit = userRole === "owner" || userRole === "editor";
+    if (!canEdit) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const updateData: Record<string, unknown> = {};
-
     if (name !== undefined) {
-      if (typeof name !== 'string' || name.trim().length === 0) {
-        return NextResponse.json({ error: 'Board name is required' }, { status: 400 });
+      if (typeof name !== "string" || name.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Board name is required" },
+          { status: 400 },
+        );
       }
       updateData.name = name.trim();
     }
-
-    if (description !== undefined) {
+    if (description !== undefined)
       updateData.description = description?.trim() || undefined;
-    }
-
-    if (content !== undefined) {
+    if (content !== undefined)
       updateData.content = content?.trim() || undefined;
-    }
-
     if (linkedFolderId !== undefined) {
-      console.log('linkedFolderId received:', linkedFolderId, 'type:', typeof linkedFolderId);
-      // If linkedFolderId is null, remove the link; otherwise set it
-      if (linkedFolderId === null || linkedFolderId === '') {
+      if (linkedFolderId === null || linkedFolderId === "") {
         updateData.linkedFolderId = null;
-        console.log('Unlinking folder');
-      } else if (typeof linkedFolderId === 'string') {
-        // Verify folder exists and user has access
+      } else if (typeof linkedFolderId === "string") {
         const folder = await models.Folder.findById(linkedFolderId);
         if (!folder) {
-          console.log('Folder not found:', linkedFolderId);
-          return NextResponse.json({ error: 'Folder not found' }, { status: 404 });
+          return NextResponse.json(
+            { error: "Folder not found" },
+            { status: 404 },
+          );
         }
-        console.log('Linking to folder:', linkedFolderId, folder.name);
         updateData.linkedFolderId = linkedFolderId;
       }
     }
 
-    console.log('updateData:', updateData);
-
     const updatedBoard = await models.Board.findByIdAndUpdate(
-      boardId,
+      id,
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
-
-    const boardObject = updatedBoard?.toObject ? updatedBoard.toObject() : updatedBoard;
-    
-    // Fetch linked folder if it exists
+    const boardObject = updatedBoard?.toObject
+      ? updatedBoard.toObject()
+      : updatedBoard;
     let linkedFolder = null;
     if (boardObject?.linkedFolderId) {
       const folder = await models.Folder.findById(boardObject.linkedFolderId);
@@ -199,58 +203,55 @@ export async function PUT(
         linkedFolder = {
           id: folderObject._id?.toString() ?? String(folderObject._id),
           name: folderObject.name,
-          color: folderObject.color ?? '#3b82f6',
+          color: folderObject.color ?? "#3b82f6",
         };
       }
     }
-
-    return NextResponse.json({ 
-      board: {
-        ...boardObject,
-        linkedFolder,
-      }
-    });
+    return NextResponse.json({ board: { ...boardObject, linkedFolder } });
   } catch (error) {
-    console.error('Error updating board:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error updating board:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
-    const resolvedParams = await params;
-    const boardId = resolvedParams.id;
-
+    const { id } = await params;
     await connectDB();
     const models = await registerModels();
-
-    // Check if board exists and user owns it
-    const existingBoard = await models.Board.findOne({ 
-      _id: boardId,
-      userId: session.user.id 
+    const { board, userRole } = await loadAccessibleBoard({
+      boardId: id,
+      userId: ctx.userId,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
     });
-
-    if (!existingBoard) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 });
+    if (!board) {
+      return NextResponse.json({ error: "Board not found" }, { status: 404 });
+    }
+    if (
+      userRole !== "owner" &&
+      !(userRole === "editor" && canWrite(ctx.role))
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Delete all cards associated with this board
-    await models.BoardCard.deleteMany({ boardId });
-
-    // Delete the board
-    await models.Board.findByIdAndDelete(boardId);
-
-    return NextResponse.json({ message: 'Board deleted successfully' });
+    await models.BoardCard.deleteMany({ boardId: id });
+    await models.Board.findByIdAndDelete(id);
+    return NextResponse.json({ message: "Board deleted successfully" });
   } catch (error) {
-    console.error('Error deleting board:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error deleting board:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
