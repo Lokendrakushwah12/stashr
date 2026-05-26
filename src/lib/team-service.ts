@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import { registerModels } from "@/models";
 import type { TeamRole } from "@/models/TeamMember";
+import type { TeamTheme } from "@/models/Team";
 
 export interface TeamSummary {
   id: string;
@@ -13,6 +14,8 @@ export interface TeamSummary {
   ownerId: string;
   role: TeamRole;
   memberCount: number;
+  theme: TeamTheme;
+  customColor?: string;
 }
 
 function slugify(name: string): string {
@@ -188,6 +191,8 @@ export async function listUserTeams(userId: string): Promise<TeamSummary[]> {
     result.push({
       id: String(team._id),
       name: team.name,
+      theme: team.theme ?? "default",
+      customColor: team.customColor ?? undefined,
       slug: team.slug,
       logoUrl: team.logoUrl ?? undefined,
       planId: team.planId,

@@ -16,9 +16,21 @@ import {
   handleApiResponse,
   useUpgradeDialog,
 } from "@/components/upgrade-dialog";
-import { useTeam, type TeamRole } from "@/lib/contexts/team-context";
+import {
+  useTeam,
+  type TeamRole,
+  type TeamTheme,
+} from "@/lib/contexts/team-context";
+import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+const THEME_PRESETS: Array<{ id: TeamTheme; label: string; swatch: string }> = [
+  { id: "default", label: "Indigo", swatch: "oklch(0.6628 0.1834 280.86)" },
+  { id: "ocean", label: "Ocean", swatch: "oklch(0.65 0.15 220)" },
+  { id: "forest", label: "Forest", swatch: "oklch(0.62 0.15 150)" },
+];
 
 interface Member {
   id: string;
@@ -38,16 +50,21 @@ export default function SettingsPage() {
 
   const [name, setName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [theme, setTheme] = useState<TeamTheme>("default");
+  const [customColor, setCustomColor] = useState("#4f46e5");
   const [members, setMembers] = useState<Member[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<TeamRole>("editor");
   const [savingTeam, setSavingTeam] = useState(false);
+  const [savingTheme, setSavingTheme] = useState(false);
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     if (currentTeam) {
       setName(currentTeam.name);
       setLogoUrl(currentTeam.logoUrl ?? "");
+      setTheme(currentTeam.theme ?? "default");
+      if (currentTeam.customColor) setCustomColor(currentTeam.customColor);
     }
   }, [currentTeam]);
 
@@ -115,6 +132,45 @@ export default function SettingsPage() {
       toast.error(msg);
     } finally {
       setSavingTeam(false);
+    }
+  };
+
+  const handleSaveTheme = async (
+    nextTheme: TeamTheme,
+    nextCustomColor?: string,
+  ) => {
+    if (!canManage) return;
+    setSavingTheme(true);
+    try {
+      const payload: { theme: TeamTheme; customColor?: string } = {
+        theme: nextTheme,
+      };
+      if (nextTheme === "custom")
+        payload.customColor = nextCustomColor ?? customColor;
+      const res = await fetch(`/api/teams/${currentTeam.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as {
+        team?: { theme?: TeamTheme; customColor?: string };
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error ?? "Failed to save theme");
+      if (data.team) {
+        setCurrentTeamLocal({
+          ...currentTeam,
+          theme: data.team.theme ?? "default",
+          customColor: data.team.customColor || undefined,
+        });
+      }
+      toast.success("Theme updated");
+      await refresh();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save theme";
+      toast.error(msg);
+    } finally {
+      setSavingTheme(false);
     }
   };
 
@@ -221,6 +277,105 @@ export default function SettingsPage() {
           Plan: <b className="capitalize">{currentTeam.planId}</b> · Your role:{" "}
           <b className="capitalize">{currentTeam.role}</b>
         </div>
+      </section>
+
+      <section className="space-y-4">
+        <header>
+          <h2 className="text-lg font-semibold">Theme</h2>
+          <p className="text-muted-foreground text-sm">
+            Pick a preset or set a custom accent color for this team.
+          </p>
+        </header>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {THEME_PRESETS.map((preset) => {
+            const active = theme === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                disabled={!canManage || savingTheme}
+                onClick={() => {
+                  setTheme(preset.id);
+                  void handleSaveTheme(preset.id);
+                }}
+                className={cn(
+                  "group bg-background relative flex flex-col items-center gap-2 rounded-lg border p-3 text-left transition",
+                  active
+                    ? "border-primary ring-primary/30 ring-2"
+                    : "hover:border-foreground/30",
+                  (!canManage || savingTheme) &&
+                    "cursor-not-allowed opacity-60",
+                )}
+              >
+                <div
+                  className="h-10 w-10 rounded-full"
+                  style={{ background: preset.swatch }}
+                />
+                <span className="text-sm font-medium">{preset.label}</span>
+                {active && (
+                  <Check className="text-primary absolute top-2 right-2 h-4 w-4" />
+                )}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            disabled={!canManage || savingTheme}
+            onClick={() => {
+              setTheme("custom");
+              void handleSaveTheme("custom", customColor);
+            }}
+            className={cn(
+              "group bg-background relative flex flex-col items-center gap-2 rounded-lg border p-3 text-left transition",
+              theme === "custom"
+                ? "border-primary ring-primary/30 ring-2"
+                : "hover:border-foreground/30",
+              (!canManage || savingTheme) && "cursor-not-allowed opacity-60",
+            )}
+          >
+            <div
+              className="h-10 w-10 rounded-full border"
+              style={{ background: customColor }}
+            />
+            <span className="text-sm font-medium">Custom</span>
+            {theme === "custom" && (
+              <Check className="text-primary absolute top-2 right-2 h-4 w-4" />
+            )}
+          </button>
+        </div>
+        {theme === "custom" && canManage && (
+          <div className="flex items-center gap-2">
+            <Label htmlFor="custom-color" className="text-sm">
+              Hex color
+            </Label>
+            <input
+              id="custom-color-picker"
+              type="color"
+              value={customColor}
+              onChange={(e) => setCustomColor(e.target.value)}
+              className="bg-background h-9 w-12 cursor-pointer rounded border"
+              disabled={savingTheme}
+            />
+            <Input
+              id="custom-color"
+              value={customColor}
+              onChange={(e) => setCustomColor(e.target.value)}
+              className="w-32 font-mono text-sm"
+              placeholder="#4f46e5"
+              disabled={savingTheme}
+            />
+            <Button
+              onClick={() => void handleSaveTheme("custom", customColor)}
+              isLoading={savingTheme}
+              disabled={
+                !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(customColor) ||
+                customColor === (currentTeam.customColor ?? "")
+              }
+            >
+              Apply
+            </Button>
+          </div>
+        )}
       </section>
 
       <section className="space-y-4">

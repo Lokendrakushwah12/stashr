@@ -35,13 +35,35 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = (await request.json()) as { name?: string; logoUrl?: string };
+  const body = (await request.json()) as {
+    name?: string;
+    logoUrl?: string;
+    theme?: "default" | "ocean" | "forest" | "custom";
+    customColor?: string;
+  };
   const update: Record<string, unknown> = {};
   if (typeof body.name === "string" && body.name.trim()) {
     update.name = body.name.trim();
   }
   if (typeof body.logoUrl === "string") {
     update.logoUrl = body.logoUrl.trim();
+  }
+  if (
+    typeof body.theme === "string" &&
+    ["default", "ocean", "forest", "custom"].includes(body.theme)
+  ) {
+    update.theme = body.theme;
+  }
+  if (typeof body.customColor === "string") {
+    const hex = body.customColor.trim();
+    if (hex === "" || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)) {
+      update.customColor = hex;
+    } else {
+      return NextResponse.json(
+        { error: "customColor must be a hex color (e.g. #4f46e5)" },
+        { status: 400 },
+      );
+    }
   }
 
   const { Team } = await registerModels();
@@ -60,6 +82,8 @@ export async function PATCH(
       logoUrl: team.logoUrl,
       planId: team.planId,
       ownerId: team.ownerId,
+      theme: team.theme ?? "default",
+      customColor: team.customColor ?? "",
     },
   });
 }

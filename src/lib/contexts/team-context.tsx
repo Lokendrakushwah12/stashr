@@ -14,6 +14,8 @@ import {
 
 export type TeamRole = "owner" | "admin" | "editor" | "viewer";
 
+export type TeamTheme = "default" | "ocean" | "forest" | "custom";
+
 export interface Team {
   id: string;
   name: string;
@@ -23,6 +25,8 @@ export interface Team {
   ownerId: string;
   role: TeamRole;
   memberCount: number;
+  theme?: TeamTheme;
+  customColor?: string;
 }
 
 interface TeamContextValue {
@@ -133,6 +137,27 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void fetchTeams();
   }, [fetchTeams]);
+
+  // Apply the current team's theme to <html>. Preset themes use the
+  // data-theme attribute (matched by [data-theme="..."] in globals.css);
+  // custom uses an inline --primary so any user-picked hex works.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    const theme = currentTeam?.theme ?? "default";
+    if (theme === "default") {
+      root.removeAttribute("data-theme");
+    } else {
+      root.dataset.theme = theme;
+    }
+    if (theme === "custom" && currentTeam?.customColor) {
+      root.style.setProperty("--primary", currentTeam.customColor);
+      root.style.setProperty("--ring", currentTeam.customColor);
+    } else {
+      root.style.removeProperty("--primary");
+      root.style.removeProperty("--ring");
+    }
+  }, [currentTeam?.theme, currentTeam?.customColor]);
 
   // Redirect to onboarding if authenticated but no teams
   useEffect(() => {

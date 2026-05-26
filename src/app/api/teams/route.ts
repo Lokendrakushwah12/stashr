@@ -101,6 +101,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           planId: team.planId,
           ownerId: team.ownerId,
           role: "owner",
+          theme: team.theme ?? "default",
+          customColor: team.customColor ?? "",
           memberCount: 1,
         },
       },
