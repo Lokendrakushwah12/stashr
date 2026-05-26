@@ -53,11 +53,14 @@ export default function SidebarItem({
     <Button
       variant={item.active ? "secondary" : "ghost"}
       className={cn(
-        "group relative h-auto justify-center gap-1 p-2",
+        "group relative h-auto justify-center gap-1 px-1.5 py-1",
         item.disabled && "cursor-not-allowed opacity-50",
         isCollapsed ? "size-8 rounded-md!" : "w-full",
         // Mobile specific styles
         "md:justify-start md:gap-2",
+        item.active
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground",
         className,
       )}
       onClick={handleClick}
@@ -75,8 +78,8 @@ export default function SidebarItem({
       )}
       <span
         className={cn(
-          "hidden truncate text-left md:block",
-          isCollapsed && "hidden",
+          "hidden w-fit truncate text-left opacity-100 transition-all md:block",
+          isCollapsed && "w-0 opacity-0",
         )}
       >
         {item.label}

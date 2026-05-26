@@ -78,7 +78,7 @@ export default function SidebarSection({
             <div className="px-2 py-1">
               <span
                 className={cn(
-                  "text-muted-foreground font-mono text-xs font-medium tracking-wide uppercase",
+                  "text-muted-foreground hidden font-mono text-xs font-medium tracking-wide uppercase",
                   isCollapsed && "hidden",
                 )}
               >
@@ -90,7 +90,7 @@ export default function SidebarSection({
       )}
 
       {!section.collapsible && (
-        <div className="flex w-full flex-col items-center space-y-1">
+        <div className="flex w-full flex-col items-center space-y-0.5">
           {section.items
             .filter((item) => !item.mobileOnly)
             .map((item) => (

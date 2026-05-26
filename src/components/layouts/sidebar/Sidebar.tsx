@@ -80,9 +80,7 @@ export default function Sidebar({
                   <config.header.icon className="text-primary h-6 w-6 shrink-0" />
                 )}
                 {!isCollapsed && (
-                  <h2 className="text-lg font-semibold">
-                    {config.header.title}
-                  </h2>
+                  <h2 className="text-lg font-medium">{config.header.title}</h2>
                 )}
               </div>
             </div>
