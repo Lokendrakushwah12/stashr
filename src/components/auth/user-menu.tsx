@@ -53,7 +53,7 @@ export default function UserMenu({ className = "" }: { className?: string }) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 rounded-2xl" align="end" forceMount>
+      <DropdownMenuContent className="w-56 rounded-xl" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm leading-none font-medium">
