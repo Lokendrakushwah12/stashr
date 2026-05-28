@@ -16,6 +16,10 @@ export interface TeamMemberDocument extends Document {
   invitedAt: Date;
   respondedAt?: Date;
   acknowledgedByInviterAt?: Date;
+  previousRole?: TeamRole;
+  roleChangedAt?: Date;
+  roleChangedByName?: string;
+  roleChangeAcknowledgedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +61,13 @@ const TeamMemberSchema = new Schema<TeamMemberDocument>(
     invitedAt: { type: Date, default: Date.now },
     respondedAt: { type: Date },
     acknowledgedByInviterAt: { type: Date },
+    previousRole: {
+      type: String,
+      enum: ["owner", "admin", "editor", "viewer"],
+    },
+    roleChangedAt: { type: Date },
+    roleChangedByName: { type: String },
+    roleChangeAcknowledgedAt: { type: Date },
   },
   { timestamps: true },
 );

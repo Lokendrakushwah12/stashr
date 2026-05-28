@@ -43,17 +43,58 @@ export async function GET(
     .sort({ createdAt: 1 })
     .lean();
 
+  // Hydrate name/image from the users collection so the list reflects each
+  // member's current profile, not the snapshot taken at invite time.
+  const userIds = members
+    .map((m) => m.userId)
+    .filter((id): id is string => !!id);
+  const emails = members.map((m) => m.email);
+  const db = TeamMember.db.db;
+  let userByKey: Map<
+    string,
+    { _id?: unknown; name?: string; image?: string; email?: string }
+  > = new Map();
+  if (db && (userIds.length > 0 || emails.length > 0)) {
+    const objectIds = userIds
+      .filter((id) => mongoose.Types.ObjectId.isValid(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
+    const users = await db
+      .collection<{
+        _id: mongoose.Types.ObjectId;
+        name?: string;
+        image?: string;
+        email?: string;
+      }>("users")
+      .find({
+        $or: [
+          ...(objectIds.length ? [{ _id: { $in: objectIds } }] : []),
+          { email: { $in: emails } },
+        ],
+      })
+      .toArray();
+    userByKey = new Map();
+    for (const u of users) {
+      userByKey.set(String(u._id), u);
+      if (u.email) userByKey.set(u.email.toLowerCase(), u);
+    }
+  }
+
   return NextResponse.json({
-    members: members.map((m) => ({
-      id: String(m._id),
-      email: m.email,
-      name: m.name,
-      image: m.image,
-      role: m.role,
-      status: m.status,
-      userId: m.userId,
-      invitedAt: m.invitedAt,
-    })),
+    members: members.map((m) => {
+      const fresh =
+        (m.userId && userByKey.get(m.userId)) ||
+        userByKey.get(m.email.toLowerCase());
+      return {
+        id: String(m._id),
+        email: m.email,
+        name: fresh?.name ?? m.name,
+        image: fresh?.image ?? m.image,
+        role: m.role,
+        status: m.status,
+        userId: m.userId,
+        invitedAt: m.invitedAt,
+      };
+    }),
   });
 }
 

@@ -3,6 +3,7 @@
 import CollaborationInvite from "@/components/notifications/CollaborationInvite";
 import TeamDeclineNotice from "@/components/notifications/TeamDeclineNotice";
 import TeamInvite from "@/components/notifications/TeamInvite";
+import TeamRoleChangeNotice from "@/components/notifications/TeamRoleChangeNotice";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +30,7 @@ export default function InboxPage() {
   const boardInvitations = data?.boardInvitations ?? [];
   const teamInvitations = data?.teamInvitations ?? [];
   const teamDeclineNotifications = data?.teamDeclineNotifications ?? [];
+  const teamRoleChangeNotifications = data?.teamRoleChangeNotifications ?? [];
   const pendingTeamInvitations = teamInvitations.filter(
     (inv) => inv.status === "pending",
   );
@@ -57,6 +59,23 @@ export default function InboxPage() {
       toast.success("Notification dismissed");
     } catch (error) {
       console.error("Error dismissing decline notification:", error);
+      toast.error("Failed to dismiss");
+    }
+  };
+
+  const handleDismissRoleChange = async (memberId: string) => {
+    try {
+      const response = await fetch(
+        `/api/teams/invitations/${memberId}/role-change`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) {
+        throw new Error("Failed to dismiss notification");
+      }
+      void refetch();
+      toast.success("Notification dismissed");
+    } catch (error) {
+      console.error("Error dismissing role change notification:", error);
       toast.error("Failed to dismiss");
     }
   };
@@ -195,7 +214,8 @@ export default function InboxPage() {
                 {pendingInvitations.filter((inv) => inv.status === "pending")
                   .length +
                   pendingTeamInvitations.length +
-                  teamDeclineNotifications.length}
+                  teamDeclineNotifications.length +
+                  teamRoleChangeNotifications.length}
               </div>
             )}
             <div className="text-muted-foreground text-sm">
@@ -260,9 +280,31 @@ export default function InboxPage() {
         </div>
       ) : pendingInvitations.length +
           teamInvitations.length +
-          teamDeclineNotifications.length >
+          teamDeclineNotifications.length +
+          teamRoleChangeNotifications.length >
         0 ? (
         <div className="space-y-6">
+          {teamRoleChangeNotifications.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Role Updates
+                </h2>
+                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                  {teamRoleChangeNotifications.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {teamRoleChangeNotifications.map((notification) => (
+                  <TeamRoleChangeNotice
+                    key={notification.id}
+                    notification={notification}
+                    onDismiss={handleDismissRoleChange}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           {pendingTeamInvitations.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">

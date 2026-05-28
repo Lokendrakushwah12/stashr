@@ -16,7 +16,7 @@ export async function GET(): Promise<NextResponse> {
   const { TeamMember, Team } = await registerModels();
   const emailLower = session.user.email.toLowerCase();
 
-  const [received, sentDeclined] = await Promise.all([
+  const [received, sentDeclined, roleChanges] = await Promise.all([
     TeamMember.find({
       email: emailLower,
       $or: [
@@ -37,10 +37,25 @@ export async function GET(): Promise<NextResponse> {
     })
       .lean()
       .exec(),
+    TeamMember.find({
+      email: emailLower,
+      status: "active",
+      roleChangedAt: { $exists: true },
+      $or: [
+        { roleChangeAcknowledgedAt: { $exists: false } },
+        { $expr: { $lt: ["$roleChangeAcknowledgedAt", "$roleChangedAt"] } },
+      ],
+    })
+      .lean()
+      .exec(),
   ]);
 
   const teamIds = [
-    ...new Set([...received, ...sentDeclined].map((m) => String(m.teamId))),
+    ...new Set(
+      [...received, ...sentDeclined, ...roleChanges].map((m) =>
+        String(m.teamId),
+      ),
+    ),
   ];
   const teams =
     teamIds.length > 0
@@ -91,5 +106,26 @@ export async function GET(): Promise<NextResponse> {
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
-  return NextResponse.json({ invitations, declinedNotifications });
+  const roleChangeNotifications = roleChanges
+    .map((m) => {
+      const team = teamMap.get(String(m.teamId));
+      if (!team) return null;
+      return {
+        id: String(m._id),
+        teamId: String(team._id),
+        teamName: team.name,
+        teamLogoUrl: team.logoUrl,
+        previousRole: m.previousRole ?? null,
+        newRole: m.role,
+        changedByName: m.roleChangedByName ?? null,
+        changedAt: m.roleChangedAt,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  return NextResponse.json({
+    invitations,
+    declinedNotifications,
+    roleChangeNotifications,
+  });
 }

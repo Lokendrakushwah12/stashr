@@ -50,8 +50,15 @@ export async function PATCH(
   if (!body.role || !VALID_ROLES.includes(body.role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
-  target.role = body.role;
-  await target.save();
+  if (target.role !== body.role) {
+    target.previousRole = target.role;
+    target.role = body.role;
+    target.roleChangedAt = new Date();
+    target.roleChangedByName =
+      session.user.name ?? session.user.email ?? "Someone";
+    target.roleChangeAcknowledgedAt = undefined;
+    await target.save();
+  }
 
   return NextResponse.json({
     member: {

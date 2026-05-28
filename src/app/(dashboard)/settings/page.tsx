@@ -6,7 +6,6 @@ import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -14,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   handleApiResponse,
   useUpgradeDialog,
@@ -31,7 +31,7 @@ import { toast } from "sonner";
 const THEME_PRESETS: Array<{ id: TeamTheme; label: string; swatch: string }> = [
   { id: "default", label: "Indigo", swatch: "oklch(0.6628 0.1834 280.86)" },
   { id: "ocean", label: "Ocean", swatch: "oklch(0.65 0.15 220)" },
-  { id: "forest", label: "Forest", swatch: "oklch(0.62 0.15 150)" },
+  { id: "forest", label: "Forest", swatch: "oklch(0.9521 0.0686 182.53)" },
 ];
 
 interface Member {
@@ -348,7 +348,7 @@ export default function SettingsPage() {
             Pick a preset or set a custom accent color for this team.
           </p>
         </header>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid h-24 grid-cols-2 gap-3 sm:grid-cols-4">
           {THEME_PRESETS.map((preset) => {
             const active = theme === preset.id;
             return (
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                   void handleSaveTheme(preset.id);
                 }}
                 className={cn(
-                  "group bg-background relative flex flex-col items-center gap-2 rounded-lg border p-3 text-left transition",
+                  "group bg-background relative flex flex-col items-center gap-1 rounded-lg border p-1 text-left transition",
                   active
                     ? "border-primary ring-primary/30 ring-2"
                     : "hover:border-foreground/30",
@@ -369,10 +369,16 @@ export default function SettingsPage() {
                     "cursor-not-allowed opacity-60",
                 )}
               >
-                <div
-                  className="h-10 w-10 rounded-full"
-                  style={{ background: preset.swatch }}
-                />
+                <div className="flex h-full w-full gap-0.5">
+                  <div
+                    className="h-full w-1/4 rounded opacity-50"
+                    style={{ background: preset.swatch }}
+                  />
+                  <div
+                    className="h-full w-3/4 rounded"
+                    style={{ background: preset.swatch }}
+                  />
+                </div>
                 <span className="text-sm font-medium">{preset.label}</span>
                 {active && (
                   <Check className="text-primary absolute top-2 right-2 h-4 w-4" />
@@ -395,10 +401,16 @@ export default function SettingsPage() {
               (!canManage || savingTheme) && "cursor-not-allowed opacity-60",
             )}
           >
-            <div
-              className="h-10 w-10 rounded-full border"
-              style={{ background: customColor }}
-            />
+            <div className="flex h-full w-full gap-0.5">
+              <div
+                className="h-full w-1/4 rounded opacity-50"
+                style={{ background: customColor }}
+              />
+              <div
+                className="h-full w-3/4 rounded"
+                style={{ background: customColor }}
+              />
+            </div>
             <span className="text-sm font-medium">Custom</span>
             {theme === "custom" && (
               <Check className="text-primary absolute top-2 right-2 h-4 w-4" />

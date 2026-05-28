@@ -35,11 +35,25 @@ export interface TeamDeclineNotification {
   respondedAt?: string;
 }
 
+export type TeamRole = "owner" | "admin" | "editor" | "viewer";
+
+export interface TeamRoleChangeNotification {
+  id: string;
+  teamId: string;
+  teamName: string;
+  teamLogoUrl?: string | null;
+  previousRole: TeamRole | null;
+  newRole: TeamRole;
+  changedByName: string | null;
+  changedAt: string;
+}
+
 export type InboxData = {
   folderInvitations: (FolderCollaboration & { folder?: Folder })[];
   boardInvitations: (BoardCollaboration & { board?: Board })[];
   teamInvitations: TeamInvitation[];
   teamDeclineNotifications: TeamDeclineNotification[];
+  teamRoleChangeNotifications: TeamRoleChangeNotification[];
 };
 
 export function useInbox(
@@ -72,6 +86,7 @@ export function useInbox(
       const teamData = (await teamResponse.json()) as {
         invitations: TeamInvitation[];
         declinedNotifications: TeamDeclineNotification[];
+        roleChangeNotifications: TeamRoleChangeNotification[];
       };
 
       return {
@@ -79,6 +94,7 @@ export function useInbox(
         boardInvitations: boardData.invitations ?? [],
         teamInvitations: teamData.invitations ?? [],
         teamDeclineNotifications: teamData.declinedNotifications ?? [],
+        teamRoleChangeNotifications: teamData.roleChangeNotifications ?? [],
       };
     },
     enabled: !!userId,
