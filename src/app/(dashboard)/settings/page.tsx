@@ -30,8 +30,8 @@ import { toast } from "sonner";
 
 const THEME_PRESETS: Array<{ id: TeamTheme; label: string; swatch: string }> = [
   { id: "default", label: "Indigo", swatch: "oklch(0.6628 0.1834 280.86)" },
-  { id: "ocean", label: "Ocean", swatch: "oklch(0.65 0.15 220)" },
-  { id: "forest", label: "Forest", swatch: "oklch(0.9521 0.0686 182.53)" },
+  { id: "ocean", label: "Sage", swatch: "oklch(0.632 0.058 118.39)" },
+  { id: "forest", label: "Mint", swatch: "oklch(0.8013 0.1096 144.28)" },
 ];
 
 interface Member {

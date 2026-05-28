@@ -58,6 +58,28 @@ export function setActiveTeamId(teamId: string | null) {
   }
 }
 
+// Pick a readable foreground (black or white) for an arbitrary hex color
+// using the WCAG relative-luminance formula. Threshold tuned so light
+// pastels get dark text and saturated mid-tones get white text.
+function readableForeground(hex: string): string {
+  const cleaned = hex.replace("#", "").trim();
+  const full =
+    cleaned.length === 3
+      ? cleaned
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : cleaned;
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return "oklch(1 0 0)";
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+  const channel = (c: number) =>
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const L = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  return L > 0.5 ? "oklch(0.15 0 0)" : "oklch(1 0 0)";
+}
+
 // Patch window.fetch ONCE to attach x-team-id header for same-origin /api/* calls.
 function installFetchInterceptor() {
   if (typeof window === "undefined") return;
@@ -153,9 +175,14 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
     if (theme === "custom" && currentTeam?.customColor) {
       root.style.setProperty("--primary", currentTeam.customColor);
       root.style.setProperty("--ring", currentTeam.customColor);
+      root.style.setProperty(
+        "--primary-foreground",
+        readableForeground(currentTeam.customColor),
+      );
     } else {
       root.style.removeProperty("--primary");
       root.style.removeProperty("--ring");
+      root.style.removeProperty("--primary-foreground");
     }
   }, [currentTeam?.theme, currentTeam?.customColor]);
 

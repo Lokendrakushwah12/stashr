@@ -88,9 +88,9 @@ export default function SidebarItem({
         <Badge
           variant={item.badge.variant ?? "default"}
           className={cn(
-            "text-xs text-white",
+            "size-4 rounded-sm p-0.5 px-0.75 text-xs text-white tabular-nums",
             isCollapsed &&
-              "absolute top-0 right-0 size-4 translate-x-1/4 -translate-y-1/4 rounded-sm p-1",
+              "absolute top-0 right-0 size-3.5 translate-x-1/4 -translate-y-1/4 rounded-sm p-0.5",
           )}
         >
           {item.badge.count}
