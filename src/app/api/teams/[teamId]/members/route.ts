@@ -109,9 +109,9 @@ export async function POST(
     throw e;
   }
 
-  // Check if already invited
+  // Check if there's an existing record for this email in the team
   const existing = await TeamMember.findOne({ teamId: teamObjectId, email });
-  if (existing) {
+  if (existing && existing.status !== "declined") {
     return NextResponse.json(
       { error: "This email has already been invited" },
       { status: 409 },
@@ -132,16 +132,30 @@ export async function POST(
     // ignore — invitedUserId stays undefined and gets linked at acceptance time
   }
 
-  const member = await TeamMember.create({
-    teamId: teamObjectId,
-    userId: invitedUserId,
-    email,
-    role,
-    status: "pending",
-    invitedByUserId: session.user.id,
-    invitedByName: session.user.name ?? session.user.email ?? "",
-    invitedAt: new Date(),
-  });
+  // If a declined record exists, re-open it as a fresh invitation
+  let member;
+  if (existing && existing.status === "declined") {
+    existing.role = role;
+    existing.status = "pending";
+    existing.userId = invitedUserId ?? existing.userId;
+    existing.invitedByUserId = session.user.id;
+    existing.invitedByName = session.user.name ?? session.user.email ?? "";
+    existing.invitedAt = new Date();
+    existing.respondedAt = undefined;
+    existing.acknowledgedByInviterAt = undefined;
+    member = await existing.save();
+  } else {
+    member = await TeamMember.create({
+      teamId: teamObjectId,
+      userId: invitedUserId,
+      email,
+      role,
+      status: "pending",
+      invitedByUserId: session.user.id,
+      invitedByName: session.user.name ?? session.user.email ?? "",
+      invitedAt: new Date(),
+    });
+  }
 
   return NextResponse.json(
     {
