@@ -18,14 +18,28 @@ export interface TeamInvitation {
   teamName: string;
   teamLogoUrl?: string | null;
   role: "owner" | "admin" | "editor" | "viewer";
+  status: "pending" | "declined";
   invitedByName?: string;
   invitedAt: string;
+  respondedAt?: string;
+}
+
+export interface TeamDeclineNotification {
+  id: string;
+  teamId: string;
+  teamName: string;
+  teamLogoUrl?: string | null;
+  role: "owner" | "admin" | "editor" | "viewer";
+  invitedEmail: string;
+  invitedName: string | null;
+  respondedAt?: string;
 }
 
 export type InboxData = {
   folderInvitations: (FolderCollaboration & { folder?: Folder })[];
   boardInvitations: (BoardCollaboration & { board?: Board })[];
   teamInvitations: TeamInvitation[];
+  teamDeclineNotifications: TeamDeclineNotification[];
 };
 
 export function useInbox(
@@ -57,12 +71,14 @@ export function useInbox(
       };
       const teamData = (await teamResponse.json()) as {
         invitations: TeamInvitation[];
+        declinedNotifications: TeamDeclineNotification[];
       };
 
       return {
         folderInvitations: folderData.invitations ?? [],
         boardInvitations: boardData.invitations ?? [],
         teamInvitations: teamData.invitations ?? [],
+        teamDeclineNotifications: teamData.declinedNotifications ?? [],
       };
     },
     enabled: !!userId,

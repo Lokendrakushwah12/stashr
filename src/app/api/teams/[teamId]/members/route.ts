@@ -38,6 +38,7 @@ export async function GET(
 
   const members = await TeamMember.find({
     teamId: new mongoose.Types.ObjectId(teamId),
+    status: { $in: ["active", "pending"] },
   })
     .sort({ createdAt: 1 })
     .lean();

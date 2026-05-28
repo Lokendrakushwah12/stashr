@@ -56,3 +56,40 @@ export async function POST(
 
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }
+
+// DELETE /api/teams/invitations/:memberId — dismiss a decline notification.
+// Only the inviter can dismiss, and only for declined invitations.
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ memberId: string }> },
+): Promise<NextResponse> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const { memberId } = await params;
+
+  await connectDB();
+  const { TeamMember } = await registerModels();
+
+  const member = await TeamMember.findById(memberId);
+  if (!member) {
+    return NextResponse.json(
+      { error: "Invitation not found" },
+      { status: 404 },
+    );
+  }
+  if (member.invitedByUserId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  if (member.status !== "declined") {
+    return NextResponse.json(
+      { error: "Only declined invitations can be dismissed" },
+      { status: 400 },
+    );
+  }
+
+  member.acknowledgedByInviterAt = new Date();
+  await member.save();
+  return NextResponse.json({ success: true });
+}

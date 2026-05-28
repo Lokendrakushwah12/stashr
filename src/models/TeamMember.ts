@@ -15,6 +15,7 @@ export interface TeamMemberDocument extends Document {
   invitedByName?: string;
   invitedAt: Date;
   respondedAt?: Date;
+  acknowledgedByInviterAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +56,7 @@ const TeamMemberSchema = new Schema<TeamMemberDocument>(
     invitedByName: { type: String },
     invitedAt: { type: Date, default: Date.now },
     respondedAt: { type: Date },
+    acknowledgedByInviterAt: { type: Date },
   },
   { timestamps: true },
 );

@@ -1,6 +1,7 @@
 "use client";
 
 import CollaborationInvite from "@/components/notifications/CollaborationInvite";
+import TeamDeclineNotice from "@/components/notifications/TeamDeclineNotice";
 import TeamInvite from "@/components/notifications/TeamInvite";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,8 +28,31 @@ export default function InboxPage() {
   const folderInvitations = data?.folderInvitations ?? [];
   const boardInvitations = data?.boardInvitations ?? [];
   const teamInvitations = data?.teamInvitations ?? [];
+  const teamDeclineNotifications = data?.teamDeclineNotifications ?? [];
+  const pendingTeamInvitations = teamInvitations.filter(
+    (inv) => inv.status === "pending",
+  );
+  const declinedTeamInvitations = teamInvitations.filter(
+    (inv) => inv.status === "declined",
+  );
   const pendingInvitations = [...folderInvitations, ...boardInvitations];
   const loadingInvitations = isLoading || isFetching;
+
+  const handleDismissDecline = async (memberId: string) => {
+    try {
+      const response = await fetch(`/api/teams/invitations/${memberId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to dismiss notification");
+      }
+      void refetch();
+      toast.success("Notification dismissed");
+    } catch (error) {
+      console.error("Error dismissing decline notification:", error);
+      toast.error("Failed to dismiss");
+    }
+  };
 
   const handleTeamInvitation = async (
     memberId: string,
@@ -162,7 +186,9 @@ export default function InboxPage() {
             ) : (
               <div className="font-mono text-3xl font-semibold">
                 {pendingInvitations.filter((inv) => inv.status === "pending")
-                  .length + teamInvitations.length}
+                  .length +
+                  pendingTeamInvitations.length +
+                  teamDeclineNotifications.length}
               </div>
             )}
             <div className="text-muted-foreground text-sm">
@@ -227,24 +253,48 @@ export default function InboxPage() {
             ))}
           </div>
         </div>
-      ) : pendingInvitations.length + teamInvitations.length > 0 ? (
+      ) : pendingInvitations.length +
+          teamInvitations.length +
+          teamDeclineNotifications.length >
+        0 ? (
         <div className="space-y-6">
-          {teamInvitations.length > 0 && (
+          {pendingTeamInvitations.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-medium tracking-tight">
                   Team Invitations
                 </h2>
                 <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
-                  {teamInvitations.length}
+                  {pendingTeamInvitations.length}
                 </div>
               </div>
               <div className="space-y-3">
-                {teamInvitations.map((invitation) => (
+                {pendingTeamInvitations.map((invitation) => (
                   <TeamInvite
                     key={invitation.id}
                     invitation={invitation}
                     onRespond={handleTeamInvitation}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {teamDeclineNotifications.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Declined Invitations
+                </h2>
+                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                  {teamDeclineNotifications.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {teamDeclineNotifications.map((notification) => (
+                  <TeamDeclineNotice
+                    key={notification.id}
+                    notification={notification}
+                    onDismiss={handleDismissDecline}
                   />
                 ))}
               </div>
@@ -267,6 +317,25 @@ export default function InboxPage() {
                     collaboration={invitation}
                     onAccept={handleAcceptInvitation}
                     onDecline={handleDeclineInvitation}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {declinedTeamInvitations.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">History</h2>
+                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                  {declinedTeamInvitations.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {declinedTeamInvitations.map((invitation) => (
+                  <TeamInvite
+                    key={invitation.id}
+                    invitation={invitation}
+                    onRespond={handleTeamInvitation}
                   />
                 ))}
               </div>

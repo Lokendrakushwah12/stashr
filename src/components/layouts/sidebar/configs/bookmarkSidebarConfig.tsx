@@ -40,13 +40,17 @@ export function useBookmarkSidebarConfig({
         invitations: (FolderCollaboration & { folder?: Folder })[];
       };
       const teamData = (await teamRes.json()) as {
-        invitations: { id: string }[];
+        invitations: { id: string; status: "pending" | "declined" }[];
+        declinedNotifications: { id: string }[];
       };
       const folderPending =
         folderData.invitations?.filter((inv) => inv.status === "pending")
           .length ?? 0;
-      const teamPending = teamData.invitations?.length ?? 0;
-      setPendingInvitationsCount(folderPending + teamPending);
+      const teamPending =
+        teamData.invitations?.filter((inv) => inv.status === "pending")
+          .length ?? 0;
+      const teamDeclined = teamData.declinedNotifications?.length ?? 0;
+      setPendingInvitationsCount(folderPending + teamPending + teamDeclined);
     } catch (error) {
       console.error("Error fetching invitations count:", error);
     }

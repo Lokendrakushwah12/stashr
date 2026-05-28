@@ -6,6 +6,7 @@ import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -91,8 +92,62 @@ export default function SettingsPage() {
 
   if (!currentTeam) {
     return (
-      <div className="text-muted-foreground flex h-64 items-center justify-center text-sm">
-        Loading team…
+      <div className="mx-auto max-w-3xl space-y-8 py-6">
+        <section className="space-y-4">
+          <header className="space-y-2">
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-4 w-64" />
+          </header>
+          <div className="rounded-xl border p-4">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-16 w-16 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
+          <Skeleton className="h-4 w-48" />
+        </section>
+
+        <section className="space-y-4">
+          <header className="space-y-2">
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-4 w-72" />
+          </header>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <header className="space-y-2">
+            <Skeleton className="h-7 w-28" />
+            <Skeleton className="h-4 w-80" />
+          </header>
+          <div className="rounded-xl border p-4">
+            <div className="flex gap-2">
+              <Skeleton className="h-9 flex-1" />
+              <Skeleton className="h-9 w-28" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
+          <ul className="divide-y rounded-xl border">
+            {[0, 1].map((i) => (
+              <li key={i} className="flex items-center gap-3 p-3">
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <Skeleton className="h-8 w-20" />
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     );
   }
