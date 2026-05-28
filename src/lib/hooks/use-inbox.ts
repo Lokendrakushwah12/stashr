@@ -18,7 +18,7 @@ export interface TeamInvitation {
   teamName: string;
   teamLogoUrl?: string | null;
   role: "owner" | "admin" | "editor" | "viewer";
-  status: "pending" | "declined";
+  status: "pending" | "declined" | "accepted";
   invitedByName?: string;
   invitedAt: string;
   respondedAt?: string;

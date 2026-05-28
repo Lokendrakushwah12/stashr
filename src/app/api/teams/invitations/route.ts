@@ -19,7 +19,13 @@ export async function GET(): Promise<NextResponse> {
   const [received, sentDeclined] = await Promise.all([
     TeamMember.find({
       email: emailLower,
-      status: { $in: ["pending", "declined"] },
+      $or: [
+        { status: { $in: ["pending", "declined"] } },
+        // Active rows only count as "accepted invitations" if they were
+        // actually invited by someone — exclude teams the user created
+        // themselves (which have no invitedByUserId).
+        { status: "active", invitedByUserId: { $exists: true } },
+      ],
     })
       .lean()
       .exec(),
@@ -50,13 +56,17 @@ export async function GET(): Promise<NextResponse> {
     .map((m) => {
       const team = teamMap.get(String(m.teamId));
       if (!team) return null;
+      const status: "pending" | "declined" | "accepted" =
+        m.status === "active"
+          ? "accepted"
+          : (m.status as "pending" | "declined");
       return {
         id: String(m._id),
         teamId: String(team._id),
         teamName: team.name,
         teamLogoUrl: team.logoUrl,
         role: m.role,
-        status: m.status as "pending" | "declined",
+        status,
         invitedByName: m.invitedByName,
         invitedAt: m.invitedAt,
         respondedAt: m.respondedAt,

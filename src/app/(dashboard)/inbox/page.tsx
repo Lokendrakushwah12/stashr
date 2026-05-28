@@ -32,8 +32,15 @@ export default function InboxPage() {
   const pendingTeamInvitations = teamInvitations.filter(
     (inv) => inv.status === "pending",
   );
-  const declinedTeamInvitations = teamInvitations.filter(
-    (inv) => inv.status === "declined",
+  const historyTeamInvitations = teamInvitations
+    .filter((inv) => inv.status === "declined" || inv.status === "accepted")
+    .sort((a, b) => {
+      const aDate = a.respondedAt ? new Date(a.respondedAt).getTime() : 0;
+      const bDate = b.respondedAt ? new Date(b.respondedAt).getTime() : 0;
+      return bDate - aDate;
+    });
+  const acceptedTeamInvitations = teamInvitations.filter(
+    (inv) => inv.status === "accepted",
   );
   const pendingInvitations = [...folderInvitations, ...boardInvitations];
   const loadingInvitations = isLoading || isFetching;
@@ -208,10 +215,8 @@ export default function InboxPage() {
               <Skeleton className="mb-1 h-9 w-16" />
             ) : (
               <div className="font-mono text-3xl font-semibold">
-                {
-                  pendingInvitations.filter((inv) => inv.status === "accepted")
-                    .length
-                }
+                {pendingInvitations.filter((inv) => inv.status === "accepted")
+                  .length + acceptedTeamInvitations.length}
               </div>
             )}
             <div className="text-muted-foreground text-sm">
@@ -322,16 +327,16 @@ export default function InboxPage() {
               </div>
             </div>
           )}
-          {declinedTeamInvitations.length > 0 && (
+          {historyTeamInvitations.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-medium tracking-tight">History</h2>
                 <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
-                  {declinedTeamInvitations.length}
+                  {historyTeamInvitations.length}
                 </div>
               </div>
               <div className="space-y-3">
-                {declinedTeamInvitations.map((invitation) => (
+                {historyTeamInvitations.map((invitation) => (
                   <TeamInvite
                     key={invitation.id}
                     invitation={invitation}

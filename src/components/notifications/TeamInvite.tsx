@@ -19,6 +19,8 @@ interface TeamInviteProps {
 export default function TeamInvite({ invitation, onRespond }: TeamInviteProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const isDeclined = invitation.status === "declined";
+  const isAccepted = invitation.status === "accepted";
+  const isPending = invitation.status === "pending";
 
   const handle = async (action: "accept" | "decline") => {
     setIsProcessing(true);
@@ -29,11 +31,30 @@ export default function TeamInvite({ invitation, onRespond }: TeamInviteProps) {
     }
   };
 
+  const accentClass = isAccepted
+    ? "bg-green-400/50"
+    : isDeclined
+      ? "bg-muted-foreground/40"
+      : "bg-blue-400/50";
+  const iconClass = isAccepted
+    ? "text-green-500"
+    : isDeclined
+      ? "text-muted-foreground"
+      : "text-blue-500";
+  const statusBadgeVariant = isAccepted
+    ? "success"
+    : isDeclined
+      ? "default"
+      : "warning";
+  const statusLabel = isAccepted
+    ? "Accepted"
+    : isDeclined
+      ? "Declined"
+      : "Pending";
+
   return (
     <Card className="shadow-[0_-1px_--theme(--color-border/70%)] relative overflow-hidden">
-      <div
-        className={`absolute top-0 left-0 h-full w-1 ${isDeclined ? "bg-muted-foreground/40" : "bg-blue-400/50"}`}
-      />
+      <div className={`absolute top-0 left-0 h-full w-1 ${accentClass}`} />
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex flex-1 items-start gap-3">
@@ -44,16 +65,38 @@ export default function TeamInvite({ invitation, onRespond }: TeamInviteProps) {
             />
             <div className="flex-1">
               <div className="mb-2 flex items-center gap-2">
-                <Users
-                  className={`h-5 w-5 ${isDeclined ? "text-muted-foreground" : "text-blue-500"}`}
-                />
+                <Users className={`h-5 w-5 ${iconClass}`} />
                 <h4 className="font-medium">Team Invitation</h4>
-                <Badge variant={isDeclined ? "default" : "warning"}>
-                  {isDeclined ? "Declined" : "Pending"}
-                </Badge>
+                <Badge variant={statusBadgeVariant}>{statusLabel}</Badge>
               </div>
               <div className="text-muted-foreground mb-2 text-sm">
-                {isDeclined ? (
+                {isAccepted ? (
+                  <>
+                    You accepted the invitation to join{" "}
+                    <span className="text-foreground font-medium">
+                      {invitation.teamName}
+                    </span>{" "}
+                    as a{" "}
+                    <Badge
+                      variant={
+                        invitation.role === "editor" ? "info" : "default"
+                      }
+                      className="text-xs"
+                    >
+                      {invitation.role}
+                    </Badge>
+                    {invitation.invitedByName ? (
+                      <>
+                        {" "}
+                        from{" "}
+                        <span className="font-medium">
+                          {invitation.invitedByName}
+                        </span>
+                      </>
+                    ) : null}
+                    .
+                  </>
+                ) : isDeclined ? (
                   <>
                     You declined the invitation to join{" "}
                     <span className="text-foreground font-medium">
@@ -107,13 +150,15 @@ export default function TeamInvite({ invitation, onRespond }: TeamInviteProps) {
                 )}
               </div>
               <p className="text-muted-foreground text-xs">
-                {isDeclined && invitation.respondedAt
-                  ? `Declined ${new Date(invitation.respondedAt).toLocaleDateString()}`
-                  : `Invited ${new Date(invitation.invitedAt).toLocaleDateString()}`}
+                {isAccepted && invitation.respondedAt
+                  ? `Joined ${new Date(invitation.respondedAt).toLocaleDateString()}`
+                  : isDeclined && invitation.respondedAt
+                    ? `Declined ${new Date(invitation.respondedAt).toLocaleDateString()}`
+                    : `Invited ${new Date(invitation.invitedAt).toLocaleDateString()}`}
               </p>
             </div>
           </div>
-          {!isDeclined && (
+          {isPending && (
             <div className="ml-4 flex gap-2">
               <Button
                 size="sm"
