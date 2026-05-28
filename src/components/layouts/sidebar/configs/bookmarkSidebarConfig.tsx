@@ -29,16 +29,24 @@ export function useBookmarkSidebarConfig({
     if (!session?.user?.id) return;
 
     try {
-      const response = await fetch("/api/collaborations/pending");
-      if (!response.ok) {
+      const [folderRes, teamRes] = await Promise.all([
+        fetch("/api/collaborations/pending"),
+        fetch("/api/teams/invitations"),
+      ]);
+      if (!folderRes.ok || !teamRes.ok) {
         throw new Error("Failed to fetch invitations");
       }
-      const data = (await response.json()) as {
+      const folderData = (await folderRes.json()) as {
         invitations: (FolderCollaboration & { folder?: Folder })[];
       };
-      setPendingInvitationsCount(
-        data.invitations?.filter((inv) => inv.status === "pending").length ?? 0,
-      );
+      const teamData = (await teamRes.json()) as {
+        invitations: { id: string }[];
+      };
+      const folderPending =
+        folderData.invitations?.filter((inv) => inv.status === "pending")
+          .length ?? 0;
+      const teamPending = teamData.invitations?.length ?? 0;
+      setPendingInvitationsCount(folderPending + teamPending);
     } catch (error) {
       console.error("Error fetching invitations count:", error);
     }

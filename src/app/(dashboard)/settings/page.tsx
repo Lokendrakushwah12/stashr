@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,8 @@ export default function SettingsPage() {
   const [savingTeam, setSavingTeam] = useState(false);
   const [savingTheme, setSavingTheme] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<Member | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
     if (currentTeam) {
@@ -216,20 +219,24 @@ export default function SettingsPage() {
     }
   };
 
-  const handleRemove = async (memberId: string) => {
-    if (!confirm("Remove this member from the team?")) return;
+  const confirmRemove = async () => {
+    if (!removeTarget) return;
+    setRemoving(true);
     try {
       const res = await fetch(
-        `/api/teams/${currentTeam.id}/members/${memberId}`,
+        `/api/teams/${currentTeam.id}/members/${removeTarget.id}`,
         { method: "DELETE" },
       );
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? "Failed to remove");
       toast.success("Member removed");
+      setRemoveTarget(null);
       await fetchMembers();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to remove";
       toast.error(msg);
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -475,7 +482,7 @@ export default function SettingsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleRemove(m.id)}
+                  onClick={() => setRemoveTarget(m)}
                 >
                   Remove
                 </Button>
@@ -484,6 +491,23 @@ export default function SettingsPage() {
           ))}
         </ul>
       </section>
+
+      <ConfirmationDialog
+        open={!!removeTarget}
+        onOpenChange={(open) => {
+          if (!open) setRemoveTarget(null);
+        }}
+        title="Remove member"
+        description={
+          removeTarget
+            ? `${removeTarget.name ?? removeTarget.email} will lose access to all boards and bookmarks in this team.`
+            : ""
+        }
+        confirmText="Remove"
+        variant="destructive"
+        onConfirm={confirmRemove}
+        isLoading={removing}
+      />
     </div>
   );
 }
