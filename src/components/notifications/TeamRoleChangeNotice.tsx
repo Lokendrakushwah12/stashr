@@ -29,9 +29,8 @@ export default function TeamRoleChangeNotice({
   };
 
   return (
-    <Card className="shadow-[0_-1px_--theme(--color-border/70%)] relative overflow-hidden">
-      <div className="absolute top-0 left-0 h-full w-1 bg-violet-400/60" />
-      <CardContent className="p-4">
+    <Card className="relative overflow-hidden border-violet-400/30 p-0 shadow-xs ring-2 ring-violet-400/10">
+      <CardContent className="p-3">
         <div className="flex items-start justify-between">
           <div className="flex flex-1 items-start gap-3">
             <TeamAvatar

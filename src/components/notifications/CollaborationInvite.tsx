@@ -34,9 +34,7 @@ export default function CollaborationInvite({
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
 
-  // Determine if this is a board or folder collaboration
   const isBoard = "board" in collaboration && collaboration.board;
-  const isFolder = "folder" in collaboration && collaboration.folder;
   const type: "folder" | "board" = isBoard ? "board" : "folder";
 
   const resourceName = isBoard
@@ -82,19 +80,27 @@ export default function CollaborationInvite({
 
   const isAccepted = collaboration.status === "accepted";
 
+  const accentClass = isAccepted
+    ? "ring-emerald-400/10 border-emerald-400/30"
+    : "ring-blue-400/10 border-blue-400/30";
+  const iconClass = isAccepted
+    ? "text-emerald-500"
+    : isBoard
+      ? "text-purple-500"
+      : "text-blue-500";
+
   return (
-    <Card className="shadow-[0_-1px_--theme(--color-border/70%)] relative overflow-hidden">
-      <div
-        className={`absolute top-0 left-0 h-full w-1 ${isAccepted ? "bg-green-400/50" : "bg-blue-400/50"}`}
-      />
-      <CardContent className="p-4">
+    <Card
+      className={`relative overflow-hidden p-0 shadow-xs ring-2 ${accentClass}`}
+    >
+      <CardContent className="p-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="mb-2 flex items-center gap-2">
               {isBoard ? (
-                <Stars className="h-5 w-5 text-purple-500" />
+                <Stars className={`h-5 w-5 ${iconClass}`} />
               ) : (
-                <Bookmark className="h-5 w-5 text-blue-500" />
+                <Bookmark className={`h-5 w-5 ${iconClass}`} />
               )}
               <h4 className="font-medium">
                 {isAccepted
@@ -109,7 +115,7 @@ export default function CollaborationInvite({
               {isAccepted ? (
                 <>
                   You have access to collaborate on the {type}{" "}
-                  <span className="font-medium">
+                  <span className="text-foreground font-medium">
                     {resourceName ?? `this ${type}`}
                   </span>{" "}
                   as a{" "}
@@ -125,7 +131,7 @@ export default function CollaborationInvite({
               ) : (
                 <>
                   You&apos;ve been invited to collaborate on the {type}{" "}
-                  <span className="font-medium">
+                  <span className="text-foreground font-medium">
                     {resourceName ?? `a ${type}`}
                   </span>{" "}
                   as a{" "}

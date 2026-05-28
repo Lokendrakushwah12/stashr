@@ -32,12 +32,12 @@ export default function TeamInvite({ invitation, onRespond }: TeamInviteProps) {
   };
 
   const accentClass = isAccepted
-    ? "bg-green-400/50"
+    ? "ring-emerald-400/10 border-emerald-400/30"
     : isDeclined
-      ? "bg-muted-foreground/40"
-      : "bg-blue-400/50";
+      ? "ring-zinc-400/10 border-zinc-400/30"
+      : "ring-blue-400/10 border-blue-400/30";
   const iconClass = isAccepted
-    ? "text-green-500"
+    ? "text-emerald-500"
     : isDeclined
       ? "text-muted-foreground"
       : "text-blue-500";
@@ -53,9 +53,10 @@ export default function TeamInvite({ invitation, onRespond }: TeamInviteProps) {
       : "Pending";
 
   return (
-    <Card className="shadow-[0_-1px_--theme(--color-border/70%)] relative overflow-hidden">
-      <div className={`absolute top-0 left-0 h-full w-1 ${accentClass}`} />
-      <CardContent className="p-4">
+    <Card
+      className={`relative overflow-hidden p-0 shadow-xs ring-2 ${accentClass}`}
+    >
+      <CardContent className="p-3">
         <div className="flex items-start justify-between">
           <div className="flex flex-1 items-start gap-3">
             <TeamAvatar
