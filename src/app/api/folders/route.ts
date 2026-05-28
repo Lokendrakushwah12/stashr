@@ -1,70 +1,65 @@
-import { authOptions } from "@/lib/auth";
-import { registerModels } from "@/models";
+import { getRequestContext, planLimitResponse } from "@/lib/api-team";
 import connectDB from "@/lib/mongodb";
-import type { CreateFolderRequest } from "@/types";
-import { getServerSession } from "next-auth";
+import { assertWithinLimit, PlanLimitError } from "@/lib/plans";
+import { canWrite } from "@/lib/team-service";
+import { registerModels } from "@/models";
+import mongoose from "mongoose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import type { CreateFolderRequest } from "@/types";
 
-// GET /api/folders - Get all folders with their bookmarks for the authenticated user
+// GET /api/folders - Get all folders in the current team (+ external collaborator folders)
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
     const { searchParams } = new URL(request.url);
-    const searchQuery = searchParams.get("search")?.trim() || "";
+    const searchQuery = searchParams.get("search")?.trim() ?? "";
 
     await connectDB();
     const { Folder, FolderCollaboration, Bookmark } = await registerModels();
+    const teamObjectId = new mongoose.Types.ObjectId(ctx.teamId);
 
-    // Get folders owned by user
-    const ownedFolders = await Folder.find({ userId: session.user.id })
-      .select("_id name description color userId bookmarks createdAt updatedAt")
+    const teamFolders = await Folder.find({ teamId: teamObjectId })
+      .select(
+        "_id name description color userId teamId bookmarks createdAt updatedAt",
+      )
       .sort({ createdAt: -1 })
       .lean()
       .exec();
 
-    // Get folders where user is a collaborator
-    const collaborations = await FolderCollaboration.find({
-      userId: session.user.id,
+    // Cross-team folders shared via per-folder collaboration (legacy)
+    const collabs = await FolderCollaboration.find({
+      userId: ctx.userId,
       status: "accepted",
     })
       .select("folderId")
       .lean()
       .exec();
-
-    const collaborationFolderIds = collaborations.map((c) => c.folderId);
-
-    const collaboratorFolders =
-      collaborationFolderIds.length > 0
-        ? await Folder.find({ _id: { $in: collaborationFolderIds } })
+    const collabIds = collabs.map((c) => c.folderId);
+    const collabFolders =
+      collabIds.length > 0
+        ? await Folder.find({
+            _id: { $in: collabIds },
+            teamId: { $ne: teamObjectId },
+          })
             .select(
-              "_id name description color userId bookmarks createdAt updatedAt",
+              "_id name description color userId teamId bookmarks createdAt updatedAt",
             )
             .sort({ createdAt: -1 })
             .lean()
             .exec()
         : [];
 
-    // Combine and sort all folders
-    const allFolders = [...ownedFolders, ...collaboratorFolders];
-    let folders = allFolders.sort(
+    let folders = [...teamFolders, ...collabFolders].sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
-    // If search query exists, filter folders and bookmarks
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       const folderIds = folders.map((f) => f._id.toString());
-
-      // Search bookmarks by title or URL in accessible folders
-      // Note: We don't filter by userId here because bookmarks in collaborator folders
-      // might be owned by the folder owner, not the collaborator
       const matchingBookmarks = await Bookmark.find({
         folderId: { $in: folderIds },
         $or: [
@@ -75,12 +70,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         .select("folderId")
         .lean()
         .exec();
-
       const bookmarkFolderIds = new Set(
         matchingBookmarks.map((b) => b.folderId?.toString()).filter(Boolean),
       );
-
-      // Filter folders by name or if they have matching bookmarks
       folders = folders.filter((folder) => {
         const folderNameMatch = folder.name
           ?.toLowerCase()
@@ -92,14 +84,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    // Transform folders to include bookmark count instead of full bookmark data
     const foldersWithCount = folders.map((folder) => ({
       _id: folder._id,
       name: folder.name,
       description: folder.description,
       color: folder.color,
       userId: folder.userId,
-      bookmarkCount: folder.bookmarks?.length || 0,
+      teamId: folder.teamId,
+      bookmarkCount: folder.bookmarks?.length ?? 0,
       createdAt: folder.createdAt,
       updatedAt: folder.updatedAt,
     }));
@@ -107,14 +99,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ folders: foldersWithCount }, { status: 200 });
   } catch (error) {
     console.error("Error fetching folders:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to fetch folders: ${error.message}` },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to fetch folders" },
       { status: 500 },
@@ -122,22 +106,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// POST /api/folders - Create a new folder for the authenticated user
+// POST /api/folders - Create a new folder in the current team
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
+    if (!canWrite(ctx.role)) {
+      return NextResponse.json(
+        { error: "You don't have permission to create folders in this team" },
+        { status: 403 },
+      );
     }
 
     await connectDB();
-    const { Folder } = await registerModels();
+    const { Folder, Team } = await registerModels();
+    const teamObjectId = new mongoose.Types.ObjectId(ctx.teamId);
+
+    const team = await Team.findById(teamObjectId).lean();
+    const planId = team?.planId ?? "free";
 
     const body = (await request.json()) as CreateFolderRequest;
     const { name, description, color } = body;
 
-    // Validate required fields
     if (!name?.trim()) {
       return NextResponse.json(
         { error: "Folder name is required" },
@@ -145,15 +135,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Check if folder with same name already exists for this user
+    // Plan limit: foldersPerTeam
+    const folderCount = await Folder.countDocuments({ teamId: teamObjectId });
+    try {
+      assertWithinLimit({
+        planId,
+        key: "foldersPerTeam",
+        current: folderCount,
+      });
+    } catch (e) {
+      if (e instanceof PlanLimitError) return planLimitResponse(e);
+      throw e;
+    }
+
     const existingFolder = await Folder.findOne({
-      userId: session.user.id,
+      teamId: teamObjectId,
       name: name.trim(),
     }).exec();
-
     if (existingFolder) {
       return NextResponse.json(
-        { error: "A folder with this name already exists" },
+        { error: "A folder with this name already exists in this team" },
         { status: 409 },
       );
     }
@@ -162,22 +163,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       name: name.trim(),
       description: description?.trim() ?? "",
       color: color ?? "#3B82F6",
-      userId: session.user.id,
+      userId: ctx.userId,
+      teamId: teamObjectId,
     });
-
     await folder.save();
 
     return NextResponse.json({ folder: folder.toObject() }, { status: 201 });
   } catch (error) {
     console.error("Error creating folder:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to create folder: ${error.message}` },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to create folder" },
       { status: 500 },

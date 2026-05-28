@@ -42,6 +42,11 @@ const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
       required: [true, "User ID is required"],
       index: true,
     },
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      index: true,
+    },
     folderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Folder",
@@ -65,8 +70,8 @@ bookmarkSchema.pre("save", function () {
   }
 });
 
-// Compound index to ensure unique URLs per user
-bookmarkSchema.index({ userId: 1, url: 1 }, { unique: true });
+// Compound index to ensure unique URLs per team
+bookmarkSchema.index({ teamId: 1, url: 1 }, { unique: true, sparse: true });
 
 export default (mongoose.models.Bookmark as BookmarkModel) ??
   mongoose.model<BookmarkDocument>("Bookmark", bookmarkSchema);

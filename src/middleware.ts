@@ -10,7 +10,7 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => !!token,
     },
-  }
+  },
 );
 
 export const config = {
@@ -18,9 +18,10 @@ export const config = {
     "/board/:path*",
     "/bookmarks/:path*",
     "/inbox/:path*",
+    "/settings/:path*",
     "/profile/:path*",
     "/api/folders/:path*",
     "/api/bookmarks/:path*",
     "/api/collaborations/:path*",
   ],
-}; 
+};

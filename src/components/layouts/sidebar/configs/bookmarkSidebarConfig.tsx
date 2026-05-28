@@ -1,11 +1,12 @@
 "use client";
 
-import { StashrLogo } from "@/components/ui/icons";
+import { TeamSwitcher } from "@/components/team/TeamSwitcher";
 import type { Folder, FolderCollaboration } from "@/types";
 import {
   BookmarkSquare,
   ClipboardText,
   InboxLine,
+  Settings,
 } from "@solar-icons/react-perf/BoldDuotone";
 import { User } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useSession } from "next-auth/react";
@@ -28,15 +29,34 @@ export function useBookmarkSidebarConfig({
     if (!session?.user?.id) return;
 
     try {
-      const response = await fetch("/api/collaborations/pending");
-      if (!response.ok) {
+      const [folderRes, teamRes] = await Promise.all([
+        fetch("/api/collaborations/pending"),
+        fetch("/api/teams/invitations"),
+      ]);
+      if (!folderRes.ok || !teamRes.ok) {
         throw new Error("Failed to fetch invitations");
       }
-      const data = (await response.json()) as {
+      const folderData = (await folderRes.json()) as {
         invitations: (FolderCollaboration & { folder?: Folder })[];
       };
+      const teamData = (await teamRes.json()) as {
+        invitations: {
+          id: string;
+          status: "pending" | "declined" | "accepted";
+        }[];
+        declinedNotifications: { id: string }[];
+        roleChangeNotifications: { id: string }[];
+      };
+      const folderPending =
+        folderData.invitations?.filter((inv) => inv.status === "pending")
+          .length ?? 0;
+      const teamPending =
+        teamData.invitations?.filter((inv) => inv.status === "pending")
+          .length ?? 0;
+      const teamDeclined = teamData.declinedNotifications?.length ?? 0;
+      const roleChanges = teamData.roleChangeNotifications?.length ?? 0;
       setPendingInvitationsCount(
-        data.invitations?.filter((inv) => inv.status === "pending").length ?? 0,
+        folderPending + teamPending + teamDeclined + roleChanges,
       );
     } catch (error) {
       console.error("Error fetching invitations count:", error);
@@ -50,10 +70,8 @@ export function useBookmarkSidebarConfig({
   }, [session?.user?.id]);
 
   const config: SidebarConfig = {
-    header: {
-      title: "Stashr",
-      icon: StashrLogo,
-    },
+    headerSlot: <TeamSwitcher />,
+    collapsedHeaderSlot: <TeamSwitcher compact />,
     sections: [
       {
         id: "navigation",
@@ -86,6 +104,13 @@ export function useBookmarkSidebarConfig({
                     variant: "destructive" as const,
                   }
                 : undefined,
+          },
+          {
+            id: "settings",
+            label: "Settings",
+            icon: Settings,
+            href: "/settings",
+            active: currentPath.startsWith("/settings"),
           },
           {
             id: "profile",

@@ -1,58 +1,68 @@
-import mongoose, { Schema, type Document } from 'mongoose';
+import mongoose, { Schema, type Document } from "mongoose";
 
 export interface BoardDocument extends Document {
   name: string;
   description?: string;
   content?: string;
   userId: string;
+  teamId?: mongoose.Types.ObjectId;
   linkedFolderId?: string;
   cardCount?: number;
   createdAt: Date;
   updatedAt: Date;
-  userRole?: 'owner' | 'editor' | 'viewer';
+  userRole?: "owner" | "editor" | "viewer";
 }
 
-const BoardSchema = new Schema<BoardDocument>({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 100,
+const BoardSchema = new Schema<BoardDocument>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    content: {
+      type: String,
+      trim: true,
+      maxlength: 10000,
+    },
+    userId: {
+      type: String,
+      required: true,
+    },
+    teamId: {
+      type: Schema.Types.ObjectId,
+      ref: "Team",
+      index: true,
+    },
+    linkedFolderId: {
+      type: String,
+      index: true,
+    },
+    cardCount: {
+      type: Number,
+      default: 0,
+    },
+    userRole: {
+      type: String,
+      enum: ["owner", "editor", "viewer"],
+      default: "owner",
+    },
   },
-  description: {
-    type: String,
-    trim: true,
-    maxlength: 500,
+  {
+    timestamps: true,
   },
-  content: {
-    type: String,
-    trim: true,
-    maxlength: 10000,
-  },
-  userId: {
-    type: String,
-    required: true,
-  },
-  linkedFolderId: {
-    type: String,
-    index: true,
-  },
-  cardCount: {
-    type: Number,
-    default: 0,
-  },
-  userRole: {
-    type: String,
-    enum: ['owner', 'editor', 'viewer'],
-    default: 'owner',
-  },
-}, {
-  timestamps: true,
-});
+);
 
 // Index for efficient queries
 BoardSchema.index({ userId: 1 });
 BoardSchema.index({ createdAt: -1 });
 BoardSchema.index({ linkedFolderId: 1 });
 
-export default mongoose.models.Board ?? mongoose.model<BoardDocument>('Board', BoardSchema);
+export default mongoose.models.Board ??
+  mongoose.model<BoardDocument>("Board", BoardSchema);

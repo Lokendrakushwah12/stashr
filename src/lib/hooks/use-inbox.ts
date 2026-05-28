@@ -5,7 +5,6 @@ import type {
   Folder,
   FolderCollaboration,
 } from "@/types";
-import { toast } from "sonner";
 
 export const inboxKeys = {
   all: ["inbox"] as const,
@@ -13,9 +12,48 @@ export const inboxKeys = {
   list: (userId?: string | null) => [...inboxKeys.lists(), { userId }] as const,
 };
 
+export interface TeamInvitation {
+  id: string;
+  teamId: string;
+  teamName: string;
+  teamLogoUrl?: string | null;
+  role: "owner" | "admin" | "editor" | "viewer";
+  status: "pending" | "declined" | "accepted";
+  invitedByName?: string;
+  invitedAt: string;
+  respondedAt?: string;
+}
+
+export interface TeamDeclineNotification {
+  id: string;
+  teamId: string;
+  teamName: string;
+  teamLogoUrl?: string | null;
+  role: "owner" | "admin" | "editor" | "viewer";
+  invitedEmail: string;
+  invitedName: string | null;
+  respondedAt?: string;
+}
+
+export type TeamRole = "owner" | "admin" | "editor" | "viewer";
+
+export interface TeamRoleChangeNotification {
+  id: string;
+  teamId: string;
+  teamName: string;
+  teamLogoUrl?: string | null;
+  previousRole: TeamRole | null;
+  newRole: TeamRole;
+  changedByName: string | null;
+  changedAt: string;
+}
+
 export type InboxData = {
   folderInvitations: (FolderCollaboration & { folder?: Folder })[];
   boardInvitations: (BoardCollaboration & { board?: Board })[];
+  teamInvitations: TeamInvitation[];
+  teamDeclineNotifications: TeamDeclineNotification[];
+  teamRoleChangeNotifications: TeamRoleChangeNotification[];
 };
 
 export function useInbox(
@@ -24,25 +62,39 @@ export function useInbox(
   return useQuery<InboxData, Error>({
     queryKey: inboxKeys.list(userId),
     queryFn: async () => {
-      const folderResponse = await fetch("/api/collaborations/pending");
+      const [folderResponse, boardResponse, teamResponse] = await Promise.all([
+        fetch("/api/collaborations/pending"),
+        fetch("/api/boards/collaborations/pending"),
+        fetch("/api/teams/invitations"),
+      ]);
       if (!folderResponse.ok) {
         throw new Error("Failed to load folder invitations");
       }
-      const folderData = (await folderResponse.json()) as {
-        invitations: (FolderCollaboration & { folder?: Folder })[];
-      };
-
-      const boardResponse = await fetch("/api/boards/collaborations/pending");
       if (!boardResponse.ok) {
         throw new Error("Failed to load board invitations");
       }
+      if (!teamResponse.ok) {
+        throw new Error("Failed to load team invitations");
+      }
+
+      const folderData = (await folderResponse.json()) as {
+        invitations: (FolderCollaboration & { folder?: Folder })[];
+      };
       const boardData = (await boardResponse.json()) as {
         invitations: (BoardCollaboration & { board?: Board })[];
+      };
+      const teamData = (await teamResponse.json()) as {
+        invitations: TeamInvitation[];
+        declinedNotifications: TeamDeclineNotification[];
+        roleChangeNotifications: TeamRoleChangeNotification[];
       };
 
       return {
         folderInvitations: folderData.invitations ?? [],
         boardInvitations: boardData.invitations ?? [],
+        teamInvitations: teamData.invitations ?? [],
+        teamDeclineNotifications: teamData.declinedNotifications ?? [],
+        teamRoleChangeNotifications: teamData.roleChangeNotifications ?? [],
       };
     },
     enabled: !!userId,

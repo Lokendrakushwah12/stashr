@@ -1,17 +1,19 @@
-import { authOptions } from "@/lib/auth";
+import { getRequestContext, planLimitResponse } from "@/lib/api-team";
 import connectDB from "@/lib/mongodb";
+import { assertWithinLimit, PlanLimitError } from "@/lib/plans";
+import { canWrite } from "@/lib/team-service";
 import { registerModels } from "@/models";
-import { getServerSession } from "next-auth";
+import mongoose from "mongoose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// POST /api/bookmarks/bulk/import - Bulk import bookmarks
+// POST /api/bookmarks/bulk - Bulk import bookmarks into the current team
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
+    if (!canWrite(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = (await request.json()) as {
@@ -29,21 +31,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     await connectDB();
-    const { Bookmark, Folder } = await registerModels();
+    const { Bookmark, Folder, Team } = await registerModels();
+    const teamObjectId = new mongoose.Types.ObjectId(ctx.teamId);
+    const team = await Team.findById(teamObjectId).lean();
+    const planId = team?.planId ?? "free";
 
-    // Get or create folder for imports
+    // Find or create the import folder (team-scoped)
     const folderNameToUse = folderName?.trim() ?? "Imported Bookmarks";
     let defaultFolder = await Folder.findOne({
-      userId: session.user.id,
+      teamId: teamObjectId,
       name: folderNameToUse,
     });
 
     if (!defaultFolder) {
+      const folderCount = await Folder.countDocuments({ teamId: teamObjectId });
+      try {
+        assertWithinLimit({
+          planId,
+          key: "foldersPerTeam",
+          current: folderCount,
+        });
+      } catch (e) {
+        if (e instanceof PlanLimitError) return planLimitResponse(e);
+        throw e;
+      }
       defaultFolder = await Folder.create({
-        userId: session.user.id,
+        userId: ctx.userId,
+        teamId: teamObjectId,
         name: folderNameToUse,
         description: `Bookmarks imported from ${source ?? "external source"}`,
-        color: "#3B82F6", // Default blue color
+        color: "#3B82F6",
         bookmarks: [],
       });
     }
@@ -53,7 +70,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     for (const bookmarkData of bookmarks) {
       try {
-        // Type guard for bookmark data
         if (!bookmarkData || typeof bookmarkData !== "object") {
           errors.push({
             url: "unknown",
@@ -61,10 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
           continue;
         }
-
         const data = bookmarkData as Record<string, unknown>;
-
-        // Validate required fields
         if (
           !data.url ||
           !data.title ||
@@ -78,17 +91,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           continue;
         }
 
-        // Check if bookmark already exists
-        // Normalize URL by removing trailing slashes
-        const normalizedUrl = data.url.replace(/\/$/, "");
+        const targetFolderId =
+          (data.folderId as string | undefined) ?? String(defaultFolder._id);
 
-        // Check for exact match first
+        // Per-folder limit check
+        const folderBookmarkCount = await Bookmark.countDocuments({
+          folderId: new mongoose.Types.ObjectId(targetFolderId),
+        });
+        try {
+          assertWithinLimit({
+            planId,
+            key: "bookmarksPerFolder",
+            current: folderBookmarkCount,
+          });
+        } catch (e) {
+          if (e instanceof PlanLimitError) {
+            errors.push({ url: data.url, error: "Plan limit reached" });
+            continue;
+          }
+          throw e;
+        }
+
+        const normalizedUrl = data.url.replace(/\/$/, "");
         let existingBookmark = await Bookmark.findOne({
-          userId: session.user.id,
+          teamId: teamObjectId,
           url: normalizedUrl,
         });
-
-        // If no exact match, check for variations (with/without trailing slash, different protocols)
         if (!existingBookmark) {
           const urlVariations = [
             normalizedUrl,
@@ -96,30 +124,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             normalizedUrl.replace(/^https?:\/\//, "http://"),
             normalizedUrl.replace(/^https?:\/\//, "https://"),
           ];
-
           existingBookmark = await Bookmark.findOne({
             url: { $in: urlVariations },
-            userId: session.user.id,
+            teamId: teamObjectId,
           });
         }
-
         if (existingBookmark) {
-          errors.push({
-            url: data.url,
-            error: "Bookmark already exists",
-          });
+          errors.push({ url: data.url, error: "Bookmark already exists" });
           continue;
         }
 
-        // Create new bookmark
         let bookmark;
         try {
           bookmark = await Bookmark.create({
-            userId: session.user.id,
+            userId: ctx.userId,
+            teamId: teamObjectId,
             title: data.title,
             url: normalizedUrl,
             description: (data.description ?? data.excerpt ?? "") as string,
-            folderId: (data.folderId as string) ?? defaultFolder._id,
+            folderId: targetFolderId,
             tags: (data.tags as string[]) ?? [],
             createdAt: data.createdAt
               ? new Date(data.createdAt as string)
@@ -127,21 +150,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             updatedAt: new Date(),
           } as Parameters<typeof Bookmark.create>[0]);
         } catch (error) {
-          // Check if it's a duplicate key error
           if (
             error instanceof Error &&
             error.message.includes("duplicate key")
           ) {
-            errors.push({
-              url: data.url,
-              error: "Bookmark already exists",
-            });
+            errors.push({ url: data.url, error: "Bookmark already exists" });
             continue;
           }
-          throw error; // Re-throw other errors
+          throw error;
         }
 
-        // Add bookmark to folder
         await Folder.findByIdAndUpdate(bookmark.folderId, {
           $push: { bookmarks: bookmark._id },
         });
@@ -177,14 +195,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   } catch (error) {
     console.error("Error importing bookmarks:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to import bookmarks: ${error.message}` },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to import bookmarks" },
       { status: 500 },
@@ -192,14 +202,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// GET /api/bookmarks/bulk/export - Export all bookmarks
+// GET /api/bookmarks/bulk - Export bookmarks in the current team
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
     const { searchParams } = new URL(request.url);
     const format = searchParams.get("format") ?? "json";
@@ -207,9 +214,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     await connectDB();
     const { Bookmark } = await registerModels();
+    const teamObjectId = new mongoose.Types.ObjectId(ctx.teamId);
 
-    let query: { userId: string; folderId?: string } = {
-      userId: session.user.id,
+    let query: { teamId: mongoose.Types.ObjectId; folderId?: string } = {
+      teamId: teamObjectId,
     };
     if (folderId) {
       query = { ...query, folderId };
@@ -222,30 +230,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .exec();
 
     if (format === "html") {
-      const htmlContent = generateHTMLExport(
-        bookmarks as unknown as Array<Record<string, unknown>>,
-      );
-      return new NextResponse(htmlContent, {
-        headers: {
-          "Content-Type": "text/html",
-          "Content-Disposition": 'attachment; filename="bookmarks.html"',
+      return new NextResponse(
+        generateHTMLExport(
+          bookmarks as unknown as Array<Record<string, unknown>>,
+        ),
+        {
+          headers: {
+            "Content-Type": "text/html",
+            "Content-Disposition": 'attachment; filename="bookmarks.html"',
+          },
         },
-      });
+      );
     }
-
     if (format === "csv") {
-      const csvContent = generateCSVExport(
-        bookmarks as unknown as Array<Record<string, unknown>>,
-      );
-      return new NextResponse(csvContent, {
-        headers: {
-          "Content-Type": "text/csv",
-          "Content-Disposition": 'attachment; filename="bookmarks.csv"',
+      return new NextResponse(
+        generateCSVExport(
+          bookmarks as unknown as Array<Record<string, unknown>>,
+        ),
+        {
+          headers: {
+            "Content-Type": "text/csv",
+            "Content-Disposition": 'attachment; filename="bookmarks.csv"',
+          },
         },
-      });
+      );
     }
 
-    // Default JSON export
     return NextResponse.json({
       success: true,
       count: bookmarks.length,
@@ -268,14 +278,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     console.error("Error exporting bookmarks:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to export bookmarks: ${error.message}` },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to export bookmarks" },
       { status: 500 },
@@ -284,8 +286,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 function generateHTMLExport(bookmarks: Array<Record<string, unknown>>): string {
-  const html = `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -295,17 +296,14 @@ function generateHTMLExport(bookmarks: Array<Record<string, unknown>>): string {
     .bookmark { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
     .title { font-weight: bold; color: #333; }
     .url { color: #0066cc; text-decoration: none; }
-    .url:hover { text-decoration: underline; }
     .description { color: #666; margin: 5px 0; }
     .folder { color: #888; font-size: 0.9em; }
-    .tags { color: #888; font-size: 0.9em; }
   </style>
 </head>
 <body>
   <h1>Bookmarks Export</h1>
   <p>Total bookmarks: ${bookmarks.length}</p>
   <p>Exported on: ${new Date().toLocaleString()}</p>
-  
   ${bookmarks
     .map(
       (b) => `
@@ -314,15 +312,12 @@ function generateHTMLExport(bookmarks: Array<Record<string, unknown>>): string {
       <div><a href="${(b.url as string) ?? "#"}" class="url">${(b.url as string) ?? "No URL"}</a></div>
       ${b.description ? `<div class="description">${b.description as string}</div>` : ""}
       ${b.folderId && typeof b.folderId === "object" && "name" in b.folderId ? `<div class="folder">Folder: ${(b.folderId as Record<string, unknown>).name as string}</div>` : ""}
-      ${b.tags && Array.isArray(b.tags) && b.tags.length > 0 ? `<div class="tags">Tags: ${b.tags.join(", ")}</div>` : ""}
     </div>
   `,
     )
     .join("")}
 </body>
 </html>`;
-
-  return html;
 }
 
 function generateCSVExport(bookmarks: Array<Record<string, unknown>>): string {
@@ -342,6 +337,5 @@ function generateCSVExport(bookmarks: Array<Record<string, unknown>>): string {
     `"${Array.isArray(b.tags) ? b.tags.join(", ") : ""}"`,
     `"${b.createdAt ? new Date(b.createdAt as string).toLocaleDateString() : ""}"`,
   ]);
-
   return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
 }

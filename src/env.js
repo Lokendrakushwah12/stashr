@@ -15,6 +15,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string().min(1),
     UPLOADTHING_SECRET: z.string().min(1).optional(),
     UPLOADTHING_APP_ID: z.string().min(1).optional(),
+    DEV_UNLIMITED_ACCESS: z.enum(["true", "false"]).optional(),
   },
 
   /**
@@ -39,6 +40,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
+    DEV_UNLIMITED_ACCESS: process.env.DEV_UNLIMITED_ACCESS,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

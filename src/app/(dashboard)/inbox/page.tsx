@@ -1,9 +1,13 @@
 "use client";
 
 import CollaborationInvite from "@/components/notifications/CollaborationInvite";
+import TeamDeclineNotice from "@/components/notifications/TeamDeclineNotice";
+import TeamInvite from "@/components/notifications/TeamInvite";
+import TeamRoleChangeNotice from "@/components/notifications/TeamRoleChangeNotice";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTeam } from "@/lib/contexts/team-context";
 import { useInbox } from "@/lib/hooks/use-inbox";
 import {
   InboxIn,
@@ -20,11 +24,87 @@ export default function InboxPage() {
   const router = useRouter();
 
   const { data, isLoading, isFetching, refetch } = useInbox(session?.user?.id);
+  const { refresh: refreshTeams } = useTeam();
 
   const folderInvitations = data?.folderInvitations ?? [];
   const boardInvitations = data?.boardInvitations ?? [];
+  const teamInvitations = data?.teamInvitations ?? [];
+  const teamDeclineNotifications = data?.teamDeclineNotifications ?? [];
+  const teamRoleChangeNotifications = data?.teamRoleChangeNotifications ?? [];
+  const pendingTeamInvitations = teamInvitations.filter(
+    (inv) => inv.status === "pending",
+  );
+  const historyTeamInvitations = teamInvitations
+    .filter((inv) => inv.status === "declined" || inv.status === "accepted")
+    .sort((a, b) => {
+      const aDate = a.respondedAt ? new Date(a.respondedAt).getTime() : 0;
+      const bDate = b.respondedAt ? new Date(b.respondedAt).getTime() : 0;
+      return bDate - aDate;
+    });
+  const acceptedTeamInvitations = teamInvitations.filter(
+    (inv) => inv.status === "accepted",
+  );
   const pendingInvitations = [...folderInvitations, ...boardInvitations];
   const loadingInvitations = isLoading || isFetching;
+
+  const handleDismissDecline = async (memberId: string) => {
+    try {
+      const response = await fetch(`/api/teams/invitations/${memberId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to dismiss notification");
+      }
+      void refetch();
+      toast.success("Notification dismissed");
+    } catch (error) {
+      console.error("Error dismissing decline notification:", error);
+      toast.error("Failed to dismiss");
+    }
+  };
+
+  const handleDismissRoleChange = async (memberId: string) => {
+    try {
+      const response = await fetch(
+        `/api/teams/invitations/${memberId}/role-change`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) {
+        throw new Error("Failed to dismiss notification");
+      }
+      void refetch();
+      toast.success("Notification dismissed");
+    } catch (error) {
+      console.error("Error dismissing role change notification:", error);
+      toast.error("Failed to dismiss");
+    }
+  };
+
+  const handleTeamInvitation = async (
+    memberId: string,
+    action: "accept" | "decline",
+  ) => {
+    try {
+      const response = await fetch(`/api/teams/invitations/${memberId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to respond to invitation");
+      }
+      void refetch();
+      if (action === "accept") {
+        await refreshTeams();
+        toast.success("You joined the team!");
+      } else {
+        toast.success("Invitation declined");
+      }
+    } catch (error) {
+      console.error("Error responding to team invitation:", error);
+      toast.error("Failed to respond to invitation");
+    }
+  };
 
   const handleAcceptInvitation = async (
     collaborationId: string,
@@ -131,10 +211,11 @@ export default function InboxPage() {
               <Skeleton className="mb-1 h-9 w-16" />
             ) : (
               <div className="font-mono text-3xl font-semibold">
-                {
-                  pendingInvitations.filter((inv) => inv.status === "pending")
-                    .length
-                }
+                {pendingInvitations.filter((inv) => inv.status === "pending")
+                  .length +
+                  pendingTeamInvitations.length +
+                  teamDeclineNotifications.length +
+                  teamRoleChangeNotifications.length}
               </div>
             )}
             <div className="text-muted-foreground text-sm">
@@ -154,10 +235,8 @@ export default function InboxPage() {
               <Skeleton className="mb-1 h-9 w-16" />
             ) : (
               <div className="font-mono text-3xl font-semibold">
-                {
-                  pendingInvitations.filter((inv) => inv.status === "accepted")
-                    .length
-                }
+                {pendingInvitations.filter((inv) => inv.status === "accepted")
+                  .length + acceptedTeamInvitations.length}
               </div>
             )}
             <div className="text-muted-foreground text-sm">
@@ -199,26 +278,116 @@ export default function InboxPage() {
             ))}
           </div>
         </div>
-      ) : pendingInvitations.length > 0 ? (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-medium tracking-tight">
-              Collaboration Invitations
-            </h2>
-            <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
-              {pendingInvitations.length}
+      ) : pendingInvitations.length +
+          teamInvitations.length +
+          teamDeclineNotifications.length +
+          teamRoleChangeNotifications.length >
+        0 ? (
+        <div className="space-y-6">
+          {teamRoleChangeNotifications.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Role Updates
+                </h2>
+                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                  {teamRoleChangeNotifications.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {teamRoleChangeNotifications.map((notification) => (
+                  <TeamRoleChangeNotice
+                    key={notification.id}
+                    notification={notification}
+                    onDismiss={handleDismissRoleChange}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="space-y-3">
-            {pendingInvitations.map((invitation) => (
-              <CollaborationInvite
-                key={invitation._id}
-                collaboration={invitation}
-                onAccept={handleAcceptInvitation}
-                onDecline={handleDeclineInvitation}
-              />
-            ))}
-          </div>
+          )}
+          {pendingTeamInvitations.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Team Invitations
+                </h2>
+                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                  {pendingTeamInvitations.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {pendingTeamInvitations.map((invitation) => (
+                  <TeamInvite
+                    key={invitation.id}
+                    invitation={invitation}
+                    onRespond={handleTeamInvitation}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {teamDeclineNotifications.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Declined Invitations
+                </h2>
+                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                  {teamDeclineNotifications.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {teamDeclineNotifications.map((notification) => (
+                  <TeamDeclineNotice
+                    key={notification.id}
+                    notification={notification}
+                    onDismiss={handleDismissDecline}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {pendingInvitations.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Collaboration Invitations
+                </h2>
+                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                  {pendingInvitations.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {pendingInvitations.map((invitation) => (
+                  <CollaborationInvite
+                    key={invitation._id}
+                    collaboration={invitation}
+                    onAccept={handleAcceptInvitation}
+                    onDecline={handleDeclineInvitation}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {historyTeamInvitations.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">History</h2>
+                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                  {historyTeamInvitations.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {historyTeamInvitations.map((invitation) => (
+                  <TeamInvite
+                    key={invitation.id}
+                    invitation={invitation}
+                    onRespond={handleTeamInvitation}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">

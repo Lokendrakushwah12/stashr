@@ -1,66 +1,89 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getRequestContext } from "@/lib/api-team";
 import connectDB from "@/lib/mongodb";
+import { canWrite } from "@/lib/team-service";
 import { registerModels } from "@/models";
 import mongoose from "mongoose";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+type AccessRole = "owner" | "editor" | "viewer";
+
+async function loadAccessibleBoard(opts: {
+  boardId: string;
+  userId: string;
+  teamId: string;
+  teamRole: "owner" | "admin" | "editor" | "viewer";
+}): Promise<{
+  board: Awaited<ReturnType<typeof loadBoard>>;
+  role: AccessRole | null;
+}> {
+  const { Board, BoardCollaboration } = await registerModels();
+  const board = await Board.findById(opts.boardId);
+  if (!board) return { board: null, role: null };
+
+  if (board.teamId && String(board.teamId) === opts.teamId) {
+    const role: AccessRole =
+      opts.teamRole === "owner" || opts.teamRole === "admin"
+        ? "owner"
+        : opts.teamRole === "editor"
+          ? "editor"
+          : "viewer";
+    return { board, role };
+  }
+  if (board.userId === opts.userId) return { board, role: "owner" };
+
+  const collab = await BoardCollaboration.findOne({
+    boardId: opts.boardId,
+    userId: opts.userId,
+    status: "accepted",
+  });
+  if (collab) return { board, role: (collab.role ?? "viewer") as AccessRole };
+
+  return { board: null, role: null };
+}
+
+// Helper to give the return type of Board.findById a name
+async function loadBoard(boardId: string) {
+  const { Board } = await registerModels();
+  return Board.findById(boardId);
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
     await connectDB();
     const models = await registerModels();
-    const resolvedParams = await params;
-    const boardId = resolvedParams.id;
+    const { id: boardId } = await params;
 
-    // Check if user has access to this board
-    const board = await models.Board.findById(boardId);
-    if (!board) {
+    const { board, role } = await loadAccessibleBoard({
+      boardId,
+      userId: ctx.userId,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
+    });
+    if (!board || !role) {
       return NextResponse.json({ error: "Board not found" }, { status: 404 });
     }
 
-    // Check if user is owner or collaborator
-    const isOwner = board.userId === session.user.id;
-    const collaboration = await models.BoardCollaboration.findOne({
-      boardId,
-      userId: session.user.id,
-      status: "accepted",
-    });
-
-    if (!isOwner && !collaboration) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    // Fetch all timeline entries for this board, sorted by creation date
     const entries = await models.BoardTimelineEntry.find({ boardId }).sort({
       createdAt: 1,
     });
 
-    // Convert to plain objects and fetch latest user data
     const entriesWithUserData = await Promise.all(
       entries.map(async (entry) => {
         const entryObject = entry.toObject ? entry.toObject() : entry;
-
-        // Fetch latest user data from users collection
         const user = await mongoose.connection.collection("users").findOne({
           _id: new mongoose.Types.ObjectId(entryObject.userId as string),
         });
-
-        // Ensure images array is always included, even if undefined
-        // Type assertion needed because toObject() returns a plain object
         const entryObj = entryObject as unknown as Record<string, unknown>;
         const entryDoc = entry as { images?: string[] };
         const images =
           (entryObj.images as string[] | undefined) ?? entryDoc.images ?? [];
-
         return {
           ...entryObject,
           userName: user?.name ?? entryObject.userName,
@@ -85,15 +108,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
     const body = await request.json();
     const { content, action, images } = body;
-    const resolvedParams = await params;
-    const boardId = resolvedParams.id;
+    const { id: boardId } = await params;
 
     if (
       !content ||
@@ -109,23 +129,19 @@ export async function POST(
     await connectDB();
     const models = await registerModels();
 
-    // Check if board exists
-    const board = await models.Board.findById(boardId);
-    if (!board) {
+    const { board, role } = await loadAccessibleBoard({
+      boardId,
+      userId: ctx.userId,
+      teamId: ctx.teamId,
+      teamRole: ctx.role,
+    });
+    if (!board || !role) {
       return NextResponse.json({ error: "Board not found" }, { status: 404 });
     }
-
-    // Check if user has edit access
-    const isOwner = board.userId === session.user.id;
-    const collaboration = await models.BoardCollaboration.findOne({
-      boardId,
-      userId: session.user.id,
-      status: "accepted",
-    });
-
-    const userRole = isOwner ? "owner" : (collaboration?.role ?? "viewer");
-    const canEdit = userRole === "owner" || userRole === "editor";
-
+    const isTeamBoard = board.teamId && String(board.teamId) === ctx.teamId;
+    const canEdit = isTeamBoard
+      ? canWrite(ctx.role)
+      : role === "owner" || role === "editor";
     if (!canEdit) {
       return NextResponse.json(
         { error: "Insufficient permissions" },
@@ -133,16 +149,15 @@ export async function POST(
       );
     }
 
-    // Create timeline entry
     const imagesArray = Array.isArray(images) ? images : [];
 
     const timelineEntry = await models.BoardTimelineEntry.create({
       boardId,
-      userId: session.user.id,
-      userEmail: session.user.email ?? "",
-      userName: session.user.name ?? session.user.email ?? "Unknown",
-      userImage: session.user.image,
-      userRole,
+      userId: ctx.userId,
+      userEmail: ctx.userEmail,
+      userName: ctx.userName ?? ctx.userEmail ?? "Unknown",
+      userImage: ctx.userImage,
+      userRole: role,
       content: content.trim(),
       action: (action ?? "created") as "created" | "updated" | "commented",
       images: imagesArray,
@@ -153,7 +168,6 @@ export async function POST(
       : timelineEntry;
     const entryObj = entryObject as unknown as Record<string, unknown>;
 
-    // Ensure images is always included in response
     return NextResponse.json(
       {
         entry: {

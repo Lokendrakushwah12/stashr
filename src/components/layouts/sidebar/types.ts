@@ -8,7 +8,15 @@ export interface SidebarItem {
   onClick?: () => void;
   badge?: {
     count: number;
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "gray";
+    variant?:
+      | "default"
+      | "secondary"
+      | "destructive"
+      | "outline"
+      | "success"
+      | "warning"
+      | "info"
+      | "gray";
   };
   active?: boolean;
   disabled?: boolean;
@@ -30,6 +38,10 @@ export interface SidebarConfig {
     icon?: React.ComponentType<{ className?: string }>;
     subtitle?: string;
   };
+  /** Custom React node rendered in the header slot. Takes precedence over `header`. */
+  headerSlot?: ReactNode;
+  /** Custom node shown in the collapsed (icon-only) sidebar header. */
+  collapsedHeaderSlot?: ReactNode;
   sections: SidebarSection[];
   account?: {
     showAccountInfo?: boolean;

@@ -1,129 +1,175 @@
-import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
-import { registerModels } from '@/models';
-import { getServerSession } from 'next-auth';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { getRequestContext, planLimitResponse } from "@/lib/api-team";
+import connectDB from "@/lib/mongodb";
+import { assertWithinLimit, PlanLimitError } from "@/lib/plans";
+import { canWrite } from "@/lib/team-service";
+import { registerModels } from "@/models";
+import mongoose from "mongoose";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
 
-    // Get query parameters
     const { searchParams } = new URL(request.url);
-    const sortBy = searchParams.get('sortBy') ?? 'recent';
-    const role = searchParams.get('role') ?? 'all';
+    const sortBy = searchParams.get("sortBy") ?? "recent";
+    const role = searchParams.get("role") ?? "all";
 
     await connectDB();
     const models = await registerModels();
+    const teamObjectId = new mongoose.Types.ObjectId(ctx.teamId);
 
-    // Determine sort order
-    let sortOrder: Record<string, 1 | -1> = { createdAt: -1 };
+    let sortOrder: Record<string, 1 | -1> = { updatedAt: -1 };
     switch (sortBy) {
-      case 'recent':
+      case "recent":
         sortOrder = { updatedAt: -1 };
         break;
-      case 'oldest':
+      case "oldest":
         sortOrder = { createdAt: 1 };
         break;
-      case 'name':
+      case "name":
         sortOrder = { name: 1 };
         break;
-      default:
-        sortOrder = { updatedAt: -1 };
     }
 
-    // Get boards owned by the user
-    const ownedBoards = await models.Board.find({ userId: session.user.id })
-      .select('_id name description userId linkedFolderId cardCount createdAt updatedAt')
+    const teamBoards = await models.Board.find({ teamId: teamObjectId })
+      .select(
+        "_id name description userId teamId linkedFolderId cardCount createdAt updatedAt",
+      )
       .sort(sortOrder);
 
-    // Get boards where user is a collaborator (accepted invitations)
+    // Legacy: boards shared via per-board collaboration outside the current team
     const collaborations = await models.BoardCollaboration.find({
-      userId: session.user.id,
-      status: 'accepted',
+      userId: ctx.userId,
+      status: "accepted",
     });
+    const collaboratedBoardIds = collaborations.map((c) => c.boardId);
+    const collaboratedBoards =
+      collaboratedBoardIds.length > 0
+        ? await models.Board.find({
+            _id: { $in: collaboratedBoardIds },
+            $or: [
+              { teamId: { $ne: teamObjectId } },
+              { teamId: { $exists: false } },
+            ],
+          })
+            .select(
+              "_id name description userId teamId linkedFolderId cardCount createdAt updatedAt",
+            )
+            .sort(sortOrder)
+        : [];
 
-    const collaboratedBoardIds = collaborations.map(c => c.boardId);
-    const collaboratedBoards = await models.Board.find({
-      _id: { $in: collaboratedBoardIds },
-    }).select('_id name description userId linkedFolderId cardCount createdAt updatedAt')
-      .sort(sortOrder);
+    const allBoards = [...teamBoards, ...collaboratedBoards];
 
-    // Combine both lists
-    const allBoards = [...ownedBoards, ...collaboratedBoards];
-
-    // Add card count and userRole for each board
     let boardsWithDetails = await Promise.all(
       allBoards.map(async (board) => {
         const boardObject = board.toObject ? board.toObject() : board;
         const boardId = boardObject._id?.toString() ?? String(boardObject._id);
         const cardCount = await models.BoardCard.countDocuments({ boardId });
-        
-        // Determine user role
-        const isOwner = boardObject.userId === session.user.id;
-        const collaboration = collaborations.find(c => c.boardId === boardId);
-        const userRole = isOwner ? 'owner' : (collaboration?.role ?? 'viewer');
-        
-        return {
-          ...boardObject,
-          cardCount,
-          userRole,
-        };
-      })
+
+        const isTeamBoard =
+          boardObject.teamId && String(boardObject.teamId) === ctx.teamId;
+        let userRole: "owner" | "editor" | "viewer" = "viewer";
+        if (isTeamBoard) {
+          // Team members all share access; map team role -> board role
+          userRole =
+            ctx.role === "owner" || ctx.role === "admin"
+              ? "owner"
+              : ctx.role === "editor"
+                ? "editor"
+                : "viewer";
+        } else if (boardObject.userId === ctx.userId) {
+          userRole = "owner";
+        } else {
+          const collaboration = collaborations.find(
+            (c) => c.boardId === boardId,
+          );
+          userRole = collaboration?.role ?? "viewer";
+        }
+
+        return { ...boardObject, cardCount, userRole };
+      }),
     );
 
-    // Filter by role if specified
-    if (role !== 'all') {
-      boardsWithDetails = boardsWithDetails.filter(board => board.userRole === role);
+    if (role !== "all") {
+      boardsWithDetails = boardsWithDetails.filter((b) => b.userRole === role);
     }
-
-    // Sort by card count if requested (can't do in MongoDB query since it's computed)
-    if (sortBy === 'cards') {
+    if (sortBy === "cards") {
       boardsWithDetails.sort((a, b) => (b.cardCount ?? 0) - (a.cardCount ?? 0));
     }
 
     return NextResponse.json({ boards: boardsWithDetails });
   } catch (error) {
-    console.error('Error fetching boards:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error fetching boards:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const ctx = await getRequestContext(request);
+    if (ctx instanceof NextResponse) return ctx;
+    if (!canWrite(ctx.role)) {
+      return NextResponse.json(
+        { error: "You don't have permission to create boards in this team" },
+        { status: 403 },
+      );
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as {
+      name?: string;
+      description?: string;
+    };
     const { name, description } = body;
 
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json({ error: 'Board name is required' }, { status: 400 });
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Board name is required" },
+        { status: 400 },
+      );
     }
 
     await connectDB();
-    const { Board } = await registerModels();
-    
+    const { Board, Team } = await registerModels();
+    const teamObjectId = new mongoose.Types.ObjectId(ctx.teamId);
+
+    const team = await Team.findById(teamObjectId).lean();
+    const planId = team?.planId ?? "free";
+
+    const boardCount = await Board.countDocuments({ teamId: teamObjectId });
+    try {
+      assertWithinLimit({
+        planId,
+        key: "boardsPerTeam",
+        current: boardCount,
+      });
+    } catch (e) {
+      if (e instanceof PlanLimitError) return planLimitResponse(e);
+      throw e;
+    }
+
     const board = new Board({
       name: name.trim(),
       description: description?.trim() || undefined,
-      userId: session.user.id,
+      userId: ctx.userId,
+      teamId: teamObjectId,
       cardCount: 0,
-      userRole: 'owner',
+      userRole: "owner",
     });
-
     const savedBoard = await board.save();
-    const boardObject = savedBoard.toObject ? savedBoard.toObject() : savedBoard;
-
+    const boardObject = savedBoard.toObject
+      ? savedBoard.toObject()
+      : savedBoard;
     return NextResponse.json({ board: boardObject }, { status: 201 });
   } catch (error) {
-    console.error('Error creating board:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error creating board:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
