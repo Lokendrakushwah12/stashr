@@ -27,18 +27,42 @@ export function TeamSwitcher({
   compact = false,
   className,
 }: TeamSwitcherProps = {}) {
-  const { teams, currentTeam, switchTeam, refresh, setCurrentTeamLocal } =
-    useTeam();
+  const {
+    teams,
+    currentTeam,
+    isLoading,
+    switchTeam,
+    refresh,
+    setCurrentTeamLocal,
+  } = useTeam();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const { showUpgrade } = useUpgradeDialog();
 
-  if (!currentTeam) return;
-  // loader
-  <div>
-    <div className="bg-muted-foreground h-9 w-9 animate-pulse rounded-full" />
-  </div>;
+  if (isLoading || !currentTeam) {
+    return compact ? (
+      <div
+        className={cn("h-9 w-9 p-1", className)}
+        aria-busy="true"
+        aria-label="Loading team"
+      >
+        <div className="bg-muted h-6 w-6 animate-pulse rounded-xs" />
+      </div>
+    ) : (
+      <div
+        className={cn(
+          "flex h-9 w-full items-center gap-2 pr-2 pl-1.5",
+          className,
+        )}
+        aria-busy="true"
+        aria-label="Loading team"
+      >
+        <div className="bg-muted h-6 w-6 shrink-0 animate-pulse rounded-xs" />
+        <div className="bg-muted h-4 w-24 animate-pulse rounded-xs" />
+      </div>
+    );
+  }
 
   return (
     <>
