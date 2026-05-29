@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { StashrLogo } from "../ui/icons";
+import BookmarkFavicon from "./BookmarkFavicon";
 
 interface ExtractionResult {
   success: boolean;
@@ -141,16 +142,11 @@ const BookmarkCard = ({
               className={showDropdown ? "-mr-8 w-full" : "w-full"}
             >
               <div className="flex w-full items-center gap-2 sm:gap-4">
-                <img
-                  src={
-                    bookmark.favicon ??
-                    `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`
-                  }
+                <BookmarkFavicon
+                  url={bookmark.url}
+                  favicon={bookmark.favicon}
                   alt="Favicon"
                   className="h-9 w-9 rounded-lg"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://img.logo.dev/${new URL(bookmark.url).hostname}?token=pk_IgdfjsfTRDC5pflfc9nf1w&retina=true`;
-                  }}
                 />
                 <div className="w-full overflow-hidden">
                   <h3 className="truncate font-semibold">{bookmark.title}</h3>

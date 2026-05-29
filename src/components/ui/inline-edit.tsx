@@ -165,7 +165,7 @@ export default function InlineEdit({
   return (
     <div
       className={cn(
-        "group relative cursor-text rounded-md transition-all",
+        "group relative mb-0! cursor-text rounded-md transition-all",
         "-ml-2 px-2 py-1",
         disabled && "cursor-not-allowed opacity-50",
         className,

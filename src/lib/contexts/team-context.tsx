@@ -173,16 +173,22 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
       root.dataset.theme = theme;
     }
     if (theme === "custom" && currentTeam?.customColor) {
-      root.style.setProperty("--primary", currentTeam.customColor);
-      root.style.setProperty("--ring", currentTeam.customColor);
+      const color = currentTeam.customColor;
+      root.style.setProperty("--primary", color);
+      root.style.setProperty("--ring", color);
+      root.style.setProperty("--primary-foreground", readableForeground(color));
+      // Tint the text-selection highlight with the custom color. color-mix
+      // with transparent yields a translucent version that reads well on
+      // both light and dark backgrounds.
       root.style.setProperty(
-        "--primary-foreground",
-        readableForeground(currentTeam.customColor),
+        "--selection",
+        `color-mix(in srgb, ${color} 20%, transparent)`,
       );
     } else {
       root.style.removeProperty("--primary");
       root.style.removeProperty("--ring");
       root.style.removeProperty("--primary-foreground");
+      root.style.removeProperty("--selection");
     }
   }, [currentTeam?.theme, currentTeam?.customColor]);
 

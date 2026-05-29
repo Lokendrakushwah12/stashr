@@ -2,6 +2,7 @@
 
 import AddBookmarkDialog from "@/components/bookmark/AddBookmarkDialog";
 import BookmarkCard from "@/components/bookmark/BookmarkCard";
+import BookmarkInfiniteTile from "@/components/bookmark/BookmarkFiniteTile";
 import EditBookmarkDialog from "@/components/bookmark/EditBookmarkDialog";
 import CollaboratorDialog from "@/components/folder/CollaboratorDialog";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InfiniteGrid } from "@/components/ui/infinite-grid";
 import InlineEdit from "@/components/ui/inline-edit";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -29,9 +31,18 @@ import {
   TrashBinTrash,
   UserPlus,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
-import { ArrowLeft, MoreVertical, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Infinity as InfinityIcon,
+  LayoutGrid,
+  MoreVertical,
+  Plus,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type ViewMode = "grid" | "infinite";
+const VIEW_STORAGE_KEY = "stashr.bookmarks.viewMode";
 
 const BookmarkFolderDetailPage = () => {
   const params = useParams();
@@ -43,6 +54,24 @@ const BookmarkFolderDetailPage = () => {
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(false);
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+
+  // Restore persisted view mode on mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
+    if (stored === "grid" || stored === "infinite") setViewMode(stored);
+  }, []);
+
+  const toggleViewMode = () => {
+    setViewMode((prev) => {
+      const next: ViewMode = prev === "grid" ? "infinite" : "grid";
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(VIEW_STORAGE_KEY, next);
+      }
+      return next;
+    });
+  };
 
   // Use React Query for data fetching
   const {
@@ -151,7 +180,7 @@ const BookmarkFolderDetailPage = () => {
 
   if (!folder) {
     return (
-      <div className="min-h-screen space-y-6 pt-2">
+      <div className="min-h-screen space-y-2">
         {/* Header Skeleton */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 space-y-2">
@@ -193,12 +222,12 @@ const BookmarkFolderDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-4 pt-2">
+    <div className="min-h-screen space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mb-0! flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
-            <div className="flex flex-shrink-0 items-center justify-center">
+            <div className="flex shrink-0 items-center justify-center">
               <ColorPicker
                 value={folder.color ?? "#3b82f6"}
                 onChange={handleUpdateColor}
@@ -226,6 +255,23 @@ const BookmarkFolderDetailPage = () => {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={toggleViewMode}
+            variant="outline"
+            size="sm"
+            aria-label={
+              viewMode === "grid"
+                ? "Switch to infinite view"
+                : "Switch to grid view"
+            }
+          >
+            {viewMode === "grid" ? (
+              <InfinityIcon className="h-4 w-4" />
+            ) : (
+              <LayoutGrid className="h-4 w-4" />
+            )}
+            {viewMode === "grid" ? "Infinite" : "Grid"}
+          </Button>
           <Button
             onClick={() => refetch()}
             variant="outline"
@@ -353,8 +399,53 @@ const BookmarkFolderDetailPage = () => {
             </Button>
           )}
         </div>
+      ) : viewMode === "infinite" ? (
+        (() => {
+          const bookmarks = folder.bookmarks ?? [];
+          // 16:9 cell with a small gap baked into the outer cell. The inner
+          // tile draws inside `tileWidth × tileHeight` and the rest is padding.
+          const cellWidth = 360;
+          const cellHeight = Math.round((cellWidth * 9) / 16);
+          const tileWidth = cellWidth - 16;
+          const tileHeight = cellHeight - 16;
+          // Centered row-major: positions in [xMin, xMin+cols) × [yMin, yMin+rows)
+          // map to indices 0..n-1, everything else is null.
+          const n = bookmarks.length;
+          const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+          const rows = Math.max(1, Math.ceil(n / cols));
+          const xMin = -Math.floor(cols / 2);
+          const yMin = -Math.floor(rows / 2);
+          const getIndex = (x: number, y: number): number | null => {
+            const col = x - xMin;
+            const row = y - yMin;
+            if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+            const idx = row * cols + col;
+            return idx < n ? idx : null;
+          };
+          return (
+            <div className="relative -mx-4 h-[calc(100vh-120px)] overflow-hidden">
+              <div className="from-sidebar absolute z-50 h-12 w-full bg-linear-to-b to-transparent dark:from-[#0F0F11]" />
+              <InfiniteGrid
+                cellWidth={cellWidth}
+                cellHeight={cellHeight}
+                getIndexForPosition={getIndex}
+                renderItem={({ gridIndex }) => {
+                  const bookmark = bookmarks[gridIndex];
+                  if (!bookmark) return null;
+                  return (
+                    <BookmarkInfiniteTile
+                      bookmark={bookmark}
+                      width={tileWidth}
+                      height={tileHeight}
+                    />
+                  );
+                }}
+              />
+            </div>
+          );
+        })()
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {folder.bookmarks?.map((bookmark) => (
             <BookmarkCard
               key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? "editing" : "normal"}`}

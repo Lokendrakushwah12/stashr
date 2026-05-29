@@ -1,8 +1,30 @@
 "use client";
-import { getRelativeTime } from "@/lib/utils";
+import { cn, getRelativeTime } from "@/lib/utils";
 import type { Board } from "@/types";
+import { Crown, Eye, PencilLineIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import FolderClip from "./FolderClip";
+
+const ROLE_META: Record<
+  NonNullable<Board["userRole"]>,
+  { label: string; Icon: typeof Crown; className: string }
+> = {
+  owner: {
+    label: "Owner",
+    Icon: Crown,
+    className: "text-amber-500 dark:text-amber-400",
+  },
+  editor: {
+    label: "Editor",
+    Icon: PencilLineIcon,
+    className: "text-blue-500 dark:text-blue-400",
+  },
+  viewer: {
+    label: "Viewer",
+    Icon: Eye,
+    className: "text-muted-foreground",
+  },
+};
 
 interface BoardCardProps {
   board: Board;
@@ -68,10 +90,26 @@ export default function FolderListCard({ board }: BoardCardProps) {
           <FolderClip className="text-border -z-10" />
           <div className="bg-border absolute top-full left-0 -z-10 h-4 w-full rounded-tr-lg" />
         </div>
-        <div className="relative h-[135px] w-full origin-bottom transition-transform duration-300 group-hover:transform-[rotateX(-24deg)] sm:w-[250px]">
+        <div className="relative h-[135px] w-full origin-bottom transform-[rotateX(-15deg)] transition-transform duration-300 group-hover:transform-[rotateX(-28deg)] sm:w-[250px]">
           <div className="bg-sidebar-ring/40 absolute inset-0 h-[135px] w-full overflow-hidden rounded-lg shadow-xs backdrop-blur-2xl sm:w-[250px]">
+            {board.userRole &&
+              (() => {
+                const meta = ROLE_META[board.userRole];
+                return (
+                  <span
+                    className={cn(
+                      "absolute bottom-1.5 left-1 z-10 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-medium select-none",
+                      meta.className,
+                    )}
+                    title={meta.label}
+                  >
+                    <meta.Icon className="h-3 w-3" />
+                    {meta.label}
+                  </span>
+                );
+              })()}
             {board.updatedAt && (
-              <span className="text-muted-foreground absolute inset-x-0 bottom-0 p-2 text-right font-mono text-xs leading-none tracking-tight">
+              <span className="text-muted-foreground absolute inset-x-0 bottom-0 p-2 text-right font-mono text-xs leading-none tracking-tight select-none">
                 Last edited {getRelativeTime(board.updatedAt)}
               </span>
             )}
