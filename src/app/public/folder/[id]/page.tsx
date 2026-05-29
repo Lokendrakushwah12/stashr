@@ -4,6 +4,7 @@ import BookmarkCard from "@/components/bookmark/BookmarkCard";
 import { Button } from "@/components/ui/button";
 import type { Bookmark } from "@/types";
 import { Refresh } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -108,6 +109,16 @@ export default function PublicFolderPage() {
               <h3 className="mb-2 text-2xl font-medium">No bookmarks</h3>
             </div>
           )}
+          <p className="text-muted-foreground flex w-full items-center justify-center py-4 pb-10">
+            Collect and Share your sets of bookmarks at&nbsp;
+            <Link
+              href="https://stashr.in"
+              target="_blank"
+              className="hover:text-foreground underline"
+            >
+              Stashr.in
+            </Link>
+          </p>
         </>
       )}
     </div>

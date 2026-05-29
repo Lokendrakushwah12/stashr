@@ -64,8 +64,9 @@ export async function PUT(
       title?: string;
       url?: string;
       description?: string;
+      inactive?: boolean;
     };
-    const { title, url, description } = body;
+    const { title, url, description, inactive } = body;
 
     if (title !== undefined && !title.trim()) {
       return NextResponse.json(
@@ -104,13 +105,14 @@ export async function PUT(
     const updateData: Partial<
       Pick<
         BookmarkDocument,
-        "title" | "url" | "description" | "favicon" | "metaImage"
+        "title" | "url" | "description" | "favicon" | "metaImage" | "inactive"
       >
     > = {};
     if (title) updateData.title = title.trim();
     if (url) updateData.url = url.trim();
     if (description !== undefined)
       updateData.description = description?.trim() || "";
+    if (typeof inactive === "boolean") updateData.inactive = inactive;
     if (url) {
       try {
         const urlObj = new URL(url.trim());

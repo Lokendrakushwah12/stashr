@@ -23,8 +23,8 @@ export async function GET(
       .populate({
         path: "bookmarks",
         model: Bookmark,
-        select:
-          "title url description favicon metaImage createdAt updatedAt",
+        match: { inactive: { $ne: true } },
+        select: "title url description favicon metaImage createdAt updatedAt",
       })
       .select("name description color bookmarks createdAt updatedAt")
       .lean()
@@ -32,6 +32,13 @@ export async function GET(
 
     if (!folder) {
       return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+    }
+
+    // `populate` with `match` leaves filtered-out items as `null` in the array.
+    if (Array.isArray(folder.bookmarks)) {
+      folder.bookmarks = folder.bookmarks.filter(
+        (b: unknown) => b !== null,
+      ) as typeof folder.bookmarks;
     }
 
     return NextResponse.json(
@@ -52,5 +59,3 @@ export async function GET(
     );
   }
 }
-
-

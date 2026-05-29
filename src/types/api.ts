@@ -17,6 +17,7 @@ export interface UpdateBookmarkRequest {
   title?: string;
   url?: string;
   description?: string;
+  inactive?: boolean;
 }
 
 export interface CreateFolderRequest {
@@ -46,8 +47,8 @@ export interface UpdateBoardRequest {
 export interface CreateBoardCardRequest {
   title: string;
   description?: string;
-  status: 'todo' | 'in-progress' | 'done';
-  priority: 'low' | 'medium' | 'high';
+  status: "todo" | "in-progress" | "done";
+  priority: "low" | "medium" | "high";
   linkedFolderId?: string;
   boardId: string;
 }
@@ -55,14 +56,14 @@ export interface CreateBoardCardRequest {
 export interface UpdateBoardCardRequest {
   title?: string;
   description?: string;
-  status?: 'todo' | 'in-progress' | 'done';
-  priority?: 'low' | 'medium' | 'high';
+  status?: "todo" | "in-progress" | "done";
+  priority?: "low" | "medium" | "high";
   linkedFolderId?: string;
 }
 
 export interface AddCollaboratorRequest {
   email: string;
-  role: 'editor' | 'viewer';
+  role: "editor" | "viewer";
 }
 
 export interface BoardCollaboration {
@@ -72,9 +73,9 @@ export interface BoardCollaboration {
   userEmail: string;
   userName?: string;
   userImage?: string;
-  role: 'owner' | 'editor' | 'viewer';
+  role: "owner" | "editor" | "viewer";
   invitedBy: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: "pending" | "accepted" | "declined";
   invitedAt: string;
   respondedAt?: string;
   createdAt: string;
@@ -88,9 +89,9 @@ export interface BoardTimelineEntry {
   userEmail: string;
   userName: string;
   userImage?: string;
-  userRole: 'owner' | 'editor' | 'viewer';
+  userRole: "owner" | "editor" | "viewer";
   content: string;
-  action: 'created' | 'updated' | 'commented';
+  action: "created" | "updated" | "commented";
   previousContent?: string;
   images?: string[];
   createdAt: string;
@@ -99,6 +100,6 @@ export interface BoardTimelineEntry {
 
 export interface CreateTimelineEntryRequest {
   content: string;
-  action?: 'created' | 'updated' | 'commented';
+  action?: "created" | "updated" | "commented";
   images?: string[];
-} 
+}

@@ -8,6 +8,7 @@ export interface Bookmark {
   metaImage?: string; // Add meta image field for Open Graph/Twitter card images
   userId: string;
   folderId: string;
+  inactive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -22,7 +23,7 @@ export interface Folder {
   bookmarkCount?: number;
   createdAt?: string;
   updatedAt?: string;
-  userRole?: 'owner' | 'editor' | 'viewer';
+  userRole?: "owner" | "editor" | "viewer";
 }
 
 export interface FolderCollaboration {
@@ -30,10 +31,10 @@ export interface FolderCollaboration {
   folderId: string;
   userId: string;
   email: string;
-  role: 'editor' | 'viewer';
+  role: "editor" | "viewer";
   invitedByUserId: string;
   invitedByUserName: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: "pending" | "accepted" | "declined";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -54,15 +55,15 @@ export interface Board {
   cardCount?: number;
   createdAt?: string;
   updatedAt?: string;
-  userRole?: 'owner' | 'editor' | 'viewer';
+  userRole?: "owner" | "editor" | "viewer";
 }
 
 export interface BoardCard {
   _id?: string;
   title: string;
   description?: string;
-  status: 'todo' | 'in-progress' | 'done';
-  priority: 'low' | 'medium' | 'high';
+  status: "todo" | "in-progress" | "done";
+  priority: "low" | "medium" | "high";
   linkedFolderId?: string; // Reference to bookmark folder
   linkedFolder?: {
     id: string;

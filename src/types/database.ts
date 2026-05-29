@@ -11,6 +11,8 @@ export interface BookmarkDocument extends Document {
   userId: string;
   teamId?: mongoose.Types.ObjectId;
   folderId: mongoose.Types.ObjectId;
+  /** When true, the bookmark is hidden from any public folder view. */
+  inactive?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

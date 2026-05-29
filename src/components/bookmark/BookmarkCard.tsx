@@ -13,12 +13,15 @@ import type { Bookmark } from "@/types";
 import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import {
   Copy,
+  Eye,
+  EyeClosed,
   Pen,
   TrashBinTrash,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useUpdateBookmark } from "@/lib/hooks/use-bookmarks";
 import { StashrLogo } from "../ui/icons";
 import BookmarkFavicon from "./BookmarkFavicon";
 
@@ -53,6 +56,20 @@ const BookmarkCard = ({
   const [isExtracting, setIsExtracting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const updateBookmark = useUpdateBookmark();
+  const isInactive = bookmark.inactive === true;
+
+  const handleToggleInactive = async () => {
+    setDropdownOpen(false);
+    try {
+      await updateBookmark.mutateAsync({
+        id: bookmark._id!,
+        data: { inactive: !isInactive },
+      });
+    } catch (error) {
+      console.error("Failed to toggle bookmark visibility:", error);
+    }
+  };
   // Initialize with stored meta image or fallback, then try to extract if needed
   useEffect(() => {
     let isCancelled = false;
@@ -133,7 +150,9 @@ const BookmarkCard = ({
 
   return (
     <>
-      <Card className="dark:bg-card group relative z-10 mb-2 overflow-hidden rounded-2xl bg-white p-0 transition-all">
+      <Card
+        className={`dark:bg-card group relative z-10 mb-2 overflow-hidden rounded-2xl bg-white p-0 transition-all ${isInactive ? "opacity-60" : ""}`}
+      >
         <CardContent className="w-full p-1">
           <div className="flex w-full items-center p-1 pb-0 sm:p-2 sm:pb-0">
             <Link
@@ -149,7 +168,9 @@ const BookmarkCard = ({
                   className="h-9 w-9 rounded-lg"
                 />
                 <div className="w-full overflow-hidden">
-                  <h3 className="truncate font-semibold">{bookmark.title}</h3>
+                  <h3 className="truncate font-medium tracking-tight">
+                    {bookmark.title}
+                  </h3>
                   <p className="text-muted-foreground truncate text-sm">
                     {bookmark.url}
                   </p>
@@ -187,6 +208,23 @@ const BookmarkCard = ({
                     Copy Link
                   </DropdownMenuItem>
                   <DropdownMenuItem
+                    onClick={() => void handleToggleInactive()}
+                    className="cursor-pointer rounded-lg"
+                    disabled={updateBookmark.isPending}
+                  >
+                    {isInactive ? (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        Mark active
+                      </>
+                    ) : (
+                      <>
+                        <EyeClosed className="h-4 w-4" />
+                        Mark inactive
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     variant="destructive"
                     onClick={handleDelete}
                   >
@@ -201,6 +239,7 @@ const BookmarkCard = ({
           {/* Meta Image Preview */}
           <div className="bg-background relative mt-4 overflow-hidden rounded-xl border">
             <div className="relative h-48 w-full overflow-hidden">
+              <div className="absolute z-50 h-full w-full rounded-lg ring-5 ring-white blur-xl ring-inset" />
               {/* Show image if available, otherwise show unavailable */}
               {metaImageUrl ? (
                 <img

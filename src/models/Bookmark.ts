@@ -52,6 +52,11 @@ const bookmarkSchema = new mongoose.Schema<BookmarkDocument>(
       ref: "Folder",
       required: [true, "Folder ID is required"],
     },
+    inactive: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
