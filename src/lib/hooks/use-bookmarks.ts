@@ -154,6 +154,7 @@ export function useUpdateBookmark() {
         data.data?.bookmark,
       );
       void queryClient.invalidateQueries({ queryKey: folderKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: folderKeys.details() });
       toast.success(
         `Bookmark "${data.data?.bookmark.title}" updated successfully`,
       );

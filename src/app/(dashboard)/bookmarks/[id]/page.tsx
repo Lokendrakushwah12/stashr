@@ -4,6 +4,7 @@ import AddBookmarkDialog from "@/components/bookmark/AddBookmarkDialog";
 import BookmarkCard from "@/components/bookmark/BookmarkCard";
 import BookmarkInfiniteTile from "@/components/bookmark/BookmarkFiniteTile";
 import EditBookmarkDialog from "@/components/bookmark/EditBookmarkDialog";
+import SortBookmarksSheet from "@/components/bookmark/SortBookmarksSheet";
 import CollaboratorDialog from "@/components/folder/CollaboratorDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ import {
   UserPlus,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import {
+  ArrowDownUp,
   ArrowLeft,
   Infinity as InfinityIcon,
   LayoutGrid,
@@ -53,6 +55,7 @@ const BookmarkFolderDetailPage = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(false);
   const [showCollaborators, setShowCollaborators] = useState(false);
+  const [showSort, setShowSort] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
@@ -310,6 +313,18 @@ const BookmarkFolderDetailPage = () => {
                   <Share className="h-4 w-4" />
                   Share Public Link
                 </DropdownMenuItem>
+                {canEdit && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setShowSort(true);
+                    }}
+                    className="cursor-pointer rounded-lg"
+                  >
+                    <ArrowDownUp className="h-4 w-4" />
+                    Sort Bookmarks
+                  </DropdownMenuItem>
+                )}
                 {userRole === "owner" && (
                   <DropdownMenuItem
                     onClick={() => {
@@ -487,6 +502,13 @@ const BookmarkFolderDetailPage = () => {
         onOpenChange={setShowCollaborators}
         folderId={folderId}
         folderName={folder?.name || ""}
+      />
+
+      <SortBookmarksSheet
+        open={showSort}
+        onOpenChange={setShowSort}
+        folderId={folderId}
+        bookmarks={folder?.bookmarks ?? []}
       />
 
       {/* Folder Deletion Confirmation Dialog */}
