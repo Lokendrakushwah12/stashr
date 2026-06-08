@@ -148,9 +148,9 @@ export default function PreferencesPage() {
           <CardContent>
             <div className="border-destructive/20 flex items-center justify-between rounded-lg border p-4">
               <div>
-                <h3 className="font-medium">Sign Out</h3>
+                <h3 className="font-medium">Log Out</h3>
                 <p className="text-muted-foreground text-sm">
-                  Sign out from your account on this device
+                  Log out from your account on this device
                 </p>
               </div>
               <Button
@@ -159,7 +159,7 @@ export default function PreferencesPage() {
                 className="gap-2"
               >
                 <Logout2 className="h-4 w-4" />
-                Sign Out
+                Log Out
               </Button>
             </div>
           </CardContent>

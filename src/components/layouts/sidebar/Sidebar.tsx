@@ -140,6 +140,7 @@ export default function Sidebar({
             }}
             onClick={() => router.push("/board")}
             isCollapsed={false}
+            isMobile
             className="flex size-10"
           />
           <SidebarItem
@@ -153,6 +154,7 @@ export default function Sidebar({
             }}
             onClick={() => router.push("/bookmarks")}
             isCollapsed={false}
+            isMobile
             className="flex size-10"
           />
           <SidebarItem
@@ -166,6 +168,7 @@ export default function Sidebar({
             }}
             onClick={() => router.push("/inbox")}
             isCollapsed={false}
+            isMobile
             className="flex size-10"
           />
           <SidebarItem
@@ -179,6 +182,7 @@ export default function Sidebar({
             }}
             onClick={() => router.push("/profile")}
             isCollapsed={false}
+            isMobile
             className="flex size-10"
           />
         </div>

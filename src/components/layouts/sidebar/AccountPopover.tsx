@@ -36,10 +36,10 @@ export default function AccountPopover({
   const handleSignOut = async () => {
     try {
       await signOut({ callbackUrl: "/auth/signin" });
-      toast.success("Signed out successfully");
+      toast.success("Logged out successfully");
     } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("Failed to sign out");
+      console.error("Error logging out:", error);
+      toast.error("Failed to log out");
     }
   };
 
@@ -138,7 +138,7 @@ export default function AccountPopover({
             </Button>
           )}
 
-          {/* Sign Out */}
+          {/* Log Out */}
           <Button
             variant="destructiveSecondary"
             size="sm"
@@ -146,7 +146,7 @@ export default function AccountPopover({
             onClick={handleSignOut}
           >
             <Logout2 className="h-4 w-4" />
-            Sign Out
+            Log Out
           </Button>
         </div>
       </PopoverContent>

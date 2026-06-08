@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { is } from "zod/v4/locales";
 
 interface SidebarItemProps {
   item: {
@@ -29,12 +30,14 @@ interface SidebarItemProps {
   onClick?: () => void;
   className?: string;
   isCollapsed?: boolean;
+  isMobile?: boolean;
 }
 
 export default function SidebarItem({
   item,
   onClick,
   className,
+  isMobile = false,
   isCollapsed,
 }: SidebarItemProps) {
   const handleClick = () => {
@@ -62,6 +65,8 @@ export default function SidebarItem({
           ? "text-foreground"
           : "text-muted-foreground hover:text-foreground",
         className,
+        isMobile &&
+          "flex-col gap-0 border-none bg-transparent px-0 py-1 hover:bg-transparent",
       )}
       onClick={handleClick}
       disabled={item.disabled}
@@ -79,7 +84,8 @@ export default function SidebarItem({
       <span
         className={cn(
           "hidden w-fit truncate text-left opacity-100 transition-all md:block",
-          isCollapsed && "w-0 opacity-0",
+          isCollapsed && !isMobile && "w-0 opacity-0",
+          isMobile && "block text-xs",
         )}
       >
         {item.label}
