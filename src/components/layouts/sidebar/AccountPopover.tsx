@@ -8,12 +8,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { useAdminStatus } from "@/lib/hooks/use-admin";
 import { cn } from "@/lib/utils";
 import {
   Logout2,
   Settings,
-  ShieldUser,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -29,7 +27,6 @@ export default function AccountPopover({
   className = "",
 }: AccountPopoverProps) {
   const { data: session } = useSession();
-  const { isAdmin } = useAdminStatus();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -125,18 +122,6 @@ export default function AccountPopover({
 
           {/* Theme Selection */}
           <ThemeToggle className="w-full" title="Toggle theme" />
-
-          {isAdmin && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2"
-              onClick={() => router.push("/admin")}
-            >
-              <ShieldUser className="text-muted-foreground h-4 w-4" />
-              Admin
-            </Button>
-          )}
 
           {/* Log Out */}
           <Button

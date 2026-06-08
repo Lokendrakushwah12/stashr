@@ -8,8 +8,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
   useCreateTimelineEntry,
+  useDeleteTimelineEntry,
   useUpdateTimelineEntry,
 } from "@/lib/hooks/use-timeline";
 import { useUploadThing } from "@/lib/uploadthing";
@@ -18,6 +20,7 @@ import type { BoardTimelineEntry } from "@/types";
 import {
   GalleryAdd,
   Pen,
+  TrashBinTrash,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { ChevronLeft, ChevronRight, DiamondPlus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -62,6 +65,20 @@ export default function BoardTimelineEditor({
   const editDropZoneRef = useRef<HTMLDivElement>(null);
   const createTimelineEntry = useCreateTimelineEntry(boardId);
   const updateTimelineEntry = useUpdateTimelineEntry(boardId);
+  const deleteTimelineEntry = useDeleteTimelineEntry(boardId);
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!deletingEntryId) return;
+    try {
+      await deleteTimelineEntry.mutateAsync(deletingEntryId);
+      toast.success("Entry deleted");
+      setDeletingEntryId(null);
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      toast.error("Failed to delete entry");
+    }
+  };
 
   const { startUpload } = useUploadThing("imageUploader", {
     onUploadBegin: () => {
@@ -502,9 +519,20 @@ export default function BoardTimelineEditor({
                         </div>
                       )}
 
-                    {/* Edit button for own entries */}
+                    {/* Edit + Delete for own entries */}
                     {entry.userId === session?.user?.id && canEdit && (
-                      <div className="flex justify-end pt-2">
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructiveSecondary"
+                          onClick={() => setDeletingEntryId(entry._id)}
+                          disabled={disabled}
+                          className="text-destructive hover:text-destructive h-8 text-xs"
+                        >
+                          <TrashBinTrash size={14} />
+                          Delete
+                        </Button>
                         <Button
                           type="button"
                           size="sm"
@@ -648,6 +676,19 @@ export default function BoardTimelineEditor({
           </div>
         )}
       </div>
+
+      {/* Delete confirmation */}
+      <ConfirmationDialog
+        open={!!deletingEntryId}
+        onOpenChange={(open) => !open && setDeletingEntryId(null)}
+        title="Delete entry"
+        description="Are you sure you want to delete this timeline entry? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={() => void handleConfirmDelete()}
+        isLoading={deleteTimelineEntry.isPending}
+      />
 
       {/* Image Viewer Modal */}
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>

@@ -151,6 +151,12 @@ export async function POST(
 
     const imagesArray = Array.isArray(images) ? images : [];
 
+    // Bump parent board's updatedAt so "last edited" reflects the change.
+    await models.Board.updateOne(
+      { _id: boardId },
+      { $set: { updatedAt: new Date() } },
+    );
+
     const timelineEntry = await models.BoardTimelineEntry.create({
       boardId,
       userId: ctx.userId,

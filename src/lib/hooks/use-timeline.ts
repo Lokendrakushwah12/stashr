@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { boardApi } from '@/lib/api';
-import type { CreateTimelineEntryRequest } from '@/types';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { boardApi } from "@/lib/api";
+import { boardKeys } from "@/lib/hooks/use-boards";
+import type { CreateTimelineEntryRequest } from "@/types";
 
 // Query keys for timeline entries
 export const timelineKeys = {
-  all: ['timeline'] as const,
-  lists: () => [...timelineKeys.all, 'list'] as const,
+  all: ["timeline"] as const,
+  lists: () => [...timelineKeys.all, "list"] as const,
   list: (boardId: string) => [...timelineKeys.lists(), boardId] as const,
 };
 
@@ -37,7 +38,11 @@ export function useCreateTimelineEntry(boardId: string) {
       return response;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: timelineKeys.list(boardId) });
+      void queryClient.invalidateQueries({
+        queryKey: timelineKeys.list(boardId),
+      });
+      // Bump "last edited" on the boards list page.
+      void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
     },
   });
 }
@@ -47,15 +52,31 @@ export function useUpdateTimelineEntry(boardId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ entryId, content, images }: { entryId: string; content: string; images?: string[] }) => {
-      const response = await boardApi.updateTimelineEntry(entryId, content, images);
+    mutationFn: async ({
+      entryId,
+      content,
+      images,
+    }: {
+      entryId: string;
+      content: string;
+      images?: string[];
+    }) => {
+      const response = await boardApi.updateTimelineEntry(
+        entryId,
+        content,
+        images,
+      );
       if (response.error) {
         throw new Error(response.error);
       }
       return response;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: timelineKeys.list(boardId) });
+      void queryClient.invalidateQueries({
+        queryKey: timelineKeys.list(boardId),
+      });
+      // Bump "last edited" on the boards list page.
+      void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
     },
   });
 }
@@ -73,8 +94,11 @@ export function useDeleteTimelineEntry(boardId: string) {
       return response;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: timelineKeys.list(boardId) });
+      void queryClient.invalidateQueries({
+        queryKey: timelineKeys.list(boardId),
+      });
+      // Bump "last edited" on the boards list page.
+      void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
     },
   });
 }
-

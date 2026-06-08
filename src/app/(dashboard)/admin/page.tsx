@@ -3,6 +3,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useAdminAnalytics,
@@ -23,6 +31,18 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
+function formatDateDDMMYYYY(
+  value: string | number | Date | null | undefined,
+): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -316,62 +336,79 @@ function UsersTab() {
               <p>No users found</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {users.map((user) => (
-                <div
-                  key={user.userId}
-                  className="bg-secondary dark:bg-secondary/50 flex items-center justify-between rounded-2xl p-2 px-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-10 w-10 rounded-lg">
-                      <AvatarImage
-                        src={user.userDetails?.image ?? undefined}
-                        alt={user.userDetails?.name ?? "User"}
-                      />
-                      <AvatarFallback>
-                        {user.userDetails?.name?.charAt(0)?.toUpperCase() ??
-                          "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">
-                        {user.userDetails?.name ??
-                          `User ${user.userId.slice(-6)}`}
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        {user.userDetails?.email ??
-                          `user-${user.userId.slice(-6)}@example.com`}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        Folders: {user.folderCount} | Bookmarks:{" "}
-                        {user.totalBookmarks} | Activity Score:{" "}
+            <div className="bg-background overflow-hidden rounded-xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead className="text-right">Folders</TableHead>
+                    <TableHead className="text-right">Bookmarks</TableHead>
+                    <TableHead className="text-right">Activity</TableHead>
+                    <TableHead>Last Active</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user.userId}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 rounded-md">
+                            <AvatarImage
+                              src={user.userDetails?.image ?? undefined}
+                              alt={user.userDetails?.name ?? "User"}
+                            />
+                            <AvatarFallback className="rounded-md text-xs">
+                              {user.userDetails?.name
+                                ?.charAt(0)
+                                ?.toUpperCase() ?? "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">
+                              {user.userDetails?.name ??
+                                `User ${user.userId.slice(-6)}`}
+                            </p>
+                            <p className="text-muted-foreground truncate text-xs">
+                              {user.userDetails?.email ??
+                                `user-${user.userId.slice(-6)}@example.com`}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {user.folderCount}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {user.totalBookmarks}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
                         {user.activityScore}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-right">
-                    <p className="text-muted-foreground text-xs">
-                      Last active:{" "}
-                      {new Date(user.lastActivity).toLocaleDateString()}
-                    </p>
-                    <div
-                      className={`w-fit rounded-sm px-2 py-1 font-mono text-xs uppercase ${
-                        user.daysSinceLastActivity <= 7
-                          ? "bg-green-600/10 text-green-600"
-                          : user.daysSinceLastActivity <= 30
-                            ? "bg-yellow-600/10 text-yellow-600"
-                            : "bg-rose-600/10 text-rose-600"
-                      }`}
-                    >
-                      {user.daysSinceLastActivity <= 7
-                        ? "Active"
-                        : user.daysSinceLastActivity <= 30
-                          ? "Recent"
-                          : "Inactive"}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-xs">
+                        {formatDateDDMMYYYY(user.lastActivity)}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`w-fit rounded-sm px-2 py-1 font-mono text-xs uppercase ${
+                            user.daysSinceLastActivity <= 7
+                              ? "bg-green-600/10 text-green-600"
+                              : user.daysSinceLastActivity <= 30
+                                ? "bg-yellow-600/10 text-yellow-600"
+                                : "bg-rose-600/10 text-rose-600"
+                          }`}
+                        >
+                          {user.daysSinceLastActivity <= 7
+                            ? "Active"
+                            : user.daysSinceLastActivity <= 30
+                              ? "Recent"
+                              : "Inactive"}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>

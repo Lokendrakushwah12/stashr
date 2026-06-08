@@ -139,6 +139,11 @@ export async function POST(
       teamId: board.teamId ?? new mongoose.Types.ObjectId(ctx.teamId),
     };
     const createdCard = await models.BoardCard.create(card);
+    // Bump parent board's updatedAt so "last edited" reflects the change.
+    await models.Board.updateOne(
+      { _id: id },
+      { $set: { updatedAt: new Date() } },
+    );
     const cardObject = createdCard.toObject
       ? createdCard.toObject()
       : createdCard;

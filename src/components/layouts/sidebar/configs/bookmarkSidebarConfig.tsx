@@ -1,6 +1,7 @@
 "use client";
 
 import { TeamSwitcher } from "@/components/team/TeamSwitcher";
+import { useAdminStatus } from "@/lib/hooks/use-admin";
 import type { Folder, FolderCollaboration } from "@/types";
 import {
   BookmarkSquare,
@@ -8,7 +9,10 @@ import {
   InboxLine,
   Settings,
 } from "@solar-icons/react-perf/BoldDuotone";
-import { User } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import {
+  ShieldUser,
+  User,
+} from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import type { SidebarConfig } from "../types";
@@ -23,6 +27,7 @@ export function useBookmarkSidebarConfig({
   currentPath = "/board",
 }: UseBookmarkSidebarConfigProps = {}) {
   const { data: session } = useSession();
+  const { isAdmin } = useAdminStatus();
   const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
 
   const fetchPendingInvitationsCount = async () => {
@@ -120,6 +125,17 @@ export function useBookmarkSidebarConfig({
             active: currentPath.startsWith("/profile"),
             mobileOnly: true,
           },
+          ...(isAdmin
+            ? [
+                {
+                  id: "admin",
+                  label: "Admin",
+                  icon: ShieldUser,
+                  href: "/admin",
+                  active: currentPath.startsWith("/admin"),
+                },
+              ]
+            : []),
         ],
       },
     ],

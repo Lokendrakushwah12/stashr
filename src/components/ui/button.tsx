@@ -15,12 +15,12 @@ const buttonVariants = cva(
         destructive:
           "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xs shadow-destructive/24 not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] [&:is(:active,[data-pressed])]:inset-shadow-[0_1px_--theme(--color-black/8%)] [&:is(:disabled,:active,[data-pressed])]:shadow-none",
         destructiveSecondary:
-          "border-none bg-transparent text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20",
+          "border-transparent bg-transparent text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20",
         outline:
           "border-border bg-background shadow-xs dark:bg-input/32 dark:not-in-data-[slot=group]:bg-clip-border [&:is(:disabled,:active,[data-pressed])]:shadow-none [&:is(:hover,[data-pressed])]:bg-accent/5 dark:[&:is(:hover,[data-pressed])]:bg-input/64",
         secondary:
           "border-secondary bg-secondary text-secondary-foreground hover:bg-secondary/90 data-pressed:bg-secondary/90",
-        ghost: "border-none hover:bg-accent data-pressed:bg-accent",
+        ghost: "border-transparent hover:bg-accent data-pressed:bg-accent",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

@@ -1,33 +1,40 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { boardApi } from '@/lib/api';
-import type { Board, BoardCard, CreateBoardRequest, UpdateBoardRequest, CreateBoardCardRequest, UpdateBoardCardRequest } from '@/types';
-import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { boardApi } from "@/lib/api";
+import type {
+  Board,
+  BoardCard,
+  CreateBoardRequest,
+  UpdateBoardRequest,
+  CreateBoardCardRequest,
+  UpdateBoardCardRequest,
+} from "@/types";
+import { toast } from "sonner";
 
 // Query keys
 export const boardKeys = {
-  all: ['boards'] as const,
-  lists: () => [...boardKeys.all, 'list'] as const,
+  all: ["boards"] as const,
+  lists: () => [...boardKeys.all, "list"] as const,
   list: (filters: string) => [...boardKeys.lists(), { filters }] as const,
-  details: () => [...boardKeys.all, 'detail'] as const,
+  details: () => [...boardKeys.all, "detail"] as const,
   detail: (id: string) => [...boardKeys.details(), id] as const,
 };
 
 export const boardCardKeys = {
-  all: ['boardCards'] as const,
-  lists: () => [...boardCardKeys.all, 'list'] as const,
+  all: ["boardCards"] as const,
+  lists: () => [...boardCardKeys.all, "list"] as const,
   list: (boardId: string) => [...boardCardKeys.lists(), boardId] as const,
-  details: () => [...boardCardKeys.all, 'detail'] as const,
+  details: () => [...boardCardKeys.all, "detail"] as const,
   detail: (id: string) => [...boardCardKeys.details(), id] as const,
 };
 
 // Board hooksØ
 export function useBoards(sortBy?: string, role?: string) {
   const params = new URLSearchParams();
-  if (sortBy) params.set('sortBy', sortBy);
-  if (role && role !== 'all') params.set('role', role);
-  
+  if (sortBy) params.set("sortBy", sortBy);
+  if (role && role !== "all") params.set("role", role);
+
   const queryString = params.toString();
-  
+
   return useQuery({
     queryKey: boardKeys.list(queryString),
     queryFn: () => boardApi.getAll(queryString),
@@ -56,7 +63,7 @@ export function useCreateBoard() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
-      toast.success('Board created successfully');
+      toast.success("Board created successfully");
     },
     onError: (error: Error) => {
       toast.error(`Failed to create board: ${error.message}`);
@@ -67,7 +74,13 @@ export function useCreateBoard() {
 export function useUpdateBoard() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateBoardRequest }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: UpdateBoardRequest;
+    }) => {
       const response = await boardApi.update(id, data);
       if (response.error) {
         throw new Error(response.error);
@@ -98,7 +111,7 @@ export function useDeleteBoard() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
-      toast.success('Board deleted successfully');
+      toast.success("Board deleted successfully");
     },
     onError: (error: Error) => {
       toast.error(`Failed to delete board: ${error.message}`);
@@ -127,9 +140,14 @@ export function useCreateBoardCard() {
       return response;
     },
     onSuccess: (response, variables) => {
-      void queryClient.invalidateQueries({ queryKey: boardCardKeys.list(variables.boardId) });
-      void queryClient.invalidateQueries({ queryKey: boardKeys.detail(variables.boardId) });
-      toast.success('Card created successfully');
+      void queryClient.invalidateQueries({
+        queryKey: boardCardKeys.list(variables.boardId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: boardKeys.detail(variables.boardId),
+      });
+      void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
+      toast.success("Card created successfully");
     },
     onError: (error: Error) => {
       toast.error(`Failed to create card: ${error.message}`);
@@ -140,7 +158,13 @@ export function useCreateBoardCard() {
 export function useUpdateBoardCard() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateBoardCardRequest }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: UpdateBoardCardRequest;
+    }) => {
       const response = await boardApi.updateCard(id, data);
       if (response.error) {
         throw new Error(response.error);
@@ -148,8 +172,12 @@ export function useUpdateBoardCard() {
       return response;
     },
     onSuccess: (response, variables) => {
-      void queryClient.setQueryData(boardCardKeys.detail(variables.id), response);
+      void queryClient.setQueryData(
+        boardCardKeys.detail(variables.id),
+        response,
+      );
       void queryClient.invalidateQueries({ queryKey: boardCardKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
     },
     onError: (error: Error) => {
       toast.error(`Failed to update card: ${error.message}`);
@@ -168,9 +196,14 @@ export function useDeleteBoardCard() {
       return response;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: boardCardKeys.list(variables.boardId) });
-      void queryClient.invalidateQueries({ queryKey: boardKeys.detail(variables.boardId) });
-      toast.success('Card deleted successfully');
+      void queryClient.invalidateQueries({
+        queryKey: boardCardKeys.list(variables.boardId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: boardKeys.detail(variables.boardId),
+      });
+      void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
+      toast.success("Card deleted successfully");
     },
     onError: (error: Error) => {
       toast.error(`Failed to delete card: ${error.message}`);

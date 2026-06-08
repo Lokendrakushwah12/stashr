@@ -52,7 +52,8 @@ export async function GET(): Promise<NextResponse> {
     }
 
     await connectDB();
-    const { Folder, Bookmark } = await registerModels();
+    const { Folder, Bookmark, Board, BoardCard, BoardTimelineEntry } =
+      await registerModels();
 
     // Get MongoDB client to access NextAuth users collection
     const client = await clientPromise;
@@ -60,7 +61,7 @@ export async function GET(): Promise<NextResponse> {
     const usersCollection = db.collection("users");
 
     // Get all unique users with their statistics
-    const usersWithStats = await Folder.aggregate([
+    const usersWithStats = (await Folder.aggregate([
       {
         $group: {
           _id: "$userId",
@@ -82,33 +83,72 @@ export async function GET(): Promise<NextResponse> {
       {
         $sort: { lastActivity: -1 },
       },
-    ]).exec() as UserStats[];
+    ]).exec()) as UserStats[];
 
     // Get additional bookmark statistics for each user and fetch user details
     const usersWithDetailedStats = await Promise.all(
       usersWithStats.map(async (user) => {
-        const bookmarkStats = await Bookmark.aggregate([
-          {
-            $match: { userId: user._id },
-          },
-          {
-            $group: {
-              _id: null,
-              totalBookmarks: { $sum: 1 },
-              uniqueDomains: { $addToSet: { $substr: ["$url", 0, 50] } },
-              lastBookmarkCreated: { $max: "$createdAt" },
-            },
-          },
-        ]).exec() as BookmarkStats[];
+        // Aggregate the most recent activity timestamp across every resource
+        // type the user touches: folders, bookmarks, boards, board cards, and
+        // timeline entries. Each is the max(updatedAt) for rows owned by this
+        // user; the overall lastActivity is the max across them.
+        const [bookmarkStats, boardMax, boardCardMax, timelineMax] =
+          await Promise.all([
+            Bookmark.aggregate([
+              { $match: { userId: user._id } },
+              {
+                $group: {
+                  _id: null,
+                  totalBookmarks: { $sum: 1 },
+                  uniqueDomains: {
+                    $addToSet: { $substr: ["$url", 0, 50] },
+                  },
+                  lastBookmarkCreated: { $max: "$createdAt" },
+                  lastBookmarkUpdated: { $max: "$updatedAt" },
+                },
+              },
+            ]).exec() as Promise<
+              Array<BookmarkStats & { lastBookmarkUpdated?: string | null }>
+            >,
+            Board.aggregate([
+              { $match: { userId: user._id } },
+              { $group: { _id: null, max: { $max: "$updatedAt" } } },
+            ]).exec() as Promise<Array<{ _id: null; max?: string | null }>>,
+            BoardCard.aggregate([
+              { $match: { userId: user._id } },
+              { $group: { _id: null, max: { $max: "$updatedAt" } } },
+            ]).exec() as Promise<Array<{ _id: null; max?: string | null }>>,
+            BoardTimelineEntry.aggregate([
+              { $match: { userId: user._id } },
+              { $group: { _id: null, max: { $max: "$updatedAt" } } },
+            ]).exec() as Promise<Array<{ _id: null; max?: string | null }>>,
+          ]);
 
         const bookmarkCount = bookmarkStats[0]?.totalBookmarks ?? 0;
         const uniqueDomains = bookmarkStats[0]?.uniqueDomains?.length ?? 0;
-        const lastBookmarkCreated = bookmarkStats[0]?.lastBookmarkCreated ?? null;
+        const lastBookmarkCreated =
+          bookmarkStats[0]?.lastBookmarkCreated ?? null;
+        const lastBookmarkUpdated =
+          bookmarkStats[0]?.lastBookmarkUpdated ?? null;
 
-        // Calculate user activity score
-        const daysSinceLastActivity = lastBookmarkCreated
+        const candidates = [
+          user.lastActivity, // max(folders.updatedAt) from the parent aggregate
+          lastBookmarkCreated,
+          lastBookmarkUpdated,
+          boardMax[0]?.max ?? null,
+          boardCardMax[0]?.max ?? null,
+          timelineMax[0]?.max ?? null,
+        ]
+          .filter((v): v is string => !!v)
+          .map((v) => new Date(v).getTime())
+          .filter((n) => !Number.isNaN(n));
+
+        const overallLastActivity =
+          candidates.length > 0 ? new Date(Math.max(...candidates)) : null;
+
+        const daysSinceLastActivity = overallLastActivity
           ? Math.floor(
-              (Date.now() - new Date(lastBookmarkCreated).getTime()) /
+              (Date.now() - overallLastActivity.getTime()) /
                 (1000 * 60 * 60 * 24),
             )
           : Infinity;
@@ -120,7 +160,9 @@ export async function GET(): Promise<NextResponse> {
         );
 
         // Get user details from NextAuth users collection
-        const userDoc = await usersCollection.findOne({ _id: new ObjectId(user._id) }) as UserDoc | null;
+        const userDoc = (await usersCollection.findOne({
+          _id: new ObjectId(user._id),
+        })) as UserDoc | null;
         const userDetails = {
           id: user._id,
           name: userDoc?.name ?? `User ${user._id.slice(-6)}`,
@@ -135,7 +177,7 @@ export async function GET(): Promise<NextResponse> {
           totalBookmarks: bookmarkCount,
           uniqueDomains,
           firstActivity: user.firstActivity,
-          lastActivity: user.lastActivity,
+          lastActivity: overallLastActivity?.toISOString() ?? user.lastActivity,
           lastBookmarkCreated,
           daysSinceLastActivity,
           activityScore,

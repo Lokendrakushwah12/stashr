@@ -6,6 +6,13 @@ import ImportExportDialog from "@/components/bookmark/ImportExportDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFolders } from "@/lib/hooks/use-bookmarks";
 import {
@@ -15,12 +22,15 @@ import {
   Library,
   Upload,
 } from "@solar-icons/react-perf/BoldDuotone";
-import { Magnifer } from "@solar-icons/react-perf/Outline";
+import { Magnifer, Sort } from "@solar-icons/react-perf/Outline";
 import { Loader, Plus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+type SortKey = "recent" | "oldest" | "name";
+const SORT_STORAGE_KEY = "bookmarksSortBy";
 
 export default function AllBookmarksPage() {
   const { status } = useSession();
@@ -28,6 +38,24 @@ export default function AllBookmarksPage() {
   const [showAddFolder, setShowAddFolder] = useState(false);
   const [showImportExport, setShowImportExport] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortKey>("recent");
+
+  // Restore persisted sort on mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(SORT_STORAGE_KEY);
+    if (stored === "recent" || stored === "oldest" || stored === "name") {
+      setSortBy(stored);
+    }
+  }, []);
+
+  const handleSortChange = (value: string) => {
+    if (value !== "recent" && value !== "oldest" && value !== "name") return;
+    setSortBy(value);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SORT_STORAGE_KEY, value);
+    }
+  };
 
   // Use React Query for data fetching with search
   const {
@@ -47,6 +75,28 @@ export default function AllBookmarksPage() {
   };
 
   const folders = foldersResponse?.data?.folders ?? [];
+
+  const sortedFolders = useMemo(() => {
+    const copy = [...folders];
+    copy.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return (a.name ?? "").localeCompare(b.name ?? "");
+        case "oldest": {
+          const aT = new Date(a.createdAt ?? a.updatedAt ?? 0).getTime();
+          const bT = new Date(b.createdAt ?? b.updatedAt ?? 0).getTime();
+          return aT - bT;
+        }
+        case "recent":
+        default: {
+          const aT = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+          const bT = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
+          return bT - aT;
+        }
+      }
+    });
+    return copy;
+  }, [folders, sortBy]);
 
   const handleClearSearch = () => {
     setSearchQuery("");
@@ -106,6 +156,19 @@ export default function AllBookmarksPage() {
               <Upload className="h-4 w-4" />
               Import/Export
             </Button>
+            <Select value={sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger
+                icon={<Sort className="h-4 w-4" />}
+                className="w-full sm:w-[166px]"
+              >
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Recently Updated</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
             <Button onClick={() => setShowAddFolder(true)}>
               <AddSquare className="h-4 w-4" />
               Add Folder
@@ -190,7 +253,7 @@ export default function AllBookmarksPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {folders.map((folder) => (
+            {sortedFolders.map((folder) => (
               <FolderCard
                 key={folder._id}
                 folder={folder}

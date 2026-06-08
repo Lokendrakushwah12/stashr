@@ -86,6 +86,12 @@ export async function PUT(
       { $set: updateData },
       { new: true },
     );
+    if (updatedCard?.boardId) {
+      await models.Board.updateOne(
+        { _id: updatedCard.boardId },
+        { $set: { updatedAt: new Date() } },
+      );
+    }
     const cardObject = updatedCard?.toObject
       ? updatedCard.toObject()
       : updatedCard;
@@ -145,6 +151,12 @@ export async function DELETE(
     }
 
     await models.BoardCard.findByIdAndDelete(cardId);
+    if (card.boardId) {
+      await models.Board.updateOne(
+        { _id: card.boardId },
+        { $set: { updatedAt: new Date() } },
+      );
+    }
     return NextResponse.json({ message: "Card deleted successfully" });
   } catch (error) {
     console.error("Error deleting board card:", error);

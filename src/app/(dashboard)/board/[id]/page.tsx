@@ -147,7 +147,7 @@ const BoardDetailPage = () => {
       <div className="relative min-h-screen space-y-4 pt-2">
         <div className="absolute top-[33%] z-10 h-60 w-full bg-linear-to-b from-transparent to-[#fafafa] sm:top-[26%] dark:to-[#0f0f11]" />
         {/* Header Skeleton */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-9 w-64" />
             <Skeleton className="h-5 w-96" />
@@ -169,9 +169,9 @@ const BoardDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-4 pt-2">
+    <div className="min-h-screen space-y-4">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex w-full items-center justify-between">
           <InlineEdit
             value={board?.name || ""}
@@ -193,19 +193,6 @@ const BoardDetailPage = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      const url = `${window.location.origin}/public/folder/${boardId}`;
-                      navigator.clipboard?.writeText(url).catch(() => {
-                        void 0;
-                      });
-                      window.open(url, "_blank");
-                    }}
-                    className="cursor-pointer rounded-lg"
-                  >
-                    <Share className="h-4 w-4" />
-                    Share Public Link
-                  </DropdownMenuItem>
                   {board.userRole === "owner" && (
                     <DropdownMenuItem
                       onClick={() => {
