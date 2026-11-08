@@ -1,49 +1,9 @@
 "use client";
 
+import FeatureBento from "@/components/landing/home/FeatureBento";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  ArrowRight,
-  BookMinimalistic,
-  Heart,
-  Lightbulb,
-} from "@solar-icons/react-perf/category/style/BoldDuotone";
-import { Magnifer } from "@solar-icons/react-perf/Outline";
+import { ArrowRight } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import Link from "next/link";
-import type { ReactNode } from "react";
-
-interface Feature {
-  title: string;
-  description: string;
-  icon: ReactNode;
-}
-
-const features: Feature[] = [
-  {
-    title: "Stash Your Tabs",
-    description:
-      "Collect the links you've been hoarding for days. Save them directly into Boards instead of drowning your browser.",
-    icon: <BookMinimalistic className="text-primary size-8" />,
-  },
-  {
-    title: "See the Big Picture",
-    description:
-      "Cluster related tabs and ideas in one place. Patterns emerge. Research becomes insight.",
-    icon: <Magnifer className="text-primary size-8" />,
-  },
-  {
-    title: "Work Together Early",
-    description:
-      "Share Boards with teammates to explore ideas before they turn into tasks, tickets, or documentation.",
-    icon: <Heart className="text-primary size-8" />,
-  },
-  {
-    title: "Boards",
-    description:
-      "Use Boards as your pre-project workspace-then graduate your thinking into your project tools when you're ready.",
-    icon: <Lightbulb className="text-primary size-8" />,
-  },
-];
 
 const HowItWorks = () => {
   return (
@@ -61,25 +21,8 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        <div className="mb-16 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {features.map((feature, index) => (
-            <Card
-              key={index}
-              className="bg-primary/5 dark:bg-primary/3 border-0 shadow-none"
-            >
-              <CardContent className="p-6 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-                  {feature.icon}
-                </div>
-                <h3 className="font-display mb-2 text-xl font-semibold md:text-2xl">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  {feature.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="mb-24">
+          <FeatureBento />
         </div>
 
         <div className="text-center">

@@ -49,3 +49,7 @@ yarn-error.log*
 .dev.vars
 .wrangler
 cloudflare-env.d.ts
+
+# Vendored skill playgrounds
+.claude/skills/*/node_modules
+.claude/skills/*/dist

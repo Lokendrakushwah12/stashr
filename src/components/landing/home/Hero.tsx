@@ -2,12 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import PixelBlastClient from "@/components/ui/PixelBlast/pixel-blast-client";
-import {
-  ArrowRight,
-  Lightning,
-  LinkMinimalistic,
-  User,
-} from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { ArrowRight } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -66,48 +61,6 @@ const Hero = () => {
             them into visual Boards you can share, shape, and evolve into real
             projects.
           </p>
-        </div>
-
-        {/* Feature highlights */}
-        <div className="mx-auto my-16 grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="bg-primary/5 dark:bg-primary/3 flex flex-col items-center rounded-lg p-6 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-              <LinkMinimalistic className="text-primary size-8" />
-            </div>
-            <h3 className="font-display mb-2 text-xl font-semibold md:text-2xl">
-              Collect
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              Move open tabs and research links into Stashr so nothing is lost
-              or left unfinished.
-            </p>
-          </div>
-
-          <div className="bg-primary/5 dark:bg-primary/3 flex flex-col items-center rounded-lg p-6 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-              <User className="text-primary size-8" />
-            </div>
-            <h3 className="font-display mb-2 text-xl font-semibold md:text-2xl">
-              Organize
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              Sort your saved links into Boards and categories that reflect how
-              you think.
-            </p>
-          </div>
-
-          <div className="bg-primary/5 dark:bg-primary/3 flex flex-col items-center rounded-lg p-6 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-              <Lightning className="text-primary size-8" />
-            </div>
-            <h3 className="font-display mb-2 text-xl font-semibold md:text-2xl">
-              Collaborate
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              Share a Board with your team and build clarity together before
-              committing to a plan.
-            </p>
-          </div>
         </div>
       </div>
     </section>
