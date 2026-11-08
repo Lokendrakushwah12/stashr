@@ -50,6 +50,10 @@ export interface Board {
   linkedFolderId?: string;
   icon?: string;
   theme?: string;
+  themeImage?: string;
+  themeColor?: string;
+  themeOpacity?: number;
+  themeBlur?: boolean;
   linkedFolder?: {
     id: string;
     name: string;

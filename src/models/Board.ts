@@ -10,6 +10,11 @@ export interface BoardDocument extends Document {
   /** Appearance shared by everyone on the board (src/lib/board-themes.ts). */
   icon?: string;
   theme?: string;
+  /** Custom theme: uploaded wallpaper URL and the "mine" note colour. */
+  themeImage?: string;
+  themeColor?: string;
+  themeOpacity?: number;
+  themeBlur?: boolean;
   cardCount?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -54,8 +59,37 @@ const BoardSchema = new Schema<BoardDocument>(
     },
     theme: {
       type: String,
-      enum: ["default", "ocean", "grove", "sunset", "plum", "graphite"],
+      enum: [
+        "default",
+        "night-garden",
+        "waves",
+        "meadow",
+        "dusk",
+        "aurora",
+        "library",
+        "blueprint",
+        "candy",
+        "custom",
+      ],
       default: "default",
+    },
+    themeImage: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    themeColor: {
+      type: String,
+      trim: true,
+      match: /^#[0-9a-fA-F]{6}$/,
+    },
+    themeOpacity: {
+      type: Number,
+      min: 0.2,
+      max: 1,
+    },
+    themeBlur: {
+      type: Boolean,
     },
     cardCount: {
       type: Number,

@@ -86,14 +86,14 @@ export function useBookmarkSidebarConfig({
         items: [
           {
             id: "boards",
-            label: "All Boards",
+            label: "Boards",
             icon: ClipboardText,
             href: "/board",
             active: currentPath.startsWith("/board"),
           },
           {
             id: "bookmarks",
-            label: "All Bookmarks",
+            label: "Bookmarks",
             icon: BookmarkSquare,
             href: "/bookmarks",
             active: currentPath.startsWith("/bookmarks"),

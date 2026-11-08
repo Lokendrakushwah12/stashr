@@ -10,7 +10,11 @@ export interface BreadcrumbSegment {
 
 export interface RouteConfig {
   pattern: RegExp;
-  getSegments: (pathname: string, params?: Record<string, string>, dynamicData?: Record<string, unknown>) => BreadcrumbSegment[];
+  getSegments: (
+    pathname: string,
+    params?: Record<string, string>,
+    dynamicData?: Record<string, unknown>,
+  ) => BreadcrumbSegment[];
 }
 
 /**
@@ -21,30 +25,30 @@ export const routeConfigs: RouteConfig[] = [
   // Board home page
   {
     pattern: /^\/board$/,
-    getSegments: () => [{ label: "All Boards" }],
+    getSegments: () => [{ label: "Boards" }],
   },
-  
-  // All Bookmarks page
+
+  // Bookmarks page
   {
     pattern: /^\/bookmarks$/,
-    getSegments: () => [{ label: "All Bookmarks" }],
+    getSegments: () => [{ label: "Bookmarks" }],
   },
-  
+
   // Bookmark folder detail page (dynamic)
   {
     pattern: /^\/bookmarks\/[^/]+$/,
     getSegments: (_pathname, _params, dynamicData) => [
-      { label: "All Bookmarks", href: "/bookmarks" },
-      { label: dynamicData?.folderName as string || "Loading..." },
+      { label: "Bookmarks", href: "/bookmarks" },
+      { label: (dynamicData?.folderName as string) || "Loading..." },
     ],
   },
-  
+
   // Inbox page
   {
     pattern: /^\/inbox$/,
     getSegments: () => [{ label: "Inbox" }],
   },
-  
+
   // Profile page
   {
     pattern: /^\/profile$/,
@@ -53,13 +57,13 @@ export const routeConfigs: RouteConfig[] = [
       { label: "Profile" },
     ],
   },
-  
+
   // Board detail page (dynamic)
   {
     pattern: /^\/board\/[^/]+$/,
     getSegments: (_pathname, _params, dynamicData) => [
-      { label: "All Boards", href: "/board" },
-      { label: dynamicData?.boardName as string || "Loading..." },
+      { label: "Boards", href: "/board" },
+      { label: (dynamicData?.boardName as string) || "Loading..." },
     ],
   },
 ];
@@ -70,31 +74,34 @@ export const routeConfigs: RouteConfig[] = [
 export function getBreadcrumbSegments(
   pathname: string,
   params?: Record<string, string>,
-  dynamicData?: Record<string, unknown>
+  dynamicData?: Record<string, unknown>,
 ): BreadcrumbSegment[] {
   // Find matching route configuration
-  const matchedConfig = routeConfigs.find((config) => config.pattern.test(pathname));
-  
+  const matchedConfig = routeConfigs.find((config) =>
+    config.pattern.test(pathname),
+  );
+
   if (matchedConfig) {
     return matchedConfig.getSegments(pathname, params, dynamicData);
   }
-  
+
   // Fallback: Generate breadcrumbs from path segments
   const segments = pathname.split("/").filter(Boolean);
-  
+
   if (segments.length === 0) {
     return [{ label: "Home", href: "/board" }];
   }
-  
+
   return [
     { label: "Home", href: "/board" },
     ...segments.map((segment, index) => {
       const isLast = index === segments.length - 1;
       const label = segment.charAt(0).toUpperCase() + segment.slice(1);
-      const href = isLast ? undefined : `/${segments.slice(0, index + 1).join("/")}`;
-      
+      const href = isLast
+        ? undefined
+        : `/${segments.slice(0, index + 1).join("/")}`;
+
       return { label, href };
     }),
   ];
 }
-

@@ -1,5 +1,6 @@
 "use client";
 
+import ImageModal from "@/components/ui/image-modal";
 import { logoDevFallbackFor } from "@/lib/favicon";
 import { cn } from "@/lib/utils";
 import { Link2 } from "lucide-react";
@@ -84,6 +85,14 @@ function MarkdownPreview({
         components={{
           a: ({ node: _node, href, children }) =>
             href ? <LinkChip href={href}>{children}</LinkChip> : children,
+          img: ({ node: _node, src, alt }) =>
+            typeof src === "string" ? (
+              <ImageModal
+                src={src}
+                alt={alt ?? ""}
+                className="my-2 max-h-80 max-w-full rounded-lg"
+              />
+            ) : null,
           p: ({ node: _node, ...props }) => (
             <p {...props} className="mb-2 last:mb-0" />
           ),

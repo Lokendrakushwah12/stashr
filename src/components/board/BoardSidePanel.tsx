@@ -2,6 +2,7 @@
 
 import { LinkChip } from "@/components/board/MarkdownPreview";
 import { Button } from "@/components/ui/button";
+import ImageModal from "@/components/ui/image-modal";
 import {
   Select,
   SelectContent,
@@ -17,11 +18,12 @@ import {
 } from "@/components/ui/popover";
 import {
   BOARD_EMOJI,
-  BOARD_THEME_IDS,
   BOARD_THEMES,
   isBoardThemeId,
+  resolveTheme,
   type BoardThemeId,
 } from "@/lib/board-themes";
+import { ThemePicker, type ThemeChoice } from "@/components/board/ThemePicker";
 import { cn } from "@/lib/utils";
 import type { BoardActivity, BoardTimelineEntry, Folder } from "@/types";
 import { ImageIcon, Link2, SmilePlus } from "lucide-react";
@@ -62,7 +64,12 @@ function shortAgo(iso: string): string {
 function ActivityRow({ item }: { item: BoardActivity }) {
   const deleted = item.action === "entry.deleted";
   return (
-    <li className="flex gap-2.5">
+    <li className="group relative flex gap-2.5 pb-3 last:pb-0">
+      {/* Connects this avatar to the next row's, like an issue history. */}
+      <span
+        aria-hidden
+        className="bg-border absolute top-6 bottom-0 left-[9.5px] w-px group-last:hidden"
+      />
       <Avatar className="mt-0.5 size-5 rounded-full">
         <AvatarImage src={item.actorImage ?? ""} alt="" />
         <AvatarFallback className="rounded-full text-[10px]">
@@ -98,6 +105,7 @@ function ActivityRow({ item }: { item: BoardActivity }) {
 }
 
 const URL_RE = /https?:\/\/[^\s<>()[\]"'`]+/g;
+const MD_IMAGE_RE = /!\[[^\]]*\]\((\S+?)(?:\s+"[^"]*")?\)/g;
 const PREVIEW_COUNT = { links: 8, images: 9, activity: 6 };
 
 /** Every distinct URL / image across the timeline, newest entry first. */
@@ -108,7 +116,12 @@ export function collectMedia(entries: BoardTimelineEntry[]) {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
   for (const entry of newestFirst) {
-    for (const url of entry.content.match(URL_RE) ?? []) {
+    // Inline images (![](url)) belong under Images, not Links.
+    const text = entry.content.replace(MD_IMAGE_RE, (_, src: string) => {
+      images.add(src);
+      return "";
+    });
+    for (const url of text.match(URL_RE) ?? []) {
       links.add(url.replace(/[.,;:!?]+$/, ""));
     }
     for (const img of entry.images ?? []) images.add(img);
@@ -204,19 +217,36 @@ function ShowAll({
   );
 }
 
+export type AppearanceChange = { icon?: string } & Partial<ThemeChoice>;
+
 function Appearance({
   icon,
   theme,
+  themeImage,
+  themeColor,
+  themeOpacity,
+  themeBlur,
   canEdit,
   onChange,
 }: {
   icon?: string;
   theme?: string;
+  themeImage?: string;
+  themeColor?: string;
+  themeOpacity?: number;
+  themeBlur?: boolean;
   canEdit: boolean;
-  onChange: (change: { icon?: string; theme?: BoardThemeId }) => void;
+  onChange: (change: AppearanceChange) => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const current: BoardThemeId = isBoardThemeId(theme) ? theme : "default";
+  const spec = resolveTheme(current, {
+    image: themeImage,
+    color: themeColor,
+    opacity: themeOpacity,
+    blur: themeBlur,
+  });
 
   return (
     <div className="flex items-center gap-3">
@@ -271,39 +301,43 @@ function Appearance({
         </PopoverContent>
       </Popover>
 
-      <div
-        role="radiogroup"
-        aria-label="Board theme"
-        className="flex flex-wrap items-center gap-1.5"
+      <button
+        type="button"
+        disabled={!canEdit}
+        onClick={() => setPickerOpen(true)}
+        className="hover:bg-muted/60 flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 text-left transition-colors disabled:pointer-events-none"
       >
-        {BOARD_THEME_IDS.map((id) => {
-          const { label, swatch } = BOARD_THEMES[id];
-          const selected = id === current;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              aria-label={id === "default" ? "Default (team colour)" : label}
-              title={id === "default" ? "Default (team colour)" : label}
-              disabled={!canEdit}
-              onClick={() => !selected && onChange({ theme: id })}
-              className={cn(
-                "size-6 rounded-full ring-offset-2 ring-offset-[var(--background)] transition-shadow disabled:cursor-default",
-                selected
-                  ? "ring-foreground/70 ring-2"
-                  : "hover:ring-border hover:ring-2",
-              )}
-              style={{
-                background:
-                  swatch ??
-                  "conic-gradient(from 45deg, oklch(0.66 0.18 281), oklch(0.8 0.11 144), oklch(0.63 0.06 118), oklch(0.66 0.18 281))",
-              }}
-            />
-          );
-        })}
-      </div>
+        <span
+          className="border-border h-10 w-16 shrink-0 rounded-md border"
+          style={{
+            background:
+              spec?.wallpaper ||
+              "linear-gradient(135deg, var(--muted), var(--accent))",
+          }}
+        />
+        <span className="min-w-0">
+          <span className="block truncate text-sm">
+            {BOARD_THEMES[current].label}
+          </span>
+          {canEdit && (
+            <span className="text-muted-foreground block text-xs">
+              Change theme
+            </span>
+          )}
+        </span>
+      </button>
+      <ThemePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        current={{
+          theme: current,
+          themeImage,
+          themeColor,
+          themeOpacity,
+          themeBlur,
+        }}
+        onApply={(choice) => onChange(choice)}
+      />
     </div>
   );
 }
@@ -315,6 +349,10 @@ export default function BoardSidePanel({
   linkedFolder,
   icon,
   theme,
+  themeImage,
+  themeColor,
+  themeOpacity,
+  themeBlur,
   canEdit,
   onLinkFolder,
   onAppearance,
@@ -325,9 +363,13 @@ export default function BoardSidePanel({
   linkedFolder?: { id: string; name: string; color: string };
   icon?: string;
   theme?: string;
+  themeImage?: string;
+  themeColor?: string;
+  themeOpacity?: number;
+  themeBlur?: boolean;
   canEdit: boolean;
   onLinkFolder: (folderId: string | null) => void;
-  onAppearance: (change: { icon?: string; theme?: BoardThemeId }) => void;
+  onAppearance: (change: AppearanceChange) => void | Promise<void>;
 }) {
   const { links, images } = useMemo(() => collectMedia(entries), [entries]);
   const [allLinks, setAllLinks] = useState(false);
@@ -345,6 +387,10 @@ export default function BoardSidePanel({
         <Appearance
           icon={icon}
           theme={theme}
+          themeImage={themeImage}
+          themeColor={themeColor}
+          themeOpacity={themeOpacity}
+          themeBlur={themeBlur}
           canEdit={canEdit}
           onChange={onAppearance}
         />
@@ -427,21 +473,16 @@ export default function BoardSidePanel({
           <div className="space-y-2">
             <div className="grid grid-cols-3 gap-1.5">
               {shownImages.map((src) => (
-                <a
+                <div
                   key={src}
-                  href={src}
-                  target="_blank"
-                  rel="noreferrer noopener"
                   className="bg-muted aspect-square overflow-hidden rounded-md transition-opacity hover:opacity-80"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <ImageModal
                     src={src}
-                    alt=""
-                    loading="lazy"
+                    alt="Board image"
                     className="h-full w-full object-cover"
                   />
-                </a>
+                </div>
               ))}
             </div>
             <ShowAll
@@ -461,7 +502,7 @@ export default function BoardSidePanel({
           </p>
         ) : (
           <div className="space-y-3">
-            <ol className="space-y-3">
+            <ol>
               {(allActivity
                 ? activity
                 : activity.slice(0, PREVIEW_COUNT.activity)

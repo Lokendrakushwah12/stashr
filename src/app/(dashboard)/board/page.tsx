@@ -138,7 +138,7 @@ export default function BoardsPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl tracking-tight">All Boards</h1>
+            <h1 className="font-display text-3xl tracking-tight">Boards</h1>
             <p className="text-muted-foreground">
               Organize your ideas and concepts into boards
             </p>

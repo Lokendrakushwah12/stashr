@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
+import ImageModal from "@/components/ui/image-modal";
 import {
   useCreateTimelineEntry,
   useDeleteTimelineEntry,
@@ -18,13 +18,12 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { cn, formatExactDate, getRelativeTime } from "@/lib/utils";
 import type { BoardTimelineEntry } from "@/types";
 import {
-  GalleryAdd,
   Pen,
   TrashBinTrash,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
-import { ChevronLeft, ChevronRight, DiamondPlus, X } from "lucide-react";
+import { DiamondPlus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import MarkdownComposer from "./MarkdownComposer";
@@ -46,21 +45,9 @@ export default function BoardTimelineEditor({
   const { data: session } = useSession();
   const [manualShowEntry, setManualShowEntry] = useState(false);
   const [newEntryContent, setNewEntryContent] = useState("");
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [isUploadingImages, setIsUploadingImages] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [editingImages, setEditingImages] = useState<string[]>([]);
-  const [isUploadingEditImages, setIsUploadingEditImages] = useState(false);
-  const [editDragActive, setEditDragActive] = useState(false);
-  const [viewingImages, setViewingImages] = useState<string[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const editFileInputRef = useRef<HTMLInputElement>(null);
-  const dropZoneRef = useRef<HTMLDivElement>(null);
-  const editDropZoneRef = useRef<HTMLDivElement>(null);
   const createTimelineEntry = useCreateTimelineEntry(boardId);
   const updateTimelineEntry = useUpdateTimelineEntry(boardId);
   const deleteTimelineEntry = useDeleteTimelineEntry(boardId);
@@ -78,43 +65,17 @@ export default function BoardTimelineEditor({
     }
   };
 
+  // Composer images upload here and go inline, where they were pasted.
   const { startUpload } = useUploadThing("imageUploader", {
-    onUploadBegin: () => {
-      setIsUploadingImages(true);
-    },
-    onClientUploadComplete: (res: Array<{ url: string }>) => {
-      setIsUploadingImages(false);
-      const urls = res.map((file) => file.url);
-      setUploadedImages((prev) => [...prev, ...urls]);
-      toast.success(`${urls.length} image(s) uploaded`);
-    },
     onUploadError: (error: Error) => {
-      setIsUploadingImages(false);
       const errorMessage = error.message.includes("FileSizeMismatch")
         ? "Image size exceeds the maximum limit of 4MB. Please choose a smaller image."
         : `Upload failed: ${error.message}`;
       toast.error(errorMessage);
     },
   });
-
-  const { startUpload: startEditUpload } = useUploadThing("imageUploader", {
-    onUploadBegin: () => {
-      setIsUploadingEditImages(true);
-    },
-    onClientUploadComplete: (res: Array<{ url: string }>) => {
-      setIsUploadingEditImages(false);
-      const urls = res.map((file) => file.url);
-      setEditingImages((prev) => [...prev, ...urls]);
-      toast.success(`${urls.length} image(s) uploaded`);
-    },
-    onUploadError: (error: Error) => {
-      setIsUploadingEditImages(false);
-      const errorMessage = error.message.includes("FileSizeMismatch")
-        ? "Image size exceeds the maximum limit of 4MB. Please choose a smaller image."
-        : `Upload failed: ${error.message}`;
-      toast.error(errorMessage);
-    },
-  });
+  const uploadImages = async (files: File[]) =>
+    ((await startUpload(files)) ?? []).map((file) => file.url);
 
   const userInitials =
     session?.user?.name
@@ -131,72 +92,19 @@ export default function BoardTimelineEditor({
   };
 
   const handleSaveNewEntry = async (content: string) => {
-    if (!content.trim() && uploadedImages.length === 0) return;
+    if (!content.trim()) return;
 
     try {
       await createTimelineEntry.mutateAsync({
         content: content.trim(),
         action: "created",
-        images: uploadedImages,
+        images: [],
       });
       setNewEntryContent("");
-      setUploadedImages([]);
       setManualShowEntry(false);
     } catch (error) {
       console.error("Error saving entry:", error);
     }
-  };
-
-  const handleFileSelect = useCallback(
-    async (files: FileList | null) => {
-      if (!files || files.length === 0) return;
-
-      const imageFiles = Array.from(files).filter((file) =>
-        file.type.startsWith("image/"),
-      );
-      if (imageFiles.length === 0) {
-        toast.error("Please select image files only");
-        return;
-      }
-
-      await startUpload(imageFiles);
-    },
-    [startUpload],
-  );
-
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setDragActive(false);
-
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        void handleFileSelect(e.dataTransfer.files);
-      }
-    },
-    [handleFileSelect],
-  );
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    void handleFileSelect(e.target.files);
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleStartEdit = (entry: BoardTimelineEntry) => {
@@ -227,100 +135,9 @@ export default function BoardTimelineEditor({
     }
   };
 
-  const handleEditFileSelect = useCallback(
-    async (files: FileList | null) => {
-      if (!files || files.length === 0) return;
-
-      const imageFiles = Array.from(files).filter((file) =>
-        file.type.startsWith("image/"),
-      );
-      if (imageFiles.length === 0) {
-        toast.error("Please select image files only");
-        return;
-      }
-
-      await startEditUpload(imageFiles);
-    },
-    [startEditUpload],
-  );
-
-  const handleEditDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setEditDragActive(true);
-    } else if (e.type === "dragleave") {
-      setEditDragActive(false);
-    }
-  }, []);
-
-  const handleEditDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setEditDragActive(false);
-
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        void handleEditFileSelect(e.dataTransfer.files);
-      }
-    },
-    [handleEditFileSelect],
-  );
-
-  const handleEditFileInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    void handleEditFileSelect(e.target.files);
-    if (editFileInputRef.current) {
-      editFileInputRef.current.value = "";
-    }
-  };
-
   const removeEditImage = (index: number) => {
     setEditingImages((prev) => prev.filter((_, i) => i !== index));
   };
-
-  const handleImageClick = (images: string[], index: number) => {
-    setViewingImages(images);
-    setCurrentImageIndex(index);
-    setIsImageViewerOpen(true);
-  };
-
-  const handlePreviousImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev > 0 ? prev - 1 : viewingImages.length - 1,
-    );
-  };
-
-  const handleNextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev < viewingImages.length - 1 ? prev + 1 : 0,
-    );
-  };
-
-  // Keyboard navigation for image viewer
-  useEffect(() => {
-    if (!isImageViewerOpen || viewingImages.length === 0) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        setCurrentImageIndex((prev) =>
-          prev > 0 ? prev - 1 : viewingImages.length - 1,
-        );
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        setCurrentImageIndex((prev) =>
-          prev < viewingImages.length - 1 ? prev + 1 : 0,
-        );
-      } else if (e.key === "Escape") {
-        setIsImageViewerOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isImageViewerOpen, viewingImages.length]);
 
   const canEdit = userRole === "owner" || userRole === "editor";
 
@@ -396,82 +213,52 @@ export default function BoardTimelineEditor({
 
               {/* Content area */}
               {editingEntryId === entry._id ? (
-                <div
-                  ref={editDropZoneRef}
-                  onDragEnter={handleEditDrag}
-                  onDragLeave={handleEditDrag}
-                  onDragOver={handleEditDrag}
-                  onDrop={handleEditDrop}
+                <MarkdownComposer
+                  value={editingContent}
+                  onChange={setEditingContent}
+                  onSubmit={() => void handleSaveEdit()}
+                  placeholder="Add a comment or update..."
+                  disabled={disabled}
+                  submitDisabled={
+                    (!editingContent.trim() && editingImages.length === 0) ||
+                    updateTimelineEntry.isPending
+                  }
+                  onCancel={handleCancelEdit}
+                  onUploadImages={uploadImages}
                 >
-                  <MarkdownComposer
-                    value={editingContent}
-                    onChange={setEditingContent}
-                    onSubmit={() => void handleSaveEdit()}
-                    placeholder="Add a comment or update..."
-                    disabled={disabled || isUploadingEditImages}
-                    className={cn(
-                      editDragActive && "border-primary border-2",
-                      isUploadingEditImages && "opacity-50",
-                    )}
-                    submitDisabled={
-                      (!editingContent.trim() && editingImages.length === 0) ||
-                      updateTimelineEntry.isPending ||
-                      isUploadingEditImages
-                    }
-                    onCancel={handleCancelEdit}
-                    onAttachImages={() => editFileInputRef.current?.click()}
-                    imageCount={editingImages.length}
-                  >
-                    <input
-                      ref={editFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleEditFileInputChange}
-                      className="hidden"
-                    />
-                    <div className="relative">
-                      {editingImages.length > 0 && (
-                        <div className="grid grid-cols-2 gap-2">
-                          {editingImages.map((imageUrl, idx) => (
-                            <div
-                              key={idx}
-                              className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
-                            >
-                              <img
-                                src={imageUrl}
-                                alt={`Edit ${idx + 1}`}
-                                className="h-full w-full object-cover"
-                              />
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeEditImage(idx)}
-                                className="bg-destructive text-destructive-foreground absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
+                  {/* Images attached before they went inline */}
+                  {editingImages.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {editingImages.map((imageUrl, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
+                        >
+                          <img
+                            src={imageUrl}
+                            alt={`Edit ${idx + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeEditImage(idx)}
+                            className="bg-destructive text-destructive-foreground absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
-                      )}
-
-                      {editDragActive && (
-                        <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
-                          <div className="text-center">
-                            <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
-                            <p className="text-primary text-sm font-medium">
-                              Drop images here
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  </MarkdownComposer>
-                </div>
+                  )}
+                </MarkdownComposer>
               ) : (
-                <div className="border-border overflow-hidden rounded-lg border bg-[var(--note-bg)]">
+                <div
+                  data-note
+                  data-mine={entry.userId === session?.user?.id || undefined}
+                  className="border-border overflow-hidden rounded-lg border"
+                >
                   <div className="space-y-0 p-4">
                     <MarkdownPreview
                       content={entry.content}
@@ -487,22 +274,12 @@ export default function BoardTimelineEditor({
                           {entry.images.map((imageUrl: string, idx: number) => (
                             <div
                               key={idx}
-                              className="bg-muted relative aspect-video cursor-pointer overflow-hidden rounded-lg transition-opacity hover:opacity-90"
-                              onClick={() =>
-                                handleImageClick(entry.images ?? [], idx)
-                              }
+                              className="bg-muted relative aspect-video overflow-hidden rounded-lg transition-opacity hover:opacity-90"
                             >
-                              <img
+                              <ImageModal
                                 src={imageUrl}
                                 alt={`Image ${idx + 1}`}
                                 className="h-full w-full object-cover"
-                                onError={(e) => {
-                                  console.error(
-                                    "Failed to load image:",
-                                    imageUrl,
-                                  );
-                                  e.currentTarget.style.display = "none";
-                                }}
                               />
                             </div>
                           ))}
@@ -571,92 +348,31 @@ export default function BoardTimelineEditor({
                 <span className="text-muted-foreground text-xs">• Now</span>
               </div>
 
-              <div
-                ref={dropZoneRef}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <MarkdownComposer
-                  value={newEntryContent}
-                  onChange={setNewEntryContent}
-                  onSubmit={() => void handleSaveNewEntry(newEntryContent)}
-                  placeholder="Add a comment or update..."
-                  disabled={disabled || isUploadingImages}
-                  className={cn(
-                    dragActive && "border-primary border-2",
-                    isUploadingImages && "opacity-50",
-                  )}
-                  submitDisabled={
-                    (!newEntryContent.trim() && uploadedImages.length === 0) ||
-                    createTimelineEntry.isPending ||
-                    isUploadingImages
-                  }
-                  onAttachImages={() => fileInputRef.current?.click()}
-                  imageCount={uploadedImages.length}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                  />
-                  <div className="relative">
-                    {uploadedImages.length > 0 && (
-                      <div className="grid grid-cols-2 gap-2">
-                        {uploadedImages.map((imageUrl, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-muted group relative aspect-video overflow-hidden rounded-lg"
-                          >
-                            <img
-                              src={imageUrl}
-                              alt={`Uploaded ${idx + 1}`}
-                              className="h-full w-full object-cover"
-                            />
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeImage(idx)}
-                              className="bg-destructive text-destructive-foreground absolute top-1 right-1 p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {dragActive && (
-                      <div className="bg-primary/10 border-primary absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed">
-                        <div className="text-center">
-                          <GalleryAdd className="text-primary mx-auto mb-2 h-8 w-8" />
-                          <p className="text-primary text-sm font-medium">
-                            Drop images here
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </MarkdownComposer>
-              </div>
+              <MarkdownComposer
+                value={newEntryContent}
+                onChange={setNewEntryContent}
+                onSubmit={() => void handleSaveNewEntry(newEntryContent)}
+                placeholder="Add a comment or update..."
+                disabled={disabled}
+                submitDisabled={
+                  !newEntryContent.trim() || createTimelineEntry.isPending
+                }
+                onUploadImages={uploadImages}
+              />
             </div>
           </div>
         )}
 
         {/* Add new entry button at bottom */}
         {!showNewEntry && (
-          <div className="relative flex justify-start pl-[6.5px]">
+          <div className="relative h-6">
+            {/* Centred on the timeline line (left-4, 1px wide). */}
             <Button
               type="button"
               variant="ghost"
               onClick={handleAddNewEntry}
               disabled={disabled}
-              className="relative flex size-5 cursor-pointer items-center justify-center transition-all ease-out hover:opacity-80 active:scale-97 disabled:cursor-not-allowed disabled:opacity-50"
+              className="absolute top-0 left-[16.5px] flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center p-0 transition-all ease-out hover:opacity-80 active:scale-97 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <DiamondPlus
                 strokeWidth={1}
@@ -679,54 +395,6 @@ export default function BoardTimelineEditor({
         onConfirm={() => void handleConfirmDelete()}
         isLoading={deleteTimelineEntry.isPending}
       />
-
-      {/* Image Viewer Modal */}
-      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="h-auto max-h-[95vh] w-auto max-w-[95vw] border-none bg-black/95 p-0">
-          <DialogTitle className="sr-only">
-            Image Viewer -{" "}
-            {viewingImages.length > 0
-              ? `Image ${currentImageIndex + 1} of ${viewingImages.length}`
-              : "Viewing image"}
-          </DialogTitle>
-          <div className="relative flex h-full min-h-[70vh] w-full items-center justify-center">
-            {viewingImages.length > 0 && (
-              <>
-                <img
-                  src={viewingImages[currentImageIndex]}
-                  alt={`Image ${currentImageIndex + 1}`}
-                  className="max-h-[90vh] max-w-full object-contain"
-                />
-
-                {/* Navigation buttons */}
-                {viewingImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={handlePreviousImage}
-                      className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </button>
-                    <button
-                      onClick={handleNextImage}
-                      className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </button>
-
-                    {/* Image counter */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
-                      {currentImageIndex + 1} / {viewingImages.length}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

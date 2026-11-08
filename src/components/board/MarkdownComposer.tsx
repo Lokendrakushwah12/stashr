@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Image from "@tiptap/extension-image";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
 import { Placeholder } from "@tiptap/extensions";
@@ -29,7 +30,7 @@ import {
   Underline,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface MarkdownComposerProps {
   /** Markdown in and out; the editor itself is WYSIWYG. */
@@ -40,8 +41,8 @@ interface MarkdownComposerProps {
   disabled?: boolean;
   submitDisabled?: boolean;
   onCancel?: () => void;
-  onAttachImages?: () => void;
-  imageCount?: number;
+  /** Uploads images and returns their URLs; enables paste, drop and attach. */
+  onUploadImages?: (files: File[]) => Promise<string[]>;
   className?: string;
   children?: ReactNode;
 }
@@ -58,6 +59,7 @@ const CONTENT_CLASS = cn(
   "[&_blockquote]:border-border [&_blockquote]:text-muted-foreground [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
   "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.92em]",
   "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:rounded-lg [&_pre]:px-3 [&_pre]:py-2",
+  "[&_img]:my-2 [&_img]:max-h-80 [&_img]:rounded-lg [&_img.ProseMirror-selectednode]:ring-primary [&_img.ProseMirror-selectednode]:ring-2",
   "[&_table]:my-2 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:bg-muted/50 [&_th]:px-2 [&_th]:py-1",
   "[&_p.is-editor-empty:first-child]:before:text-muted-foreground/60 [&_p.is-editor-empty:first-child]:before:pointer-events-none [&_p.is-editor-empty:first-child]:before:float-left [&_p.is-editor-empty:first-child]:before:h-0 [&_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]",
 );
@@ -70,18 +72,39 @@ export default function MarkdownComposer({
   disabled = false,
   submitDisabled = false,
   onCancel,
-  onAttachImages,
-  imageCount = 0,
+  onUploadImages,
   className,
   children,
 }: MarkdownComposerProps) {
   // Refs so the editor (created once) always calls the latest handlers.
+  const [uploading, setUploading] = useState(0);
   const submitRef = useRef<() => void>(() => undefined);
   submitRef.current = () => {
-    if (!disabled && !submitDisabled) onSubmit();
+    if (!disabled && !submitDisabled && !uploading) onSubmit();
   };
   const changeRef = useRef(onChange);
   changeRef.current = onChange;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Uploads images and drops them in where they were pasted/dropped/picked.
+  const insertImagesRef = useRef<
+    (files: Iterable<File>, pos?: number) => boolean
+  >(() => false);
+  insertImagesRef.current = (files, pos) => {
+    const images = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (!onUploadImages || images.length === 0) return false;
+    setUploading((n) => n + 1);
+    onUploadImages(images)
+      .then((urls) => {
+        const nodes = urls.map((src) => ({ type: "image", attrs: { src } }));
+        if (!editor || nodes.length === 0) return;
+        const at = pos ?? editor.state.selection.to;
+        editor.chain().focus().insertContentAt(at, nodes).run();
+      })
+      .catch(() => undefined) // the uploader reports its own errors
+      .finally(() => setUploading((n) => n - 1));
+    return true;
+  };
 
   const editor = useEditor({
     immediatelyRender: false, // SSR-safe
@@ -100,6 +123,7 @@ export default function MarkdownComposer({
       TaskList,
       TaskItem.configure({ nested: true }),
       TableKit.configure({ table: { resizable: false } }),
+      Image,
       Placeholder.configure({ placeholder }),
       Markdown,
       // Mod-Enter sends. Runs before HardBreak, which also binds Mod-Enter;
@@ -115,7 +139,17 @@ export default function MarkdownComposer({
         }),
       }),
     ],
-    editorProps: { attributes: { class: CONTENT_CLASS } },
+    editorProps: {
+      attributes: { class: CONTENT_CLASS },
+      handlePaste: (_view, event) =>
+        insertImagesRef.current(event.clipboardData?.files ?? []),
+      handleDrop: (view, event, _slice, moved) =>
+        !moved &&
+        insertImagesRef.current(
+          event.dataTransfer?.files ?? [],
+          view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos,
+        ),
+    },
     onUpdate: ({ editor: e }) => changeRef.current(e.getMarkdown()),
   });
 
@@ -246,8 +280,10 @@ export default function MarkdownComposer({
 
   return (
     <div
+      data-note
+      data-mine
       className={cn(
-        "border-border/70 focus-within:border-primary/30 overflow-hidden rounded-xl border bg-[var(--note-bg)] transition-colors",
+        "border-border/70 focus-within:border-primary/30 overflow-hidden rounded-xl border transition-colors",
         disabled && "opacity-60",
         className,
       )}
@@ -286,23 +322,34 @@ export default function MarkdownComposer({
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-3 pb-2">
         <div className="flex flex-wrap items-center gap-2">
-          {onAttachImages && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={onAttachImages}
-              disabled={disabled}
-              className="text-muted-foreground hover:text-foreground h-8 gap-1.5 rounded-full px-2.5 text-xs"
-            >
-              <Paperclip className="size-3.5" />
-              Add images
-            </Button>
-          )}
-          {imageCount > 0 && (
-            <span className="text-muted-foreground text-xs">
-              {imageCount} image{imageCount > 1 ? "s" : ""} attached
-            </span>
+          {onUploadImages && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  if (e.target.files) insertImagesRef.current(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled || uploading > 0}
+                className="text-muted-foreground hover:text-foreground h-8 gap-1.5 rounded-full px-2.5 text-xs"
+              >
+                <Paperclip
+                  className={cn("size-3.5", uploading > 0 && "animate-pulse")}
+                />
+                {uploading > 0 ? "Uploading image…" : "Add images"}
+              </Button>
+            </>
           )}
           <span className="text-muted-foreground hidden text-xs md:inline">
             <span className="font-medium">Shift + Enter</span> new line ·{" "}
@@ -327,7 +374,7 @@ export default function MarkdownComposer({
             type="button"
             size="sm"
             onClick={() => submitRef.current()}
-            disabled={disabled || submitDisabled}
+            disabled={disabled || submitDisabled || uploading > 0}
             className="h-8 w-8 rounded-full p-0"
             title="Send (⌘/Ctrl + Enter)"
           >

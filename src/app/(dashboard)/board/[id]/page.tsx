@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import InlineEdit from "@/components/ui/inline-edit";
 import { Skeleton } from "skullet/react";
-import type { Board, BoardTimelineEntry } from "@/types";
+import type { Board, BoardTimelineEntry, UpdateBoardRequest } from "@/types";
 import {
   useBoard,
   useDeleteBoard,
@@ -128,7 +128,7 @@ const BoardDetailPage = () => {
   const canEdit = board?.userRole === "owner" || board?.userRole === "editor";
 
   // The board's theme recolours the whole content panel while it's open.
-  useBoardPanelTheme(loadedBoard?.theme);
+  useBoardPanelTheme(loadedBoard);
 
   const handleDeleteFolder = () => {
     setDropdownOpen(false);
@@ -179,10 +179,7 @@ const BoardDetailPage = () => {
     }
   };
 
-  const handleAppearance = async (change: {
-    icon?: string;
-    theme?: string;
-  }) => {
+  const handleAppearance = async (change: UpdateBoardRequest) => {
     if (!canEdit || !board?._id) return;
     try {
       await updateBoardMutation.mutateAsync({ id: board._id, data: change });
@@ -229,6 +226,10 @@ const BoardDetailPage = () => {
       linkedFolder={board.linkedFolder}
       icon={board.icon || undefined}
       theme={board.theme}
+      themeImage={board.themeImage}
+      themeColor={board.themeColor}
+      themeOpacity={board.themeOpacity}
+      themeBlur={board.themeBlur}
       canEdit={canEdit}
       onLinkFolder={(id) => void handleLinkFolder(id)}
       onAppearance={(change) => void handleAppearance(change)}

@@ -50,6 +50,10 @@ export interface BoardDocument extends Document {
   linkedFolderId?: string;
   icon?: string;
   theme?: string;
+  themeImage?: string;
+  themeColor?: string;
+  themeOpacity?: number;
+  themeBlur?: boolean;
   createdAt: Date;
   updatedAt: Date;
   userRole?: "owner" | "editor" | "viewer";

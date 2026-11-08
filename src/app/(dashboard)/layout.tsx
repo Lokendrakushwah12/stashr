@@ -26,7 +26,8 @@ function ContentPanel({ children }: { children: React.ReactNode }) {
   const boardTheme = usePanelTheme();
   return (
     <main
-      data-board-theme={boardTheme ?? undefined}
+      data-board-theme={boardTheme?.id}
+      style={boardTheme?.style}
       className="bg-accent/30 mx-2 mt-1 mb-2 flex-1 overflow-auto rounded-lg border pb-16 md:mt-2.5 md:mr-2 md:ml-0 md:pb-0"
     >
       <div className="p-4">

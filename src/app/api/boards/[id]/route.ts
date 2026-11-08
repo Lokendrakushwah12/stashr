@@ -2,6 +2,7 @@ import { getRequestContext } from "@/lib/api-team";
 import { deleteBoardActivity, logBoardActivity } from "@/lib/board-activity";
 import {
   BOARD_THEMES,
+  HEX_RE,
   isBoardThemeId,
   type BoardThemeId,
 } from "@/lib/board-themes";
@@ -147,7 +148,18 @@ export async function PUT(
     if (ctx instanceof NextResponse) return ctx;
 
     const body = await request.json();
-    const { name, description, content, linkedFolderId, icon, theme } = body;
+    const {
+      name,
+      description,
+      content,
+      linkedFolderId,
+      icon,
+      theme,
+      themeImage,
+      themeColor,
+      themeOpacity,
+      themeBlur,
+    } = body;
     const { id } = await params;
 
     await connectDB();
@@ -190,6 +202,48 @@ export async function PUT(
         return NextResponse.json({ error: "Unknown theme" }, { status: 400 });
       }
       updateData.theme = theme;
+    }
+    if (themeImage !== undefined) {
+      if (
+        typeof themeImage !== "string" ||
+        (themeImage !== "" && !/^https:\/\/\S{1,490}$/.test(themeImage))
+      ) {
+        return NextResponse.json(
+          { error: "Theme image must be an https URL" },
+          { status: 400 },
+        );
+      }
+      updateData.themeImage = themeImage;
+    }
+    if (themeOpacity !== undefined) {
+      if (
+        typeof themeOpacity !== "number" ||
+        !(themeOpacity >= 0.2 && themeOpacity <= 1)
+      ) {
+        return NextResponse.json(
+          { error: "Note opacity must be between 0.2 and 1" },
+          { status: 400 },
+        );
+      }
+      updateData.themeOpacity = themeOpacity;
+    }
+    if (themeBlur !== undefined) {
+      if (typeof themeBlur !== "boolean") {
+        return NextResponse.json(
+          { error: "themeBlur must be true or false" },
+          { status: 400 },
+        );
+      }
+      updateData.themeBlur = themeBlur;
+    }
+    if (themeColor !== undefined) {
+      if (typeof themeColor !== "string" || !HEX_RE.test(themeColor)) {
+        return NextResponse.json(
+          { error: "Theme colour must be a hex colour" },
+          { status: 400 },
+        );
+      }
+      updateData.themeColor = themeColor;
     }
     if (description !== undefined)
       updateData.description = description?.trim() || undefined;

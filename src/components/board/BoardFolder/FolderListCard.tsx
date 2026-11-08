@@ -77,6 +77,8 @@ export default function FolderListCard({ board }: BoardCardProps) {
     router.push(`/board/${board._id}`);
   };
 
+  // Skeleton (skullet attributes): the tab and the card body draw as two
+  // solid blocks; the clip, strip and hover-only images are left out.
   return (
     <div className="flex w-full items-center justify-center sm:w-fit">
       <div
@@ -84,15 +86,24 @@ export default function FolderListCard({ board }: BoardCardProps) {
         onClick={handleCardClick}
       >
         <div className="relative flex h-8 flex-row items-start justify-start">
-          <h4 className="font-display bg-border text-foreground -z-9 h-full w-fit max-w-48 min-w-12 truncate rounded-tl-md pt-0.5 pl-2 text-xl font-semibold tracking-tight text-nowrap select-none">
+          <h4
+            skullet-block=""
+            className="font-display bg-border text-foreground -z-9 h-full w-fit max-w-48 min-w-12 truncate rounded-tl-md pt-0.5 pl-2 text-xl font-semibold tracking-tight text-nowrap select-none"
+          >
             {board.icon ? <span className="mr-1">{board.icon}</span> : null}
             {board.name}
           </h4>
-          <FolderClip className="text-border -z-10" />
-          <div className="bg-border absolute top-full left-0 -z-10 h-4 w-full rounded-tr-lg" />
+          <FolderClip skullet-ignore="" className="text-border -z-10" />
+          <div
+            skullet-ignore=""
+            className="bg-border absolute top-full left-0 -z-10 h-4 w-full rounded-tr-lg"
+          />
         </div>
         <div className="relative h-[135px] w-full origin-bottom transform-[rotateX(-15deg)] transition-transform duration-300 group-hover:transform-[rotateX(-28deg)] sm:w-[250px]">
-          <div className="bg-sidebar-ring/40 absolute inset-0 h-[135px] w-full overflow-hidden rounded-lg shadow-xs backdrop-blur-2xl sm:w-[250px]">
+          <div
+            skullet-block=""
+            className="bg-sidebar-ring/40 absolute inset-0 h-[135px] w-full overflow-hidden rounded-lg shadow-xs backdrop-blur-2xl sm:w-[250px]"
+          >
             {board.userRole &&
               (() => {
                 const meta = ROLE_META[board.userRole];
@@ -118,7 +129,10 @@ export default function FolderListCard({ board }: BoardCardProps) {
           </div>
         </div>
         {/* Images that pop out */}
-        <div className="absolute inset-0 left-1/4 -z-5 opacity-0 transition-opacity delay-75 duration-300 group-hover:opacity-100">
+        <div
+          skullet-ignore=""
+          className="absolute inset-0 left-1/4 -z-5 opacity-0 transition-opacity delay-75 duration-300 group-hover:opacity-100"
+        >
           <div
             style={
               { "--pl": c1!.light, "--pd": c1!.dark } as React.CSSProperties

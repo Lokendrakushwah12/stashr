@@ -44,6 +44,10 @@ export interface UpdateBoardRequest {
   linkedFolderId?: string | null;
   icon?: string;
   theme?: string;
+  themeImage?: string;
+  themeColor?: string;
+  themeOpacity?: number;
+  themeBlur?: boolean;
 }
 
 export interface CreateBoardCardRequest {

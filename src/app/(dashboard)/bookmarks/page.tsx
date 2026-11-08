@@ -145,9 +145,7 @@ export default function AllBookmarksPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl tracking-tight">
-              All Bookmarks
-            </h1>
+            <h1 className="font-display text-3xl tracking-tight">Bookmarks</h1>
             <p className="text-muted-foreground">
               Manage your bookmark folders and collections
             </p>
