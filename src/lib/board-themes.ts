@@ -1,13 +1,27 @@
 // Board appearance: a shared icon and theme, set per board like a chat theme
 // in Instagram (everyone on the board sees it), not per viewer.
 
+// The palettes themselves live in globals.css (main[data-board-theme]);
+// `swatch` previews one in the picker.
 export const BOARD_THEMES = {
-  default: { label: "Default", accent: null },
-  ocean: { label: "Ocean", accent: "#2f7fd8" },
-  grove: { label: "Grove", accent: "#3a9458" },
-  sunset: { label: "Sunset", accent: "#e2603a" },
-  plum: { label: "Plum", accent: "#9a4fd0" },
-  graphite: { label: "Graphite", accent: "#55555e" },
+  default: { label: "Default", swatch: null },
+  ocean: {
+    label: "Ocean",
+    swatch: "linear-gradient(135deg, #9cc8ff, #2f7fd8)",
+  },
+  grove: {
+    label: "Grove",
+    swatch: "linear-gradient(135deg, #a6dfb6, #2f8a50)",
+  },
+  sunset: {
+    label: "Sunset",
+    swatch: "linear-gradient(135deg, #ffc0a3, #e2603a 60%, #e0508c)",
+  },
+  plum: { label: "Plum", swatch: "linear-gradient(135deg, #d9bbff, #9a4fd0)" },
+  graphite: {
+    label: "Graphite",
+    swatch: "linear-gradient(135deg, #d4d4d8, #3f3f46)",
+  },
 } as const;
 
 export type BoardThemeId = keyof typeof BOARD_THEMES;
@@ -74,16 +88,4 @@ export function readableForeground(hex: string): string {
   };
   const L = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
   return L > 0.5 ? "oklch(0.15 0 0)" : "oklch(1 0 0)";
-}
-
-/** CSS variables that recolor a subtree with the board's theme. */
-export function boardThemeStyle(theme: string | undefined) {
-  const accent = isBoardThemeId(theme) ? BOARD_THEMES[theme].accent : null;
-  if (!accent) return undefined;
-  return {
-    "--primary": accent,
-    "--ring": accent,
-    "--primary-foreground": readableForeground(accent),
-    "--selection": `color-mix(in srgb, ${accent} 20%, transparent)`,
-  } as React.CSSProperties;
 }

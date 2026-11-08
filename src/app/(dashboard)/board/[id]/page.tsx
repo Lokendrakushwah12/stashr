@@ -25,9 +25,9 @@ import {
   TrashBinTrash,
   UserPlus,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
+import { useBoardPanelTheme } from "@/lib/contexts/panel-theme";
 import { useTeam } from "@/lib/contexts/team-context";
 import { Sheet } from "@/components/ui/sheet";
-import { boardThemeStyle } from "@/lib/board-themes";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, MoreVertical, PanelRight } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -126,6 +126,9 @@ const BoardDetailPage = () => {
   const deleteBoardMutation = useDeleteBoard();
 
   const canEdit = board?.userRole === "owner" || board?.userRole === "editor";
+
+  // The board's theme recolours the whole content panel while it's open.
+  useBoardPanelTheme(loadedBoard?.theme);
 
   const handleDeleteFolder = () => {
     setDropdownOpen(false);
@@ -234,10 +237,7 @@ const BoardDetailPage = () => {
 
   return (
     <Skeleton loading={boardLoading} label="Loading board">
-      <div
-        className="min-h-screen space-y-4"
-        style={boardThemeStyle(board.theme)}
-      >
+      <div className="min-h-screen space-y-4">
         {/* Header */}
         <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex w-full items-center justify-between">
@@ -324,12 +324,7 @@ const BoardDetailPage = () => {
 
         {/* Timeline, with board properties (folder, links, images) on the right */}
         <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
-          <div
-            className={cn(
-              "min-w-0 flex-1",
-              board.theme && board.theme !== "default" && "board-canvas",
-            )}
-          >
+          <div className="min-w-0 flex-1">
             <Skeleton loading={timelineLoading} label="Loading timeline">
               <BoardTimelineEditor
                 boardId={boardId}

@@ -277,7 +277,7 @@ function Appearance({
         className="flex flex-wrap items-center gap-1.5"
       >
         {BOARD_THEME_IDS.map((id) => {
-          const { label, accent } = BOARD_THEMES[id];
+          const { label, swatch } = BOARD_THEMES[id];
           const selected = id === current;
           return (
             <button
@@ -297,7 +297,7 @@ function Appearance({
               )}
               style={{
                 background:
-                  accent ??
+                  swatch ??
                   "conic-gradient(from 45deg, oklch(0.66 0.18 281), oklch(0.8 0.11 144), oklch(0.63 0.06 118), oklch(0.66 0.18 281))",
               }}
             />
