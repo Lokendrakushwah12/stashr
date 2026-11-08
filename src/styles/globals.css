@@ -318,3 +318,13 @@
   animation: spin 1s linear infinite;
 }
 
+
+/* Skullet skeleton colours by theme (html:root outranks the provider's :root). */
+html:root {
+  --skullet-base: rgb(0 0 0 / 0.06);
+  --skullet-highlight: rgb(255 255 255 / 0.6);
+}
+html.dark:root {
+  --skullet-base: rgb(255 255 255 / 0.07);
+  --skullet-highlight: rgb(255 255 255 / 0.08);
+}

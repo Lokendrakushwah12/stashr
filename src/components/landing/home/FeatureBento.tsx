@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import {
   createContext,
   useContext,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -390,7 +391,11 @@ function Activity() {
 
 export default function FeatureBento() {
   const { resolvedTheme } = useTheme();
-  const theme = resolvedTheme === "dark" ? "dark" : "light";
+  // Light on the server and first render (they must match), then the real
+  // theme once mounted.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const theme = mounted && resolvedTheme === "dark" ? "dark" : "light";
   return (
     <PageTheme.Provider value={theme}>
       <div className="stashr-bento" data-theme={theme}>
