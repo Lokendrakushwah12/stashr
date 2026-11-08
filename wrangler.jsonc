@@ -4,5 +4,9 @@
   "name": "stashr",
   "compatibility_date": "2025-09-23",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" }
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "routes": [
+    { "pattern": "stashr.in", "custom_domain": true },
+    { "pattern": "www.stashr.in", "custom_domain": true }
+  ]
 }

@@ -12,8 +12,8 @@ import connectDB from "@/lib/mongodb";
  * must not start until a request is actually being handled.
  */
 export async function getMongoClient(): Promise<MongoClient> {
-  const mongoose = await connectDB();
-  return mongoose.connection.getClient() as unknown as MongoClient;
+  const conn = await connectDB();
+  return conn.getClient() as unknown as MongoClient;
 }
 
 export default getMongoClient;

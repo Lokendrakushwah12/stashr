@@ -58,7 +58,7 @@ export async function GET(
     const ctx = await getRequestContext(request);
     if (ctx instanceof NextResponse) return ctx;
 
-    await connectDB();
+    const db = await connectDB();
     const models = await registerModels();
     const { id: boardId } = await params;
 
@@ -79,7 +79,7 @@ export async function GET(
     const entriesWithUserData = await Promise.all(
       entries.map(async (entry) => {
         const entryObject = entry.toObject ? entry.toObject() : entry;
-        const user = await mongoose.connection.collection("users").findOne({
+        const user = await db.collection("users").findOne({
           _id: new mongoose.Types.ObjectId(entryObject.userId as string),
         });
         const entryObj = entryObject as unknown as Record<string, unknown>;
