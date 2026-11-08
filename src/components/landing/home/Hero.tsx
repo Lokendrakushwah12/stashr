@@ -1,5 +1,6 @@
 "use client";
 
+import HeroDemo from "@/components/landing/home/HeroDemo";
 import { Button } from "@/components/ui/button";
 import PixelBlastClient from "@/components/ui/PixelBlast/pixel-blast-client";
 import { ArrowRight } from "@solar-icons/react-perf/category/style/BoldDuotone";
@@ -32,8 +33,12 @@ const Hero = () => {
           </Button>
         </div>
 
-        {/* dashboard image */}
-        <div className="relative mx-auto max-w-7xl">
+        {/* Product demo from md up; the static screenshot on phones, where a
+            desktop scene would be too small to read. */}
+        <div className="mx-auto hidden max-w-5xl md:block">
+          <HeroDemo />
+        </div>
+        <div className="relative mx-auto max-w-7xl md:hidden">
           <div className="from-background pointer-events-none absolute bottom-0 z-30 h-60 w-full bg-linear-to-t to-transparent" />
           <div className="border-border/50 bg-background relative aspect-video overflow-hidden rounded-sm border border-b-0 select-none lg:rounded-t-2xl">
             <img

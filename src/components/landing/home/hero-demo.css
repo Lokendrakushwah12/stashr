@@ -1,0 +1,272 @@
+/* Stashr's hero demo. Everything nests under .sh (the Stage's class). */
+.sh {
+  overflow: hidden;
+  --ss-accent: oklch(0.6628 0.1834 280.86);
+  --ss-accent-soft: oklch(0.6628 0.1834 280.86 / 0.12);
+  --ss-font: var(--font-geist-sans, 'Geist'), system-ui, -apple-system, sans-serif;
+  --ss-radius-md: 7px;
+  --sh-ink: oklch(0.1408 0.0044 285);
+  --sh-ink-2: oklch(0.5555 0 0);
+  --sh-line: oklch(0 0 0 / 0.07);
+  --sh-chip: oklch(0.6628 0.1834 280.86 / 0.1);
+  --sh-card: #fff;
+  --sh-canvas: oklch(0.985 0.002 285);
+
+  /* Stage puts data-theme on its inner .ss-stage, so redefine there. */
+  & .ss-stage[data-theme='dark'] {
+    --sh-ink: oklch(0.985 0 0);
+    --sh-ink-2: oklch(0.708 0 0);
+    --sh-line: oklch(1 0 0 / 0.08);
+    --sh-chip: oklch(0.6628 0.1505 282.8 / 0.2);
+    --sh-card: oklch(0.2 0.004 285);
+    --sh-canvas: oklch(0.16 0.004 285);
+  }
+
+  & .sh-window {
+    position: absolute;
+    /* One gutter above and to each side; the window runs off the bottom. */
+    inset: 28px 28px -40px;
+  }
+
+  & .sh-board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 248px;
+    height: 100%;
+    background: var(--sh-canvas);
+    color: var(--sh-ink);
+    font-size: 14px;
+  }
+
+  & .sh-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 20px 24px;
+  }
+
+  & .sh-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+    font-family: var(--font-display, Georgia), Georgia, serif;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+  }
+
+  & .sh-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  & .sh-entry,
+  & .sh-composer {
+    border-radius: 10px;
+    background: var(--sh-card);
+    box-shadow: 0 0 0 1px var(--sh-line), 0 1px 2px oklch(0 0 0 / 0.04);
+  }
+
+  & .sh-entry {
+    padding: 12px 14px;
+    will-change: transform;
+  }
+
+  & .sh-entry-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  & .sh-entry-name {
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  & .sh-entry-body {
+    padding-left: 30px;
+  }
+
+  & .sh-faint {
+    color: var(--sh-ink-2);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & .sh-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .sh-list li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    will-change: transform;
+  }
+
+  & .sh-num {
+    width: 16px;
+    flex: none;
+    color: var(--sh-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  & .sh-chip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 7px 0 5px;
+    border-radius: 6px;
+    background: var(--sh-chip);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  & .ss-stage {
+    overflow: hidden;
+  }
+
+  & .sh-composer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 122px;
+    box-sizing: border-box;
+    padding: 14px;
+    transition: box-shadow 150ms ease-out;
+  }
+
+  & .sh-draft {
+    position: relative;
+    height: 56px;
+  }
+
+  & .sh-placeholder,
+  & .sh-draft-note {
+    position: absolute;
+    inset: 0 auto auto 0;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+  }
+
+  & .sh-placeholder[data-show],
+  & .sh-draft-note[data-show] {
+    opacity: 1;
+  }
+
+  & .sh-draft .sh-chip {
+    animation: sh-chip-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  & .sh-composer[data-focus] {
+    box-shadow: 0 0 0 1px var(--ss-accent), 0 0 0 4px var(--ss-accent-soft);
+  }
+
+  & .sh-placeholder {
+    color: var(--sh-ink-2);
+    line-height: 28px;
+  }
+
+  & .sh-composer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  & .sh-send {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: var(--ss-accent);
+    opacity: 0.45;
+    transition: opacity 150ms ease-out;
+  }
+
+  & .sh-send[data-on] {
+    opacity: 1;
+  }
+
+  & .sh-side {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 22px 18px;
+    box-shadow: inset 1px 0 0 var(--sh-line);
+  }
+
+  & .sh-section {
+    display: grid;
+    gap: 8px;
+  }
+
+  & .sh-section-title {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  & .sh-count {
+    color: var(--sh-ink-2);
+    font-weight: 400;
+  }
+
+  & .sh-side-row,
+  & .sh-act,
+  & .sh-composer {
+    will-change: transform;
+  }
+
+  & .sh-side-row {
+    display: flex;
+    padding-bottom: 6px;
+  }
+
+  & .sh-act {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    font-size: 12.5px;
+    color: var(--sh-ink-2);
+  }
+
+  & .sh-act-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & .sh-act-text b {
+    font-weight: 600;
+    color: var(--sh-ink);
+  }
+}
+
+@keyframes sh-chip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* A new list line arrives on Enter: a quick fade, not a pop. */
+.sh .sh-draft li + li {
+  animation: sh-line-in 160ms ease-out both;
+}
+
+@keyframes sh-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
