@@ -9,14 +9,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import type { BoardTimelineEntry, Folder } from "@/types";
+import type { BoardActivity, BoardTimelineEntry, Folder } from "@/types";
 import { ImageIcon, Link2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+const VERB: Record<BoardActivity["action"], string> = {
+  "entry.created": "added a note",
+  "entry.updated": "edited a note",
+  "entry.deleted": "deleted a note",
+  "board.renamed": "renamed the board",
+  "folder.linked": "linked a folder",
+  "folder.unlinked": "unlinked a folder",
+};
+
+const fullDate = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+const shortDate = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+});
+
+/** "now", "5m", "3h", "2d", then "Nov 8" */
+function shortAgo(iso: string): string {
+  const date = new Date(iso);
+  const mins = Math.floor((Date.now() - date.getTime()) / 60000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  if (mins < 60 * 24) return `${Math.floor(mins / 60)}h`;
+  if (mins < 60 * 24 * 7) return `${Math.floor(mins / (60 * 24))}d`;
+  return shortDate.format(date);
+}
+
+function ActivityRow({ item }: { item: BoardActivity }) {
+  const deleted = item.action === "entry.deleted";
+  return (
+    <li className="flex gap-2.5">
+      <Avatar className="mt-0.5 size-5 rounded-full">
+        <AvatarImage src={item.actorImage ?? ""} alt="" />
+        <AvatarFallback className="rounded-full text-[10px]">
+          {item.actorName.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] leading-5">
+          <bdi className="font-medium">{item.actorName}</bdi>{" "}
+          <span className="text-muted-foreground">{VERB[item.action]}</span>
+        </p>
+        {item.detail && (
+          <p
+            title={item.detail}
+            className={cn(
+              "text-muted-foreground truncate text-xs leading-5",
+              deleted && "decoration-muted-foreground/60 line-through",
+            )}
+          >
+            “{item.detail}”
+          </p>
+        )}
+      </div>
+      <time
+        dateTime={item.createdAt}
+        title={fullDate.format(new Date(item.createdAt))}
+        className="text-muted-foreground shrink-0 text-xs leading-5 tabular-nums"
+      >
+        {shortAgo(item.createdAt)}
+      </time>
+    </li>
+  );
+}
+
 const URL_RE = /https?:\/\/[^\s<>()[\]"'`]+/g;
-const PREVIEW_COUNT = { links: 8, images: 9 };
+const PREVIEW_COUNT = { links: 8, images: 9, activity: 6 };
 
 /** Every distinct URL / image across the timeline, newest entry first. */
 export function collectMedia(entries: BoardTimelineEntry[]) {
@@ -124,12 +192,14 @@ function ShowAll({
 
 export default function BoardSidePanel({
   entries,
+  activity,
   folders,
   linkedFolder,
   canEdit,
   onLinkFolder,
 }: {
   entries: BoardTimelineEntry[];
+  activity: BoardActivity[];
   folders: Folder[];
   linkedFolder?: { id: string; name: string; color: string };
   canEdit: boolean;
@@ -138,6 +208,7 @@ export default function BoardSidePanel({
   const { links, images } = useMemo(() => collectMedia(entries), [entries]);
   const [allLinks, setAllLinks] = useState(false);
   const [allImages, setAllImages] = useState(false);
+  const [allActivity, setAllActivity] = useState(false);
 
   const shownLinks = allLinks ? links : links.slice(0, PREVIEW_COUNT.links);
   const shownImages = allImages
@@ -245,6 +316,31 @@ export default function BoardSidePanel({
               limit={PREVIEW_COUNT.images}
               expanded={allImages}
               onToggle={() => setAllImages((v) => !v)}
+            />
+          </div>
+        )}
+      </Section>
+
+      <Section title="Activity">
+        {activity.length === 0 ? (
+          <p className="text-muted-foreground text-xs">
+            Who added, edited or deleted what, and when, shows up here.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <ol className="space-y-3">
+              {(allActivity
+                ? activity
+                : activity.slice(0, PREVIEW_COUNT.activity)
+              ).map((item) => (
+                <ActivityRow key={item.id} item={item} />
+              ))}
+            </ol>
+            <ShowAll
+              total={activity.length}
+              limit={PREVIEW_COUNT.activity}
+              expanded={allActivity}
+              onToggle={() => setAllActivity((v) => !v)}
             />
           </div>
         )}

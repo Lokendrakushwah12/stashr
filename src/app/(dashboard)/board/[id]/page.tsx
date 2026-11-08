@@ -84,6 +84,7 @@ const BoardDetailPage = () => {
   // Fetch timeline entries
   const { data: timelineResponse } = useTimeline(boardId, !!boardId);
   const timelineEntries = timelineResponse?.data?.entries ?? [];
+  const activity = timelineResponse?.data?.activity ?? [];
 
   // Fetch folders for linking
   const { data: foldersResponse } = useFolders();
@@ -202,6 +203,7 @@ const BoardDetailPage = () => {
   const detailsPanel = (
     <BoardSidePanel
       entries={timelineEntries}
+      activity={activity}
       folders={folders}
       linkedFolder={board.linkedFolder}
       canEdit={canEdit}

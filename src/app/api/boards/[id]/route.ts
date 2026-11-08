@@ -1,4 +1,5 @@
 import { getRequestContext } from "@/lib/api-team";
+import { deleteBoardActivity, logBoardActivity } from "@/lib/board-activity";
 import connectDB from "@/lib/mongodb";
 import { canWrite } from "@/lib/team-service";
 import { registerModels } from "@/models";
@@ -189,11 +190,42 @@ export async function PUT(
       }
     }
 
+    const previousFolderId = board.linkedFolderId
+      ? String(board.linkedFolderId)
+      : null;
     const updatedBoard = await models.Board.findByIdAndUpdate(
       id,
       { $set: updateData },
       { new: true },
     );
+
+    const actor = {
+      boardId: id,
+      actorId: ctx.userId,
+      actorName: ctx.userName ?? ctx.userEmail,
+      actorImage: ctx.userImage,
+    };
+    if (typeof updateData.name === "string" && updateData.name !== board.name) {
+      await logBoardActivity({
+        ...actor,
+        action: "board.renamed",
+        detail: updateData.name,
+      });
+    }
+    if ("linkedFolderId" in updateData) {
+      const nextFolderId = updateData.linkedFolderId as string | null;
+      if (nextFolderId !== previousFolderId) {
+        const folderId = nextFolderId ?? previousFolderId;
+        const folder = folderId
+          ? await models.Folder.findById(folderId, { name: 1 }).lean()
+          : null;
+        await logBoardActivity({
+          ...actor,
+          action: nextFolderId ? "folder.linked" : "folder.unlinked",
+          detail: folder?.name,
+        });
+      }
+    }
     const boardObject = updatedBoard?.toObject
       ? updatedBoard.toObject()
       : updatedBoard;
@@ -248,6 +280,7 @@ export async function DELETE(
 
     await models.BoardCard.deleteMany({ boardId: id });
     await models.Board.findByIdAndDelete(id);
+    await deleteBoardActivity([id]);
     return NextResponse.json({ message: "Board deleted successfully" });
   } catch (error) {
     console.error("Error deleting board:", error);

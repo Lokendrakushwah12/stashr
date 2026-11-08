@@ -1,4 +1,9 @@
 import { getRequestContext } from "@/lib/api-team";
+import {
+  listBoardActivity,
+  logBoardActivity,
+  noteSnippet,
+} from "@/lib/board-activity";
 import connectDB from "@/lib/mongodb";
 import { canWrite } from "@/lib/team-service";
 import { registerModels } from "@/models";
@@ -95,7 +100,8 @@ export async function GET(
       }),
     );
 
-    return NextResponse.json({ entries: entriesWithUserData });
+    const activity = await listBoardActivity(boardId);
+    return NextResponse.json({ entries: entriesWithUserData, activity });
   } catch (error) {
     console.error("Error fetching timeline entries:", error);
     return NextResponse.json(
@@ -170,6 +176,15 @@ export async function POST(
       action: (action ?? "created") as "created" | "updated" | "commented",
       images: imagesArray,
     } as Parameters<typeof models.BoardTimelineEntry.create>[0]);
+
+    await logBoardActivity({
+      boardId,
+      actorId: ctx.userId,
+      actorName: ctx.userName ?? ctx.userEmail,
+      actorImage: ctx.userImage,
+      action: "entry.created",
+      detail: noteSnippet(content),
+    });
 
     const entryObject = timelineEntry.toObject
       ? timelineEntry.toObject()

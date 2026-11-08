@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { logBoardActivity, noteSnippet } from "@/lib/board-activity";
 import connectDB from "@/lib/mongodb";
 import { registerModels } from "@/models";
 import type { BoardTimelineEntryDocument } from "@/models/BoardTimelineEntry";
@@ -83,6 +84,15 @@ export async function PUT(
       );
     }
 
+    await logBoardActivity({
+      boardId: String(updatedEntry.boardId),
+      actorId: session.user.id,
+      actorName: session.user.name ?? session.user.email ?? "Someone",
+      actorImage: session.user.image,
+      action: "entry.updated",
+      detail: noteSnippet(content),
+    });
+
     // Get the entry from DB to ensure we have the latest data
     const entryFromDB = (await models.BoardTimelineEntry.findById(
       entryId,
@@ -149,6 +159,15 @@ export async function DELETE(
     }
 
     await models.BoardTimelineEntry.findByIdAndDelete(entryId);
+
+    await logBoardActivity({
+      boardId: String(entry.boardId),
+      actorId: session.user.id,
+      actorName: session.user.name ?? session.user.email ?? "Someone",
+      actorImage: session.user.image,
+      action: "entry.deleted",
+      detail: noteSnippet(entry.content ?? ""),
+    });
 
     if (entry.boardId) {
       await models.Board.updateOne(

@@ -4,6 +4,7 @@ import type {
   Board,
   BoardCard,
   BoardCollaboration,
+  BoardActivity,
   BoardTimelineEntry,
   Bookmark,
   CreateBoardCardRequest,
@@ -261,10 +262,13 @@ export const boardApi = {
   // Get timeline entries for a board
   async getTimeline(
     boardId: string,
-  ): Promise<ApiResponse<{ entries: BoardTimelineEntry[] }>> {
-    return apiRequest<{ entries: BoardTimelineEntry[] }>(
-      `/boards/${boardId}/timeline`,
-    );
+  ): Promise<
+    ApiResponse<{ entries: BoardTimelineEntry[]; activity: BoardActivity[] }>
+  > {
+    return apiRequest<{
+      entries: BoardTimelineEntry[];
+      activity: BoardActivity[];
+    }>(`/boards/${boardId}/timeline`);
   },
 
   // Create a timeline entry

@@ -92,6 +92,11 @@ export function useUpdateBoard() {
       void queryClient.setQueryData(boardKeys.detail(variables.id), response);
       // Invalidate board list to update counts/colors
       void queryClient.invalidateQueries({ queryKey: boardKeys.lists() });
+      // The board's activity log rides on its timeline query
+      // (= timelineKeys.list(id); literal to avoid a circular import).
+      void queryClient.invalidateQueries({
+        queryKey: ["timeline", "list", variables.id],
+      });
     },
     onError: (error: Error) => {
       toast.error(`Failed to update board: ${error.message}`);

@@ -1,6 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import { registerModels } from "@/models";
+import { deleteBoardActivity } from "@/lib/board-activity";
 import { canManageTeam, teamDeletedNotices } from "@/lib/team-service";
 import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
@@ -131,6 +132,7 @@ export async function DELETE(
     }),
     m.BoardTimelineEntry.deleteMany({ boardId: { $in: boardIds } }),
     m.BoardCollaboration.deleteMany({ boardId: { $in: boardIds } }),
+    deleteBoardActivity(boardIds),
     m.FolderCollaboration.deleteMany({ folderId: { $in: folderIds } }),
     m.Bookmark.deleteMany({
       $or: [{ teamId: tid }, { folderId: { $in: folderIds } }],

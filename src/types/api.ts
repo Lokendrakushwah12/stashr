@@ -82,6 +82,22 @@ export interface BoardCollaboration {
   updatedAt: string;
 }
 
+export interface BoardActivity {
+  id: string;
+  actorId: string;
+  actorName: string;
+  actorImage: string | null;
+  action:
+    | "entry.created"
+    | "entry.updated"
+    | "entry.deleted"
+    | "board.renamed"
+    | "folder.linked"
+    | "folder.unlinked";
+  detail: string | null;
+  createdAt: string;
+}
+
 export interface BoardTimelineEntry {
   _id: string;
   boardId: string;
