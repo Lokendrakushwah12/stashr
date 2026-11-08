@@ -7,6 +7,9 @@ export interface BoardDocument extends Document {
   userId: string;
   teamId?: mongoose.Types.ObjectId;
   linkedFolderId?: string;
+  /** Appearance shared by everyone on the board (src/lib/board-themes.ts). */
+  icon?: string;
+  theme?: string;
   cardCount?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +46,16 @@ const BoardSchema = new Schema<BoardDocument>(
     linkedFolderId: {
       type: String,
       index: true,
+    },
+    icon: {
+      type: String,
+      trim: true,
+      maxlength: 16,
+    },
+    theme: {
+      type: String,
+      enum: ["default", "ocean", "grove", "sunset", "plum", "graphite"],
+      default: "default",
     },
     cardCount: {
       type: Number,

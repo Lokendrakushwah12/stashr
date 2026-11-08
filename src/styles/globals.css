@@ -328,3 +328,16 @@ html.dark:root {
   --skullet-base: rgb(255 255 255 / 0.07);
   --skullet-highlight: rgb(255 255 255 / 0.08);
 }
+
+/* A themed board's timeline sits on a faint dotted canvas in its colour,
+   like a chat wallpaper; notes stay solid cards on top of it. */
+.board-canvas {
+  border-radius: 1rem;
+  padding: 1rem;
+  background-color: color-mix(in oklch, var(--primary) 5%, transparent);
+  background-image: radial-gradient(
+    color-mix(in oklch, var(--primary) 24%, transparent) 1px,
+    transparent 1.3px
+  );
+  background-size: 16px 16px;
+}

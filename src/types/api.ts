@@ -42,6 +42,8 @@ export interface UpdateBoardRequest {
   description?: string;
   content?: string;
   linkedFolderId?: string | null;
+  icon?: string;
+  theme?: string;
 }
 
 export interface CreateBoardCardRequest {
@@ -93,7 +95,9 @@ export interface BoardActivity {
     | "entry.deleted"
     | "board.renamed"
     | "folder.linked"
-    | "folder.unlinked";
+    | "folder.unlinked"
+    | "board.icon"
+    | "board.themed";
   detail: string | null;
   createdAt: string;
 }

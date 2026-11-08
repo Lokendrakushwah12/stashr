@@ -7,7 +7,9 @@ export type BoardActivityAction =
   | "entry.deleted"
   | "board.renamed"
   | "folder.linked"
-  | "folder.unlinked";
+  | "folder.unlinked"
+  | "board.icon"
+  | "board.themed";
 
 export interface BoardActivityInput {
   boardId: string;

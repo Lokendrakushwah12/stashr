@@ -1,5 +1,10 @@
 import { getRequestContext } from "@/lib/api-team";
 import { deleteBoardActivity, logBoardActivity } from "@/lib/board-activity";
+import {
+  BOARD_THEMES,
+  isBoardThemeId,
+  type BoardThemeId,
+} from "@/lib/board-themes";
 import connectDB from "@/lib/mongodb";
 import { canWrite } from "@/lib/team-service";
 import { registerModels } from "@/models";
@@ -142,7 +147,7 @@ export async function PUT(
     if (ctx instanceof NextResponse) return ctx;
 
     const body = await request.json();
-    const { name, description, content, linkedFolderId } = body;
+    const { name, description, content, linkedFolderId, icon, theme } = body;
     const { id } = await params;
 
     await connectDB();
@@ -170,6 +175,21 @@ export async function PUT(
         );
       }
       updateData.name = name.trim();
+    }
+    if (icon !== undefined) {
+      if (typeof icon !== "string" || [...icon].length > 4) {
+        return NextResponse.json(
+          { error: "Icon must be a single emoji" },
+          { status: 400 },
+        );
+      }
+      updateData.icon = icon.trim();
+    }
+    if (theme !== undefined) {
+      if (!isBoardThemeId(theme)) {
+        return NextResponse.json({ error: "Unknown theme" }, { status: 400 });
+      }
+      updateData.theme = theme;
     }
     if (description !== undefined)
       updateData.description = description?.trim() || undefined;
@@ -210,6 +230,26 @@ export async function PUT(
         ...actor,
         action: "board.renamed",
         detail: updateData.name,
+      });
+    }
+    if (
+      typeof updateData.icon === "string" &&
+      updateData.icon !== (board.icon ?? "")
+    ) {
+      await logBoardActivity({
+        ...actor,
+        action: "board.icon",
+        detail: updateData.icon || undefined,
+      });
+    }
+    if (
+      typeof updateData.theme === "string" &&
+      updateData.theme !== (board.theme ?? "default")
+    ) {
+      await logBoardActivity({
+        ...actor,
+        action: "board.themed",
+        detail: BOARD_THEMES[updateData.theme as BoardThemeId].label,
       });
     }
     if ("linkedFolderId" in updateData) {

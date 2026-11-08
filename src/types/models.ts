@@ -48,6 +48,8 @@ export interface Board {
   content?: string;
   userId?: string;
   linkedFolderId?: string;
+  icon?: string;
+  theme?: string;
   linkedFolder?: {
     id: string;
     name: string;

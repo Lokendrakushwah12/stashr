@@ -48,6 +48,8 @@ export interface BoardDocument extends Document {
   teamId?: mongoose.Types.ObjectId;
   cardCount?: number;
   linkedFolderId?: string;
+  icon?: string;
+  theme?: string;
   createdAt: Date;
   updatedAt: Date;
   userRole?: "owner" | "editor" | "viewer";

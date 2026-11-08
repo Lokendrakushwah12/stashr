@@ -10,9 +10,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  BOARD_EMOJI,
+  BOARD_THEME_IDS,
+  BOARD_THEMES,
+  isBoardThemeId,
+  type BoardThemeId,
+} from "@/lib/board-themes";
 import { cn } from "@/lib/utils";
 import type { BoardActivity, BoardTimelineEntry, Folder } from "@/types";
-import { ImageIcon, Link2 } from "lucide-react";
+import { ImageIcon, Link2, SmilePlus } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -23,6 +35,8 @@ const VERB: Record<BoardActivity["action"], string> = {
   "board.renamed": "renamed the board",
   "folder.linked": "linked a folder",
   "folder.unlinked": "unlinked a folder",
+  "board.icon": "changed the icon",
+  "board.themed": "changed the theme",
 };
 
 const fullDate = new Intl.DateTimeFormat(undefined, {
@@ -190,20 +204,130 @@ function ShowAll({
   );
 }
 
+function Appearance({
+  icon,
+  theme,
+  canEdit,
+  onChange,
+}: {
+  icon?: string;
+  theme?: string;
+  canEdit: boolean;
+  onChange: (change: { icon?: string; theme?: BoardThemeId }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const current: BoardThemeId = isBoardThemeId(theme) ? theme : "default";
+
+  return (
+    <div className="flex items-center gap-3">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild disabled={!canEdit}>
+          <button
+            type="button"
+            aria-label={icon ? "Change board icon" : "Add board icon"}
+            className={cn(
+              "flex size-10 shrink-0 items-center justify-center rounded-lg text-xl transition-colors",
+              icon
+                ? "bg-muted hover:bg-muted/70"
+                : "border-border text-muted-foreground hover:text-foreground border border-dashed",
+              !canEdit && "pointer-events-none",
+            )}
+          >
+            {icon ?? <SmilePlus className="size-4" />}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-64 p-2">
+          <div className="grid grid-cols-8 gap-0.5">
+            {BOARD_EMOJI.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                aria-label={`Use ${emoji}`}
+                onClick={() => {
+                  onChange({ icon: emoji });
+                  setOpen(false);
+                }}
+                className={cn(
+                  "hover:bg-muted flex size-7 items-center justify-center rounded-md text-base",
+                  emoji === icon && "bg-muted",
+                )}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+          {icon && (
+            <button
+              type="button"
+              onClick={() => {
+                onChange({ icon: "" });
+                setOpen(false);
+              }}
+              className="text-muted-foreground hover:text-foreground mt-2 w-full rounded-md px-2 py-1.5 text-left text-xs"
+            >
+              Remove icon
+            </button>
+          )}
+        </PopoverContent>
+      </Popover>
+
+      <div
+        role="radiogroup"
+        aria-label="Board theme"
+        className="flex flex-wrap items-center gap-1.5"
+      >
+        {BOARD_THEME_IDS.map((id) => {
+          const { label, accent } = BOARD_THEMES[id];
+          const selected = id === current;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              aria-label={id === "default" ? "Default (team colour)" : label}
+              title={id === "default" ? "Default (team colour)" : label}
+              disabled={!canEdit}
+              onClick={() => !selected && onChange({ theme: id })}
+              className={cn(
+                "size-6 rounded-full ring-offset-2 ring-offset-[var(--background)] transition-shadow disabled:cursor-default",
+                selected
+                  ? "ring-foreground/70 ring-2"
+                  : "hover:ring-border hover:ring-2",
+              )}
+              style={{
+                background:
+                  accent ??
+                  "conic-gradient(from 45deg, oklch(0.66 0.18 281), oklch(0.8 0.11 144), oklch(0.63 0.06 118), oklch(0.66 0.18 281))",
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function BoardSidePanel({
   entries,
   activity,
   folders,
   linkedFolder,
+  icon,
+  theme,
   canEdit,
   onLinkFolder,
+  onAppearance,
 }: {
   entries: BoardTimelineEntry[];
   activity: BoardActivity[];
   folders: Folder[];
   linkedFolder?: { id: string; name: string; color: string };
+  icon?: string;
+  theme?: string;
   canEdit: boolean;
   onLinkFolder: (folderId: string | null) => void;
+  onAppearance: (change: { icon?: string; theme?: BoardThemeId }) => void;
 }) {
   const { links, images } = useMemo(() => collectMedia(entries), [entries]);
   const [allLinks, setAllLinks] = useState(false);
@@ -217,6 +341,15 @@ export default function BoardSidePanel({
 
   return (
     <aside className="space-y-4 lg:sticky lg:top-4">
+      <Section title="Appearance">
+        <Appearance
+          icon={icon}
+          theme={theme}
+          canEdit={canEdit}
+          onChange={onAppearance}
+        />
+      </Section>
+
       <Section title="Linked folder">
         {linkedFolder ? (
           <div className="flex items-center gap-2">

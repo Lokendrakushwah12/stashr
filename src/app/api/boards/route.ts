@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     const teamBoards = await models.Board.find({ teamId: teamObjectId })
       .select(
-        "_id name description userId teamId linkedFolderId cardCount createdAt updatedAt",
+        "_id name description icon theme userId teamId linkedFolderId cardCount createdAt updatedAt",
       )
       .sort(sortOrder);
 
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
             teamId: { $nin: myTeamIds },
           })
             .select(
-              "_id name description userId teamId linkedFolderId cardCount createdAt updatedAt",
+              "_id name description icon theme userId teamId linkedFolderId cardCount createdAt updatedAt",
             )
             .sort(sortOrder)
         : [];

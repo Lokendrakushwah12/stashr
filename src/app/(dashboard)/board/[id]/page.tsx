@@ -27,6 +27,7 @@ import {
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useTeam } from "@/lib/contexts/team-context";
 import { Sheet } from "@/components/ui/sheet";
+import { boardThemeStyle } from "@/lib/board-themes";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, MoreVertical, PanelRight } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -175,6 +176,18 @@ const BoardDetailPage = () => {
     }
   };
 
+  const handleAppearance = async (change: {
+    icon?: string;
+    theme?: string;
+  }) => {
+    if (!canEdit || !board?._id) return;
+    try {
+      await updateBoardMutation.mutateAsync({ id: board._id, data: change });
+    } catch {
+      toast.error("Couldn't update the board's appearance");
+    }
+  };
+
   const confirmDeleteBoard = async () => {
     if (!board?._id) return;
 
@@ -211,28 +224,41 @@ const BoardDetailPage = () => {
       activity={activity}
       folders={folders}
       linkedFolder={board.linkedFolder}
+      icon={board.icon || undefined}
+      theme={board.theme}
       canEdit={canEdit}
       onLinkFolder={(id) => void handleLinkFolder(id)}
+      onAppearance={(change) => void handleAppearance(change)}
     />
   );
 
   return (
     <Skeleton loading={boardLoading} label="Loading board">
-      <div className="min-h-screen space-y-4">
+      <div
+        className="min-h-screen space-y-4"
+        style={boardThemeStyle(board.theme)}
+      >
         {/* Header */}
         <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex w-full items-center justify-between">
-            <InlineEdit
-              value={board?.name || ""}
-              onSave={handleUpdateTitle}
-              placeholder="Enter board name..."
-              fontSize="3xl"
-              fontWeight="semibold"
-              disabled={!canEdit}
-              maxLength={100}
-              allowEmpty={false}
-              className="font-display tracking-tight"
-            />
+            <div className="flex min-w-0 items-center gap-3">
+              {board.icon ? (
+                <span className="text-3xl leading-none" aria-hidden>
+                  {board.icon}
+                </span>
+              ) : null}
+              <InlineEdit
+                value={board?.name || ""}
+                onSave={handleUpdateTitle}
+                placeholder="Enter board name..."
+                fontSize="3xl"
+                fontWeight="semibold"
+                disabled={!canEdit}
+                maxLength={100}
+                allowEmpty={false}
+                className="font-display tracking-tight"
+              />
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
@@ -298,7 +324,12 @@ const BoardDetailPage = () => {
 
         {/* Timeline, with board properties (folder, links, images) on the right */}
         <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
-          <div className="min-w-0 flex-1">
+          <div
+            className={cn(
+              "min-w-0 flex-1",
+              board.theme && board.theme !== "default" && "board-canvas",
+            )}
+          >
             <Skeleton loading={timelineLoading} label="Loading timeline">
               <BoardTimelineEditor
                 boardId={boardId}

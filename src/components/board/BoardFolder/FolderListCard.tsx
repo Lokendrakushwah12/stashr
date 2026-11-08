@@ -85,6 +85,7 @@ export default function FolderListCard({ board }: BoardCardProps) {
       >
         <div className="relative flex h-8 flex-row items-start justify-start">
           <h4 className="font-display bg-border text-foreground -z-9 h-full w-fit max-w-48 min-w-12 truncate rounded-tl-md pt-0.5 pl-2 text-xl font-semibold tracking-tight text-nowrap select-none">
+            {board.icon ? <span className="mr-1">{board.icon}</span> : null}
             {board.name}
           </h4>
           <FolderClip className="text-border -z-10" />
