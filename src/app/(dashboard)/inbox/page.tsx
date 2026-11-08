@@ -9,19 +9,28 @@ import TeamInvite from "@/components/notifications/TeamInvite";
 import TeamRoleChangeNotice from "@/components/notifications/TeamRoleChangeNotice";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useTeam } from "@/lib/contexts/team-context";
-import { useInbox } from "@/lib/hooks/use-inbox";
+import { useInbox, type TeamInvitation } from "@/lib/hooks/use-inbox";
 import {
   InboxIn,
   InboxLine,
   Refresh,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
-import { Loader } from "lucide-react";
+import { Skeleton } from "skullet/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+// Shapes the first skeleton, drawn from the real invite card.
+const SAMPLE_INVITES: TeamInvitation[] = [0, 1, 2].map((i) => ({
+  id: `sample-${i}`,
+  teamId: `sample-${i}`,
+  teamName: "Design team",
+  role: "editor",
+  status: "pending",
+  invitedByName: "Maya Chen",
+  invitedAt: new Date().toISOString(),
+}));
 
 export default function InboxPage() {
   const { data: session, status } = useSession();
@@ -184,14 +193,6 @@ export default function InboxPage() {
     return null;
   }
 
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen space-y-8">
       {/* Header */}
@@ -223,9 +224,7 @@ export default function InboxPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
           <div className="flex w-full flex-col items-start justify-center p-4">
-            {loadingInvitations ? (
-              <Skeleton className="mb-1 h-9 w-16" />
-            ) : (
+            <Skeleton loading={isLoading} label="Loading inbox count">
               <div className="font-mono text-3xl font-semibold">
                 {pendingInvitations.filter((inv) => inv.status === "pending")
                   .length +
@@ -234,7 +233,7 @@ export default function InboxPage() {
                   teamRoleChangeNotifications.length +
                   teamDeletedNotifications.length}
               </div>
-            )}
+            </Skeleton>
             <div className="text-muted-foreground text-sm">
               Pending Invitations
             </div>
@@ -248,14 +247,12 @@ export default function InboxPage() {
         </div>
         <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
           <div className="flex w-full flex-col items-start justify-center p-4">
-            {loadingInvitations ? (
-              <Skeleton className="mb-1 h-9 w-16" />
-            ) : (
+            <Skeleton loading={isLoading} label="Loading inbox count">
               <div className="font-mono text-3xl font-semibold">
                 {pendingInvitations.filter((inv) => inv.status === "accepted")
                   .length + acceptedTeamInvitations.length}
               </div>
-            )}
+            </Skeleton>
             <div className="text-muted-foreground text-sm">
               Accepted Invitations
             </div>
@@ -269,178 +266,167 @@ export default function InboxPage() {
         </div>
       </div>
 
-      {/* Invitations */}
-      {loadingInvitations ? (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-7 w-48" />
-            <Skeleton className="h-6 w-8 rounded-full" />
-          </div>
-          <div className="relative space-y-3">
-            <div className="absolute inset-0 z-10 -mb-1 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
-            {[...Array(3)].map((_, i) => (
-              <Card key={i} className="rounded-lg border p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </div>
-                  <div className="flex gap-2">
-                    <Skeleton className="h-9 w-20" />
-                    <Skeleton className="h-9 w-20" />
-                  </div>
-                </div>
-              </Card>
+      {/* Invitations: measured from real cards while loading */}
+      <Skeleton loading={isLoading} label="Loading inbox">
+        {isLoading ? (
+          <div className="space-y-3">
+            {SAMPLE_INVITES.map((invitation) => (
+              <TeamInvite
+                key={invitation.id}
+                invitation={invitation}
+                onRespond={() => undefined}
+              />
             ))}
           </div>
-        </div>
-      ) : pendingInvitations.length +
-          teamInvitations.length +
-          teamDeclineNotifications.length +
-          teamRoleChangeNotifications.length +
-          teamDeletedNotifications.length >
-        0 ? (
-        <div className="space-y-6">
-          {teamDeletedNotifications.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium tracking-tight">
-                  Deleted Teams
-                </h2>
-                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
-                  {teamDeletedNotifications.length}
+        ) : pendingInvitations.length +
+            teamInvitations.length +
+            teamDeclineNotifications.length +
+            teamRoleChangeNotifications.length +
+            teamDeletedNotifications.length >
+          0 ? (
+          <div className="space-y-6">
+            {teamDeletedNotifications.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-medium tracking-tight">
+                    Deleted Teams
+                  </h2>
+                  <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                    {teamDeletedNotifications.length}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {teamDeletedNotifications.map((notification) => (
+                    <TeamDeletedNotice
+                      key={notification.id}
+                      notification={notification}
+                      onDismiss={handleDismissTeamDeleted}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="space-y-3">
-                {teamDeletedNotifications.map((notification) => (
-                  <TeamDeletedNotice
-                    key={notification.id}
-                    notification={notification}
-                    onDismiss={handleDismissTeamDeleted}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {teamRoleChangeNotifications.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium tracking-tight">
-                  Role Updates
-                </h2>
-                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
-                  {teamRoleChangeNotifications.length}
+            )}
+            {teamRoleChangeNotifications.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-medium tracking-tight">
+                    Role Updates
+                  </h2>
+                  <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                    {teamRoleChangeNotifications.length}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {teamRoleChangeNotifications.map((notification) => (
+                    <TeamRoleChangeNotice
+                      key={notification.id}
+                      notification={notification}
+                      onDismiss={handleDismissRoleChange}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="space-y-3">
-                {teamRoleChangeNotifications.map((notification) => (
-                  <TeamRoleChangeNotice
-                    key={notification.id}
-                    notification={notification}
-                    onDismiss={handleDismissRoleChange}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {pendingTeamInvitations.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium tracking-tight">
-                  Team Invitations
-                </h2>
-                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
-                  {pendingTeamInvitations.length}
+            )}
+            {pendingTeamInvitations.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-medium tracking-tight">
+                    Team Invitations
+                  </h2>
+                  <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                    {pendingTeamInvitations.length}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {pendingTeamInvitations.map((invitation) => (
+                    <TeamInvite
+                      key={invitation.id}
+                      invitation={invitation}
+                      onRespond={handleTeamInvitation}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="space-y-3">
-                {pendingTeamInvitations.map((invitation) => (
-                  <TeamInvite
-                    key={invitation.id}
-                    invitation={invitation}
-                    onRespond={handleTeamInvitation}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {teamDeclineNotifications.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium tracking-tight">
-                  Declined Invitations
-                </h2>
-                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
-                  {teamDeclineNotifications.length}
+            )}
+            {teamDeclineNotifications.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-medium tracking-tight">
+                    Declined Invitations
+                  </h2>
+                  <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                    {teamDeclineNotifications.length}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {teamDeclineNotifications.map((notification) => (
+                    <TeamDeclineNotice
+                      key={notification.id}
+                      notification={notification}
+                      onDismiss={handleDismissDecline}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="space-y-3">
-                {teamDeclineNotifications.map((notification) => (
-                  <TeamDeclineNotice
-                    key={notification.id}
-                    notification={notification}
-                    onDismiss={handleDismissDecline}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {pendingInvitations.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium tracking-tight">
-                  Collaboration Invitations
-                </h2>
-                <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
-                  {pendingInvitations.length}
+            )}
+            {pendingInvitations.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-medium tracking-tight">
+                    Collaboration Invitations
+                  </h2>
+                  <div className="bg-warning/20 text-warning-600 dark:text-warning-400 rounded-full px-2 py-1 text-xs font-medium">
+                    {pendingInvitations.length}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {pendingInvitations.map((invitation) => (
+                    <CollaborationInvite
+                      key={invitation._id}
+                      collaboration={invitation}
+                      onAccept={handleAcceptInvitation}
+                      onDecline={handleDeclineInvitation}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="space-y-3">
-                {pendingInvitations.map((invitation) => (
-                  <CollaborationInvite
-                    key={invitation._id}
-                    collaboration={invitation}
-                    onAccept={handleAcceptInvitation}
-                    onDecline={handleDeclineInvitation}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {historyTeamInvitations.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium tracking-tight">History</h2>
-                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
-                  {historyTeamInvitations.length}
+            )}
+            {historyTeamInvitations.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-medium tracking-tight">
+                    History
+                  </h2>
+                  <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                    {historyTeamInvitations.length}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {historyTeamInvitations.map((invitation) => (
+                    <TeamInvite
+                      key={invitation.id}
+                      invitation={invitation}
+                      onRespond={handleTeamInvitation}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="space-y-3">
-                {historyTeamInvitations.map((invitation) => (
-                  <TeamInvite
-                    key={invitation.id}
-                    invitation={invitation}
-                    onRespond={handleTeamInvitation}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <EmptyState
-          icon={<InboxLine />}
-          title="You're all caught up"
-          description="Team invites, shared boards and folders, and team updates land here."
-          action={
-            <Button variant="outline" onClick={() => void refetch()}>
-              <Refresh className="h-4 w-4" />
-              Refresh
-            </Button>
-          }
-        />
-      )}
+            )}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<InboxLine />}
+            title="You're all caught up"
+            description="Team invites, shared boards and folders, and team updates land here."
+            action={
+              <Button variant="outline" onClick={() => void refetch()}>
+                <Refresh className="h-4 w-4" />
+                Refresh
+              </Button>
+            }
+          />
+        )}
+      </Skeleton>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import type { TeamDeletedNotification } from "@/lib/hooks/use-inbox";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Skeleton } from "skullet/react";
 import { toast } from "sonner";
 
 function OnboardingInner() {
@@ -57,55 +58,57 @@ function OnboardingInner() {
     }
   }, [status, isLoading, currentTeam, router]);
 
-  if (status === "loading" || isLoading) {
-    return (
-      <div className="text-muted-foreground flex min-h-screen items-center justify-center text-sm">
-        Loading…
-      </div>
-    );
-  }
+  // The welcome text is a skeleton until the session and teams resolve; the
+  // dialog waits, since a user with a team is redirected instead.
+  const loading = status === "loading" || isLoading;
 
-  if (status !== "authenticated") {
+  if (!loading && status !== "authenticated") {
     router.replace("/auth/signin");
     return null;
   }
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center px-4">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold">Welcome to Stashr</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Hi {session.user?.name?.split(" ")[0] ?? "there"} — let&apos;s set up
-          your team to get started.
+      <Skeleton loading={loading} label="Loading">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-semibold">Welcome to Stashr</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Hi {session?.user?.name?.split(" ")[0] ?? "there"} — let&apos;s set
+            up your team to get started.
+          </p>
+        </div>
+      </Skeleton>
+      {!loading && (
+        <CreateTeamDialog
+          open={open}
+          onOpenChange={setOpen}
+          required
+          notice={
+            deletedNotices.length > 0 ? (
+              <div className="space-y-2">
+                {deletedNotices.map((n) => (
+                  <TeamDeletedNotice
+                    key={n.id}
+                    notification={n}
+                    onDismiss={dismissNotice}
+                  />
+                ))}
+              </div>
+            ) : null
+          }
+          handleApiResponse={handleApiResponse}
+          onLimit={showUpgrade}
+          onCreated={async (team) => {
+            setCurrentTeamLocal(team);
+            router.replace("/board");
+          }}
+        />
+      )}
+      {!loading && teams.length > 0 && (
+        <p className="text-muted-foreground mt-4 text-xs">
+          You already have {teams.length} team{teams.length === 1 ? "" : "s"}
         </p>
-      </div>
-      <CreateTeamDialog
-        open={open}
-        onOpenChange={setOpen}
-        required
-        notice={
-          deletedNotices.length > 0 ? (
-            <div className="space-y-2">
-              {deletedNotices.map((n) => (
-                <TeamDeletedNotice
-                  key={n.id}
-                  notification={n}
-                  onDismiss={dismissNotice}
-                />
-              ))}
-            </div>
-          ) : null
-        }
-        handleApiResponse={handleApiResponse}
-        onLimit={showUpgrade}
-        onCreated={async (team) => {
-          setCurrentTeamLocal(team);
-          router.replace("/board");
-        }}
-      />
-      <p className="text-muted-foreground mt-4 text-xs">
-        You already have {teams.length} team{teams.length === 1 ? "" : "s"}
-      </p>
+      )}
     </div>
   );
 }

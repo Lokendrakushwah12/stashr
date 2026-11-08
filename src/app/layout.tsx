@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { AppSkulletProvider } from "@/components/providers/skullet-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import { displayFont } from "@/lib/fonts";
 import "@/styles/globals.css";
@@ -94,8 +95,10 @@ export default function RootLayout({
         <AuthSessionProvider>
           <QueryProvider>
             <ThemeProvider>
-              {children}
-              <Toaster />
+              <AppSkulletProvider>
+                {children}
+                <Toaster />
+              </AppSkulletProvider>
             </ThemeProvider>
           </QueryProvider>
         </AuthSessionProvider>

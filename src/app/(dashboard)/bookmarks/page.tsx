@@ -6,7 +6,6 @@ import ImportExportDialog from "@/components/bookmark/ImportExportDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Card, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFolders } from "@/lib/hooks/use-bookmarks";
+import type { Folder } from "@/types";
 import {
   AddSquare,
   BookmarkSquare,
@@ -26,7 +25,8 @@ import {
   Upload,
 } from "@solar-icons/react-perf/BoldDuotone";
 import { Magnifer, Sort } from "@solar-icons/react-perf/Outline";
-import { Loader, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import { Skeleton } from "skullet/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -34,6 +34,21 @@ import { toast } from "sonner";
 
 type SortKey = "recent" | "oldest" | "name";
 const SORT_STORAGE_KEY = "bookmarksSortBy";
+
+// Shapes the first skeleton (skullet remembers the real one after a visit).
+const SAMPLE_FOLDERS: Folder[] = [
+  "Inspiration",
+  "Engineering blogs",
+  "Recipes",
+  "Read later",
+  "Design systems",
+  "Travel",
+].map((name, i) => ({
+  _id: `sample-${i}`,
+  name,
+  description: "A few saved links",
+  bookmarkCount: 8,
+}));
 
 export default function AllBookmarksPage() {
   const { status } = useSession();
@@ -124,14 +139,6 @@ export default function AllBookmarksPage() {
     return null;
   }
 
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <>
       <section className="min-h-screen space-y-8">
@@ -196,13 +203,11 @@ export default function AllBookmarksPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
             <div className="flex w-full flex-col items-start justify-center p-4">
-              {isLoading ? (
-                <Skeleton className="mb-1 h-9 w-16" />
-              ) : (
+              <Skeleton loading={isLoading} label="Loading folder count">
                 <div className="font-mono text-3xl font-semibold">
-                  {folders.length}
+                  {isLoading ? 12 : folders.length}
                 </div>
-              )}
+              </Skeleton>
               <div className="text-muted-foreground text-sm">Total Folders</div>
             </div>
             <div className="bg-muted/30 bg-lines-diag flex h-full items-center justify-center px-9">
@@ -211,16 +216,16 @@ export default function AllBookmarksPage() {
           </div>
           <div className="bg-secondary/20 relative flex overflow-hidden rounded-2xl border">
             <div className="flex w-full flex-col items-start justify-center p-4">
-              {isLoading ? (
-                <Skeleton className="mb-1 h-9 w-16" />
-              ) : (
+              <Skeleton loading={isLoading} label="Loading bookmark count">
                 <div className="font-mono text-3xl font-semibold">
-                  {folders.reduce(
-                    (acc, folder) => acc + (folder.bookmarkCount ?? 0),
-                    0,
-                  )}
+                  {isLoading
+                    ? 120
+                    : folders.reduce(
+                        (acc, folder) => acc + (folder.bookmarkCount ?? 0),
+                        0,
+                      )}
                 </div>
-              )}
+              </Skeleton>
               <div className="text-muted-foreground text-sm">
                 Total Bookmarks
               </div>
@@ -261,25 +266,26 @@ export default function AllBookmarksPage() {
           </TabsList>
         </Tabs>
 
-        {/* Folders Grid */}
-        {isLoading ? (
-          <div className="relative grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div className="absolute inset-0 z-10 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="h-32 rounded-2xl p-0">
-                <CardHeader className="flex h-full w-full flex-col items-center justify-between gap-0 p-2">
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <Skeleton className="ml-32 h-6 w-32" />
-                    <Skeleton className="h-5 w-8" />
-                  </div>
-                  <div className="flex w-full flex-col gap-2">
-                    <Skeleton className="mx-auto h-4 w-[60%]" />
-                    <Skeleton className="mx-auto h-4 w-3/4" />
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+        {/* Folders Grid: one element from skeleton to cards */}
+        {isLoading || sortedFolders.length > 0 ? (
+          <Skeleton
+            data={isLoading ? null : sortedFolders}
+            sample={SAMPLE_FOLDERS}
+            id="folders-grid"
+            label="Loading folders"
+          >
+            {(list) => (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {list.map((folder) => (
+                  <FolderCard
+                    key={folder._id}
+                    folder={folder}
+                    onUpdate={() => handleRefetch()}
+                  />
+                ))}
+              </div>
+            )}
+          </Skeleton>
         ) : view === "shared" && sharedFolders.length === 0 ? (
           <EmptyState
             icon={<FolderOpen />}
@@ -307,17 +313,7 @@ export default function AllBookmarksPage() {
               </div>
             }
           />
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {sortedFolders.map((folder) => (
-              <FolderCard
-                key={folder._id}
-                folder={folder}
-                onUpdate={() => handleRefetch()}
-              />
-            ))}
-          </div>
-        )}
+        ) : null}
       </section>
 
       <AddFolderDialog

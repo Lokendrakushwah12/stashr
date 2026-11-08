@@ -1,7 +1,6 @@
 "use client";
 
 import AddBoardDialog from "@/components/board/AddBoardDialog";
-import FolderClip from "@/components/board/BoardFolder/FolderClip";
 import FolderListCard from "@/components/board/BoardFolder/FolderListCard";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,19 +13,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBoards } from "@/lib/hooks/use-boards";
+import type { Board } from "@/types";
 import {
   AddFolder,
   Share,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { Magnifer, Sort } from "@solar-icons/react-perf/Outline";
-import { Loader, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import { Skeleton } from "skullet/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+// Shapes the first skeleton (skullet remembers the real one after a visit).
+const SAMPLE_BOARDS: Board[] = [
+  "Weekend ideas",
+  "Launch plan",
+  "Reading list",
+  "Design refs",
+].map((name, i) => ({
+  _id: `sample-${i}`,
+  name,
+  userRole: "owner",
+  updatedAt: new Date().toISOString(),
+}));
 
 export default function BoardsPage() {
   const { status } = useSession();
@@ -117,14 +130,6 @@ export default function BoardsPage() {
   if (status === "unauthenticated") {
     router.push("/auth/signin");
     return null;
-  }
-
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader className="text-muted-foreground mb-4 h-8 w-8 animate-spin" />
-      </div>
-    );
   }
 
   return (
@@ -266,24 +271,26 @@ export default function BoardsPage() {
           </div>
         )}
 
-        {/* Boards Grid */}
-        {isLoading ? (
-          <div className="relative grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <div className="absolute inset-0 z-10 -mb-1 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex w-full items-center justify-center">
-                <div className="group relative w-full animate-pulse perspective-midrange">
-                  <div className="relative flex h-8 flex-row items-start justify-start overflow-hidden">
-                    <div className="bg-border h-8 w-32 rounded-tl-md rounded-tr-none rounded-br-none rounded-bl-none" />
-                    <FolderClip className="text-border -z-10" />
-                  </div>
-                  <div className="bg-border absolute top-8 left-0 h-3 w-2 rounded-br-lg" />
-                  <div className="absolute z-50 h-1/4 w-full rounded-t-lg bg-[repeating-linear-gradient(45deg,var(--primary-foreground)_0px,var(--primary-foreground)_2px,transparent_2px,transparent_5.5px)] opacity-40 sm:w-[250px] dark:opacity-10" />
-                  <Skeleton className="bg-sidebar-ring/50! h-[135px] w-full rounded-lg backdrop-blur-2xl sm:w-[250px]" />
-                </div>
+        {/* Boards Grid: one element from skeleton to cards */}
+        {isLoading || filteredBoards.length > 0 ? (
+          <Skeleton
+            data={isLoading ? null : filteredBoards}
+            sample={SAMPLE_BOARDS}
+            id="boards-grid"
+            label="Loading boards"
+          >
+            {(list) => (
+              <div className="grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {list.map((board) => (
+                  <FolderListCard
+                    key={board._id}
+                    board={board}
+                    onUpdate={() => handleRefetch()}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </Skeleton>
         ) : roleFilter === "shared" && boards.length === 0 ? (
           <EmptyState
             icon={<Share />}
@@ -323,17 +330,7 @@ export default function BoardsPage() {
               </Button>
             }
           />
-        ) : (
-          <div className="grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredBoards.map((board) => (
-              <FolderListCard
-                key={board._id}
-                board={board}
-                onUpdate={() => handleRefetch()}
-              />
-            ))}
-          </div>
-        )}
+        ) : null}
       </section>
 
       <AddBoardDialog

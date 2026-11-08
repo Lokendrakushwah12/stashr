@@ -31,6 +31,8 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Skeleton } from "skullet/react";
+import type { AdminStatsResponse, AdminUsersResponse } from "@/types";
 
 function formatDateDDMMYYYY(
   value: string | number | Date | null | undefined,
@@ -43,6 +45,34 @@ function formatDateDDMMYYYY(
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
+
+const SAMPLE_STATS: Partial<AdminStatsResponse> = {
+  totalUsers: 1280,
+  totalFolders: 3460,
+  totalBookmarks: 52800,
+  activeUsers: 312,
+};
+
+const SAMPLE_USERS: AdminUsersResponse["users"] = [
+  "Maya Chen",
+  "Jon Park",
+  "Ana Silva",
+].map((name, i) => ({
+  userId: `sample-${i}`,
+  userDetails: {
+    id: `sample-${i}`,
+    name,
+    email: `${name.split(" ")[0]!.toLowerCase()}@studio.co`,
+  },
+  folderCount: 12,
+  totalBookmarks: 140,
+  uniqueDomains: 48,
+  firstActivity: new Date().toISOString(),
+  lastActivity: new Date().toISOString(),
+  daysSinceLastActivity: 1,
+  activityScore: 80,
+  folders: [],
+}));
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -62,17 +92,12 @@ export default function AdminPage() {
     return null;
   }
 
-  // Show loading while checking authentication
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Refresh className="text-muted-foreground h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  // Until the session arrives the header is a skeleton and the tabs (and
+  // their admin-only requests) wait, so "Access Denied" never flashes.
+  const sessionLoading = status === "loading";
 
   // Check if user is admin
-  if (!isAdmin) {
+  if (!sessionLoading && !isAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -90,40 +115,44 @@ export default function AdminPage() {
 
   return (
     <section className="mx-auto min-h-screen space-y-2">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">
-            Admin Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Monitor user activity and platform statistics
-          </p>
+      <Skeleton loading={sessionLoading} label="Loading admin dashboard">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl tracking-tight">
+              Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Monitor user activity and platform statistics
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {sessionLoading ? <RefreshButton disabled /> : <AdminStats />}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <AdminStats />
-        </div>
-      </div>
+      </Skeleton>
 
       {/* Navigation Tabs */}
-      <Tabs defaultValue="analytics" className="w-full" variant="bordered">
-        <TabsList className="mb-4 grid w-fit grid-cols-3">
-          <TabsTrigger value="analytics">
-            <PieChart2 className="h-4 w-4" />
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="users">
-            <UsersGroupTwoRounded className="h-4 w-4" />
-            Users
-          </TabsTrigger>
-        </TabsList>
+      {!sessionLoading && (
+        <Tabs defaultValue="analytics" className="w-full" variant="bordered">
+          <TabsList className="mb-4 grid w-fit grid-cols-3">
+            <TabsTrigger value="analytics">
+              <PieChart2 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="users">
+              <UsersGroupTwoRounded className="h-4 w-4" />
+              Users
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="analytics">
-          <AnalyticsTab />
-        </TabsContent>
-        <TabsContent value="users">
-          <UsersTab />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="analytics">
+            <AnalyticsTab />
+          </TabsContent>
+          <TabsContent value="users">
+            <UsersTab />
+          </TabsContent>
+        </Tabs>
+      )}
     </section>
   );
 }
@@ -132,14 +161,6 @@ export default function AdminPage() {
 function AnalyticsTab() {
   const { data: stats, isLoading, error, refetch } = useAdminStats();
   const { data: analyticsData } = useAdminAnalytics();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Refresh className="text-muted-foreground h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -154,158 +175,154 @@ function AnalyticsTab() {
     );
   }
 
-  const statsData = stats;
+  // Sample figures shape the skeleton while the real ones load.
+  const statsData = stats ?? (isLoading ? SAMPLE_STATS : undefined);
 
   return (
-    <div className="space-y-6">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          value={statsData?.totalUsers?.toString() ?? "0"}
-          icon={UsersGroupTwoRounded}
-          description="Total users"
-        />
-        <StatsCard
-          value={statsData?.totalFolders?.toString() ?? "0"}
-          icon={Folder}
-          description="Total folders"
-        />
-        <StatsCard
-          value={statsData?.totalBookmarks?.toString() ?? "0"}
-          icon={Bookmark}
-          description="Total bookmarks"
-        />
-        <StatsCard
-          value={statsData?.activeUsers?.toString() ?? "0"}
-          icon={SliderMinimalisticHorizontal}
-          description="Active users"
-        />
-      </div>
-
+    <Skeleton loading={isLoading} label="Loading analytics">
       <div className="space-y-6">
-        {/* User Engagement */}
-        <Card className="bg-secondary/15 relative gap-0 overflow-hidden rounded-2xl p-1 shadow-none">
-          <CardHeader className="p-1.5">
-            <CardTitle className="flex items-center gap-2">
-              <SliderMinimalisticHorizontal className="h-5 w-5" />
-              User Engagement
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
-              <div className="bg-secondary/40 dark:bg-secondary/30 rounded-xl p-4">
-                <p className="font-semibold">7-Day Engagement</p>
-                <p className="text-2xl font-semibold tabular-nums">
-                  {analyticsData?.userEngagement?.engagementRate7d?.toFixed(
-                    1,
-                  ) ?? 0}
-                  %
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {analyticsData?.userEngagement?.activeUsers7d ?? 0} active
-                  users
-                </p>
-              </div>
-              <div className="bg-secondary/40 dark:bg-secondary/30 rounded-2xl p-4">
-                <p className="font-semibold">30-Day Engagement</p>
-                <p className="text-2xl font-semibold tabular-nums">
-                  {analyticsData?.userEngagement?.engagementRate30d?.toFixed(
-                    1,
-                  ) ?? 0}
-                  %
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {analyticsData?.userEngagement?.activeUsers30d ?? 0} active
-                  users
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StatsCard
+            value={statsData?.totalUsers?.toString() ?? "0"}
+            icon={UsersGroupTwoRounded}
+            description="Total users"
+          />
+          <StatsCard
+            value={statsData?.totalFolders?.toString() ?? "0"}
+            icon={Folder}
+            description="Total folders"
+          />
+          <StatsCard
+            value={statsData?.totalBookmarks?.toString() ?? "0"}
+            icon={Bookmark}
+            description="Total bookmarks"
+          />
+          <StatsCard
+            value={statsData?.activeUsers?.toString() ?? "0"}
+            icon={SliderMinimalisticHorizontal}
+            description="Active users"
+          />
+        </div>
 
-        {/* Popular Domains */}
-        <Card className="bg-secondary/40 relative overflow-hidden rounded-2xl border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bookmark className="h-5 w-5" />
-              Popular Domains
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analyticsData?.popularDomains?.length === 0 ? (
-              <div className="text-muted-foreground py-8 text-center">
-                <Bookmark className="mx-auto mb-4 h-12 w-12" />
-                <p>No domain data available</p>
+        <div className="space-y-6">
+          {/* User Engagement */}
+          <Card className="bg-secondary/15 relative gap-0 overflow-hidden rounded-2xl p-1 shadow-none">
+            <CardHeader className="p-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <SliderMinimalisticHorizontal className="h-5 w-5" />
+                User Engagement
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
+                <div className="bg-secondary/40 dark:bg-secondary/30 rounded-xl p-4">
+                  <p className="font-semibold">7-Day Engagement</p>
+                  <p className="text-2xl font-semibold tabular-nums">
+                    {analyticsData?.userEngagement?.engagementRate7d?.toFixed(
+                      1,
+                    ) ?? 0}
+                    %
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {analyticsData?.userEngagement?.activeUsers7d ?? 0} active
+                    users
+                  </p>
+                </div>
+                <div className="bg-secondary/40 dark:bg-secondary/30 rounded-2xl p-4">
+                  <p className="font-semibold">30-Day Engagement</p>
+                  <p className="text-2xl font-semibold tabular-nums">
+                    {analyticsData?.userEngagement?.engagementRate30d?.toFixed(
+                      1,
+                    ) ?? 0}
+                    %
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {analyticsData?.userEngagement?.activeUsers30d ?? 0} active
+                    users
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="space-y-2">
-                {analyticsData?.popularDomains
-                  ?.slice(0, 5)
-                  .map((domain, index) => (
-                    <div
-                      key={domain._id}
-                      className="bg-secondary dark:bg-secondary/50 flex items-center justify-between rounded-lg p-2"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="bg-muted rounded-sm px-2 py-1 font-mono text-sm">
-                          {index + 1}
+            </CardContent>
+          </Card>
+
+          {/* Popular Domains */}
+          <Card className="bg-secondary/40 relative overflow-hidden rounded-2xl border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bookmark className="h-5 w-5" />
+                Popular Domains
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analyticsData?.popularDomains?.length === 0 ? (
+                <div className="text-muted-foreground py-8 text-center">
+                  <Bookmark className="mx-auto mb-4 h-12 w-12" />
+                  <p>No domain data available</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {analyticsData?.popularDomains
+                    ?.slice(0, 5)
+                    .map((domain, index) => (
+                      <div
+                        key={domain._id}
+                        className="bg-secondary dark:bg-secondary/50 flex items-center justify-between rounded-lg p-2"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="bg-muted rounded-sm px-2 py-1 font-mono text-sm">
+                            {index + 1}
+                          </span>
+                          <span className="font-medium">{domain._id}</span>
+                        </div>
+                        <span className="text-muted-foreground text-sm">
+                          {domain.count} bookmarks
                         </span>
-                        <span className="font-medium">{domain._id}</span>
                       </div>
-                      <span className="text-muted-foreground text-sm">
-                        {domain.count} bookmarks
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Summary Stats */}
-        <Card className="bg-secondary/15 relative gap-0 overflow-hidden rounded-2xl p-1 shadow-none">
-          <CardHeader className="p-1.5">
-            <CardTitle className="flex items-center gap-2">
-              <PieChart2 className="h-5 w-5" />
-              Platform Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
-              <div className="bg-secondary/40 dark:bg-secondary/30 rounded-xl p-4">
-                <p className="font-semibold">Average Folders per User</p>
-                <p className="text-2xl font-semibold tabular-nums">
-                  {analyticsData?.summary?.averageFoldersPerUser?.toFixed(1) ??
-                    0}
-                </p>
+          {/* Summary Stats */}
+          <Card className="bg-secondary/15 relative gap-0 overflow-hidden rounded-2xl p-1 shadow-none">
+            <CardHeader className="p-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <PieChart2 className="h-5 w-5" />
+                Platform Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
+                <div className="bg-secondary/40 dark:bg-secondary/30 rounded-xl p-4">
+                  <p className="font-semibold">Average Folders per User</p>
+                  <p className="text-2xl font-semibold tabular-nums">
+                    {analyticsData?.summary?.averageFoldersPerUser?.toFixed(
+                      1,
+                    ) ?? 0}
+                  </p>
+                </div>
+                <div className="bg-secondary/40 dark:bg-secondary/30 rounded-xl p-4">
+                  <p className="font-semibold">Average Bookmarks per User</p>
+                  <p className="text-2xl font-semibold tabular-nums">
+                    {analyticsData?.summary?.averageBookmarksPerUser?.toFixed(
+                      1,
+                    ) ?? 0}
+                  </p>
+                </div>
               </div>
-              <div className="bg-secondary/40 dark:bg-secondary/30 rounded-xl p-4">
-                <p className="font-semibold">Average Bookmarks per User</p>
-                <p className="text-2xl font-semibold tabular-nums">
-                  {analyticsData?.summary?.averageBookmarksPerUser?.toFixed(
-                    1,
-                  ) ?? 0}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </Skeleton>
   );
 }
 
 // Users Tab Component
 function UsersTab() {
   const { data: usersData, isLoading, error, refetch } = useAdminUsers();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Refresh className="text-muted-foreground h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -320,102 +337,105 @@ function UsersTab() {
     );
   }
 
-  const users = usersData?.users ?? [];
+  // Sample rows shape the skeleton while the real users load.
+  const users = usersData?.users ?? (isLoading ? SAMPLE_USERS : []);
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-secondary/20 relative overflow-hidden rounded-2xl border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UsersGroupTwoRounded className="h-5 w-5" />
-            User Statistics ({users.length} users)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {users.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">
-              <UsersGroupTwoRounded className="mx-auto mb-4 h-12 w-12" />
-              <p>No users found</p>
-            </div>
-          ) : (
-            <div className="bg-background overflow-hidden rounded-xl border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead className="text-right">Folders</TableHead>
-                    <TableHead className="text-right">Bookmarks</TableHead>
-                    <TableHead className="text-right">Activity</TableHead>
-                    <TableHead>Last Active</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.userId}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8 rounded-md">
-                            <AvatarImage
-                              src={user.userDetails?.image ?? undefined}
-                              alt={user.userDetails?.name ?? "User"}
-                            />
-                            <AvatarFallback className="rounded-md text-xs">
-                              {user.userDetails?.name
-                                ?.charAt(0)
-                                ?.toUpperCase() ?? "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">
-                              {user.userDetails?.name ??
-                                `User ${user.userId.slice(-6)}`}
-                            </p>
-                            <p className="text-muted-foreground truncate text-xs">
-                              {user.userDetails?.email ??
-                                `user-${user.userId.slice(-6)}@example.com`}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {user.folderCount}
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {user.totalBookmarks}
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {user.activityScore}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground font-mono text-xs">
-                        {formatDateDDMMYYYY(user.lastActivity)}
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={`w-fit rounded-sm px-2 py-1 font-mono text-xs uppercase ${
-                            user.daysSinceLastActivity <= 7
-                              ? "bg-green-600/10 text-green-600"
-                              : user.daysSinceLastActivity <= 30
-                                ? "bg-yellow-600/10 text-yellow-600"
-                                : "bg-rose-600/10 text-rose-600"
-                          }`}
-                        >
-                          {user.daysSinceLastActivity <= 7
-                            ? "Active"
-                            : user.daysSinceLastActivity <= 30
-                              ? "Recent"
-                              : "Inactive"}
-                        </span>
-                      </TableCell>
+    <Skeleton loading={isLoading} label="Loading users">
+      <div className="space-y-6">
+        <Card className="bg-secondary/20 relative overflow-hidden rounded-2xl border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UsersGroupTwoRounded className="h-5 w-5" />
+              User Statistics ({users.length} users)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {users.length === 0 ? (
+              <div className="text-muted-foreground py-8 text-center">
+                <UsersGroupTwoRounded className="mx-auto mb-4 h-12 w-12" />
+                <p>No users found</p>
+              </div>
+            ) : (
+              <div className="bg-background overflow-hidden rounded-xl border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead className="text-right">Folders</TableHead>
+                      <TableHead className="text-right">Bookmarks</TableHead>
+                      <TableHead className="text-right">Activity</TableHead>
+                      <TableHead>Last Active</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.userId}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 rounded-md">
+                              <AvatarImage
+                                src={user.userDetails?.image ?? undefined}
+                                alt={user.userDetails?.name ?? "User"}
+                              />
+                              <AvatarFallback className="rounded-md text-xs">
+                                {user.userDetails?.name
+                                  ?.charAt(0)
+                                  ?.toUpperCase() ?? "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">
+                                {user.userDetails?.name ??
+                                  `User ${user.userId.slice(-6)}`}
+                              </p>
+                              <p className="text-muted-foreground truncate text-xs">
+                                {user.userDetails?.email ??
+                                  `user-${user.userId.slice(-6)}@example.com`}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {user.folderCount}
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {user.totalBookmarks}
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {user.activityScore}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground font-mono text-xs">
+                          {formatDateDDMMYYYY(user.lastActivity)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`w-fit rounded-sm px-2 py-1 font-mono text-xs uppercase ${
+                              user.daysSinceLastActivity <= 7
+                                ? "bg-green-600/10 text-green-600"
+                                : user.daysSinceLastActivity <= 30
+                                  ? "bg-yellow-600/10 text-yellow-600"
+                                  : "bg-rose-600/10 text-rose-600"
+                            }`}
+                          >
+                            {user.daysSinceLastActivity <= 7
+                              ? "Active"
+                              : user.daysSinceLastActivity <= 30
+                                ? "Recent"
+                                : "Inactive"}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </Skeleton>
   );
 }
 
@@ -452,15 +472,6 @@ function StatsCard({
 function AdminStats() {
   const { isLoading, error, refetch } = useAdminStats();
 
-  if (isLoading) {
-    return (
-      <Button variant="outline" size="sm" disabled>
-        <Refresh className="h-4 w-4 animate-spin" />
-        Loading...
-      </Button>
-    );
-  }
-
   if (error) {
     return (
       <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -471,7 +482,21 @@ function AdminStats() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={() => refetch()}>
+    <Skeleton loading={isLoading} label="Loading statistics">
+      <RefreshButton onClick={() => void refetch()} />
+    </Skeleton>
+  );
+}
+
+function RefreshButton({
+  onClick,
+  disabled,
+}: {
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Button variant="outline" size="sm" onClick={onClick} disabled={disabled}>
       <Refresh className="h-4 w-4" />
       Refresh
     </Button>

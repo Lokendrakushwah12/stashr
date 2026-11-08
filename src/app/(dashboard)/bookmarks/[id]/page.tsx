@@ -7,7 +7,6 @@ import EditBookmarkDialog from "@/components/bookmark/EditBookmarkDialog";
 import SortBookmarksSheet from "@/components/bookmark/SortBookmarksSheet";
 import CollaboratorDialog from "@/components/folder/CollaboratorDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import ColorPicker from "@/components/ui/color-picker";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
@@ -18,7 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { InfiniteGrid } from "@/components/ui/infinite-grid";
 import InlineEdit from "@/components/ui/inline-edit";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "skullet/react";
+import type { Folder } from "@/types";
 import {
   useDeleteBookmark,
   useDeleteFolder,
@@ -47,6 +47,29 @@ import { toast } from "sonner";
 
 type ViewMode = "grid" | "infinite";
 const VIEW_STORAGE_KEY = "stashr.bookmarks.viewMode";
+
+// 1×1 transparent image: sample bookmarks never fetch a preview or favicon.
+const BLANK =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+const SAMPLE_FOLDER: Folder = {
+  name: "Inspiration",
+  description: "Links worth coming back to",
+  color: "#6366f1",
+  userRole: "viewer",
+  bookmarks: ["Design systems", "Typography", "Motion", "Colour"].map(
+    (title, i) => ({
+      _id: `sample-${i}`,
+      title,
+      url: "https://example.com",
+      description: "A saved link",
+      favicon: BLANK,
+      metaImage: BLANK,
+      userId: "sample",
+      folderId: "sample",
+    }),
+  ),
+};
 
 const BookmarkFolderDetailPage = () => {
   const params = useParams();
@@ -103,7 +126,11 @@ const BookmarkFolderDetailPage = () => {
     refetch,
   } = useFolder(folderId);
 
-  const folder = folderResponse?.data?.folder;
+  // While loading, the real page renders from a sample folder and skullet
+  // draws its skeleton from that, so nothing moves when the data arrives.
+  const loadedFolder = folderResponse?.data?.folder;
+  const folderLoading = !loadedFolder;
+  const folder = loadedFolder ?? { ...SAMPLE_FOLDER, _id: folderId };
   const userRole = folder?.userRole ?? "owner";
   const canEdit = userRole === "owner" || userRole === "editor";
 
@@ -200,349 +227,295 @@ const BookmarkFolderDetailPage = () => {
     );
   }
 
-  if (!folder) {
-    return (
+  return (
+    <Skeleton loading={folderLoading} label="Loading folder">
       <div className="min-h-screen space-y-2">
-        {/* Header Skeleton */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        {/* Header */}
+        <div className="mb-0! flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <Skeleton className="size-5 rounded-sm" />
-              <Skeleton className="h-9 w-64" />
+              <div className="flex shrink-0 items-center justify-center">
+                <ColorPicker
+                  value={folder.color ?? "#3b82f6"}
+                  onChange={handleUpdateColor}
+                  disabled={!canEdit}
+                >
+                  <button
+                    type="button"
+                    disabled={!canEdit}
+                    className="size-5 cursor-pointer rounded-sm opacity-60 transition-all hover:opacity-100 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: folder.color ?? "#3b82f6" }}
+                  />
+                </ColorPicker>
+              </div>
+              <InlineEdit
+                value={folder.name}
+                onSave={handleUpdateTitle}
+                placeholder="Enter folder name..."
+                fontSize="3xl"
+                fontWeight="semibold"
+                disabled={!canEdit}
+                maxLength={100}
+                allowEmpty={false}
+                className="font-display tracking-tight"
+              />
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Skeleton className="h-9 w-20" />
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-9" />
-          </div>
-        </div>
-
-        {/* Description Skeleton */}
-        <Skeleton className="h-6 w-3/4" />
-
-        {/* Bookmarks Grid Skeleton */}
-        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="absolute inset-0 z-10 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="overflow-hidden p-1">
-              <CardContent className="p-0">
-                <div className="mb-2 flex w-full items-center gap-1 pt-1 pl-1">
-                  <Skeleton className="h-8 w-9 rounded-md" />
-                  <div className="flex w-full flex-col gap-1">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
-                <Skeleton className="h-48 w-full rounded-xl" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen space-y-2">
-      {/* Header */}
-      <div className="mb-0! flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex shrink-0 items-center justify-center">
-              <ColorPicker
-                value={folder.color ?? "#3b82f6"}
-                onChange={handleUpdateColor}
-                disabled={!canEdit}
-              >
-                <button
-                  type="button"
-                  disabled={!canEdit}
-                  className="size-5 cursor-pointer rounded-sm opacity-60 transition-all hover:opacity-100 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: folder.color ?? "#3b82f6" }}
-                />
-              </ColorPicker>
-            </div>
-            <InlineEdit
-              value={folder.name}
-              onSave={handleUpdateTitle}
-              placeholder="Enter folder name..."
-              fontSize="3xl"
-              fontWeight="semibold"
-              disabled={!canEdit}
-              maxLength={100}
-              allowEmpty={false}
-              className="font-display tracking-tight"
-            />
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            onClick={toggleViewMode}
-            variant="outline"
-            size="sm"
-            aria-label={
-              viewMode === "grid"
-                ? "Switch to infinite view"
-                : "Switch to grid view"
-            }
-          >
-            {viewMode === "grid" ? (
-              <InfinityIcon className="h-4 w-4" />
-            ) : (
-              <LayoutGrid className="h-4 w-4" />
-            )}
-            {viewMode === "grid" ? "Infinite" : "Grid"}
-          </Button>
-          <Button
-            onClick={() => refetch()}
-            variant="outline"
-            size="sm"
-            disabled={isLoading}
-          >
-            <Refresh className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-
-          {canEdit && (
-            <Button onClick={() => setShowAddBookmark(true)}>
-              <Plus className="h-4 w-4" />
-              Add Bookmark
+            <Button
+              onClick={toggleViewMode}
+              variant="outline"
+              size="sm"
+              aria-label={
+                viewMode === "grid"
+                  ? "Switch to infinite view"
+                  : "Switch to grid view"
+              }
+            >
+              {viewMode === "grid" ? (
+                <InfinityIcon className="h-4 w-4" />
+              ) : (
+                <LayoutGrid className="h-4 w-4" />
+              )}
+              {viewMode === "grid" ? "Infinite" : "Grid"}
             </Button>
-          )}
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              size="sm"
+              disabled={isLoading}
+            >
+              <Refresh
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
 
-          {(userRole === "owner" || canEdit) && (
-            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="px-2">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                <DropdownMenuItem
-                  onClick={() => {
-                    const url = `${window.location.origin}/public/folder/${folderId}`;
-                    navigator.clipboard?.writeText(url).catch(() => {
-                      void 0;
-                    });
-                    window.open(url, "_blank");
-                  }}
-                  className="cursor-pointer rounded-lg"
-                >
-                  <Share className="h-4 w-4" />
-                  Share Public Link
-                </DropdownMenuItem>
-                {canEdit && (
+            {canEdit && (
+              <Button onClick={() => setShowAddBookmark(true)}>
+                <Plus className="h-4 w-4" />
+                Add Bookmark
+              </Button>
+            )}
+
+            {(userRole === "owner" || canEdit) && (
+              <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="px-2">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 rounded-xl">
                   <DropdownMenuItem
                     onClick={() => {
-                      setDropdownOpen(false);
-                      setShowSort(true);
+                      const url = `${window.location.origin}/public/folder/${folderId}`;
+                      navigator.clipboard?.writeText(url).catch(() => {
+                        void 0;
+                      });
+                      window.open(url, "_blank");
                     }}
                     className="cursor-pointer rounded-lg"
                   >
-                    <ArrowDownUp className="h-4 w-4" />
-                    Sort Bookmarks
+                    <Share className="h-4 w-4" />
+                    Share Public Link
                   </DropdownMenuItem>
-                )}
-                {userRole === "owner" && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      setShowCollaborators(true);
-                    }}
-                    className="cursor-pointer rounded-lg text-nowrap"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Manage Collaborators
-                  </DropdownMenuItem>
-                )}
-                {userRole === "owner" && (
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={handleDeleteFolder}
-                  >
-                    <TrashBinTrash className="h-4 w-4" />
-                    {deleteFolderMutation.isPending
-                      ? "Deleting..."
-                      : "Delete Folder"}
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-
-      <InlineEdit
-        value={folder.description ?? ""}
-        onSave={handleUpdateDescription}
-        placeholder="Add a description..."
-        fontSize="base"
-        fontWeight="normal"
-        disabled={!canEdit}
-        multiline
-        maxLength={500}
-        allowEmpty={true}
-        className="text-muted-foreground"
-      />
-
-      {/* Bookmarks List */}
-      {isLoading ? (
-        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="absolute inset-0 z-10 bg-linear-to-b from-transparent to-[#fafafa] dark:to-[#0f0f11]" />
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="overflow-hidden p-1">
-              <CardContent className="p-0">
-                <div className="mb-2 flex w-full items-center gap-1 pt-1 pl-1">
-                  <Skeleton className="h-8 w-9 rounded-md" />
-                  <div className="flex w-full flex-col gap-1">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
-                <Skeleton className="h-48 w-full rounded-xl" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : folder.bookmarks?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="relative h-32 w-full sm:w-[25rem]">
-            <div className="absolute bottom-0 z-40 h-16 w-full bg-gradient-to-t from-[#fafafa] to-transparent dark:from-[#0f0f11]" />
-            <div className="dark:bg-muted/60 absolute bottom-0 z-20 h-[60%] w-full rounded-t-2xl border border-[#ddd] bg-white/60 p-2 backdrop-blur-2xl dark:border-white/10">
-              <div className="mb-2 h-[50%] w-[50%] rounded-lg bg-black/5 dark:bg-white/10" />
-              <div className="h-[50%] w-full rounded-lg bg-black/5 dark:bg-white/10" />
-            </div>
-            <div className="dark:bg-muted/50 absolute bottom-4 left-1/2 z-10 h-[60%] w-[95%] -translate-x-1/2 scale-95 rounded-t-2xl border border-[#ddd] bg-white/50 p-2 backdrop-blur-2xl transition-all group-hover:-rotate-2 dark:border-white/10" />
-            <div className="dark:bg-muted/40 absolute bottom-8 left-1/2 z-0 h-[60%] w-[85%] -translate-x-1/2 scale-90 rounded-t-2xl border border-[#ddd] bg-white/40 p-2 transition-all group-hover:rotate-2 dark:border-white/10" />
+                  {canEdit && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setShowSort(true);
+                      }}
+                      className="cursor-pointer rounded-lg"
+                    >
+                      <ArrowDownUp className="h-4 w-4" />
+                      Sort Bookmarks
+                    </DropdownMenuItem>
+                  )}
+                  {userRole === "owner" && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setShowCollaborators(true);
+                      }}
+                      className="cursor-pointer rounded-lg text-nowrap"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Manage Collaborators
+                    </DropdownMenuItem>
+                  )}
+                  {userRole === "owner" && (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={handleDeleteFolder}
+                    >
+                      <TrashBinTrash className="h-4 w-4" />
+                      {deleteFolderMutation.isPending
+                        ? "Deleting..."
+                        : "Delete Folder"}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          <h3 className="mb-2 text-2xl font-medium">
-            {canEdit
-              ? "You don't have any bookmarks yet"
-              : "No bookmarks in this folder"}
-          </h3>
-          <p className="text-muted-foreground mb-6 max-w-md">
-            {canEdit
-              ? "Get started by adding your first bookmark to this folder."
-              : "This folder doesn't contain any bookmarks yet."}
-          </p>
-          {canEdit && (
-            <Button variant="outline" onClick={() => setShowAddBookmark(true)}>
-              <Plus className="h-4 w-4" />
-              Add Your First Bookmark
-            </Button>
-          )}
         </div>
-      ) : viewMode === "infinite" ? (
-        (() => {
-          const bookmarks = folder.bookmarks ?? [];
-          // 16:9 cell with a small gap baked into the outer cell. The inner
-          // tile draws inside `tileWidth × tileHeight` and the rest is padding.
-          const cellWidth = 360;
-          const cellHeight = Math.round((cellWidth * 9) / 16);
-          const tileWidth = cellWidth - 16;
-          const tileHeight = cellHeight - 16;
-          // Centered row-major: positions in [xMin, xMin+cols) × [yMin, yMin+rows)
-          // map to indices 0..n-1, everything else is null.
-          const n = bookmarks.length;
-          const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
-          const rows = Math.max(1, Math.ceil(n / cols));
-          const xMin = -Math.floor(cols / 2);
-          const yMin = -Math.floor(rows / 2);
-          const getIndex = (x: number, y: number): number | null => {
-            const col = x - xMin;
-            const row = y - yMin;
-            if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
-            const idx = row * cols + col;
-            return idx < n ? idx : null;
-          };
-          return (
-            <div className="relative -mx-4 h-[calc(100vh-120px)] overflow-hidden">
-              <div className="from-sidebar absolute z-50 h-12 w-full bg-linear-to-b to-transparent dark:from-[#0F0F11]" />
-              <InfiniteGrid
-                cellWidth={cellWidth}
-                cellHeight={cellHeight}
-                getIndexForPosition={getIndex}
-                renderItem={({ gridIndex }) => {
-                  const bookmark = bookmarks[gridIndex];
-                  if (!bookmark) return null;
-                  return (
-                    <BookmarkInfiniteTile
-                      bookmark={bookmark}
-                      width={tileWidth}
-                      height={tileHeight}
-                    />
-                  );
-                }}
-              />
+
+        <InlineEdit
+          value={folder.description ?? ""}
+          onSave={handleUpdateDescription}
+          placeholder="Add a description..."
+          fontSize="base"
+          fontWeight="normal"
+          disabled={!canEdit}
+          multiline
+          maxLength={500}
+          allowEmpty={true}
+          className="text-muted-foreground"
+        />
+
+        {/* Bookmarks List */}
+        {folder.bookmarks?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="relative h-32 w-full sm:w-[25rem]">
+              <div className="absolute bottom-0 z-40 h-16 w-full bg-gradient-to-t from-[#fafafa] to-transparent dark:from-[#0f0f11]" />
+              <div className="dark:bg-muted/60 absolute bottom-0 z-20 h-[60%] w-full rounded-t-2xl border border-[#ddd] bg-white/60 p-2 backdrop-blur-2xl dark:border-white/10">
+                <div className="mb-2 h-[50%] w-[50%] rounded-lg bg-black/5 dark:bg-white/10" />
+                <div className="h-[50%] w-full rounded-lg bg-black/5 dark:bg-white/10" />
+              </div>
+              <div className="dark:bg-muted/50 absolute bottom-4 left-1/2 z-10 h-[60%] w-[95%] -translate-x-1/2 scale-95 rounded-t-2xl border border-[#ddd] bg-white/50 p-2 backdrop-blur-2xl transition-all group-hover:-rotate-2 dark:border-white/10" />
+              <div className="dark:bg-muted/40 absolute bottom-8 left-1/2 z-0 h-[60%] w-[85%] -translate-x-1/2 scale-90 rounded-t-2xl border border-[#ddd] bg-white/40 p-2 transition-all group-hover:rotate-2 dark:border-white/10" />
             </div>
-          );
-        })()
-      ) : (
-        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {folder.bookmarks?.map((bookmark) => (
-            <BookmarkCard
-              key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? "editing" : "normal"}`}
-              bookmark={bookmark}
-              onEdit={canEdit ? setEditingBookmark : noOpEdit}
-              onDelete={canEdit ? handleDeleteBookmark : noOpDelete}
-              showDropdown={canEdit}
-              isLoading={deleteBookmarkMutation.isPending}
-            />
-          ))}
-        </div>
-      )}
+            <h3 className="mb-2 text-2xl font-medium">
+              {canEdit
+                ? "You don't have any bookmarks yet"
+                : "No bookmarks in this folder"}
+            </h3>
+            <p className="text-muted-foreground mb-6 max-w-md">
+              {canEdit
+                ? "Get started by adding your first bookmark to this folder."
+                : "This folder doesn't contain any bookmarks yet."}
+            </p>
+            {canEdit && (
+              <Button
+                variant="outline"
+                onClick={() => setShowAddBookmark(true)}
+              >
+                <Plus className="h-4 w-4" />
+                Add Your First Bookmark
+              </Button>
+            )}
+          </div>
+        ) : viewMode === "infinite" ? (
+          (() => {
+            const bookmarks = folder.bookmarks ?? [];
+            // 16:9 cell with a small gap baked into the outer cell. The inner
+            // tile draws inside `tileWidth × tileHeight` and the rest is padding.
+            const cellWidth = 360;
+            const cellHeight = Math.round((cellWidth * 9) / 16);
+            const tileWidth = cellWidth - 16;
+            const tileHeight = cellHeight - 16;
+            // Centered row-major: positions in [xMin, xMin+cols) × [yMin, yMin+rows)
+            // map to indices 0..n-1, everything else is null.
+            const n = bookmarks.length;
+            const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+            const rows = Math.max(1, Math.ceil(n / cols));
+            const xMin = -Math.floor(cols / 2);
+            const yMin = -Math.floor(rows / 2);
+            const getIndex = (x: number, y: number): number | null => {
+              const col = x - xMin;
+              const row = y - yMin;
+              if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+              const idx = row * cols + col;
+              return idx < n ? idx : null;
+            };
+            return (
+              <div className="relative -mx-4 h-[calc(100vh-120px)] overflow-hidden">
+                <div className="from-sidebar absolute z-50 h-12 w-full bg-linear-to-b to-transparent dark:from-[#0F0F11]" />
+                <InfiniteGrid
+                  cellWidth={cellWidth}
+                  cellHeight={cellHeight}
+                  getIndexForPosition={getIndex}
+                  renderItem={({ gridIndex }) => {
+                    const bookmark = bookmarks[gridIndex];
+                    if (!bookmark) return null;
+                    return (
+                      <BookmarkInfiniteTile
+                        bookmark={bookmark}
+                        width={tileWidth}
+                        height={tileHeight}
+                      />
+                    );
+                  }}
+                />
+              </div>
+            );
+          })()
+        ) : (
+          <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {folder.bookmarks?.map((bookmark) => (
+              <BookmarkCard
+                key={`${bookmark._id}-${editingBookmark?._id === bookmark._id ? "editing" : "normal"}`}
+                bookmark={bookmark}
+                onEdit={canEdit ? setEditingBookmark : noOpEdit}
+                onDelete={canEdit ? handleDeleteBookmark : noOpDelete}
+                showDropdown={canEdit}
+                isLoading={deleteBookmarkMutation.isPending}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* Dialogs */}
-      <AddBookmarkDialog
-        open={showAddBookmark}
-        onOpenChange={setShowAddBookmark}
-        folderId={folderId}
-        onSuccess={() => {
-          setShowAddBookmark(false);
-          // React Query will automatically refetch after mutation
-        }}
-      />
-
-      {editingBookmark && (
-        <EditBookmarkDialog
-          open={!!editingBookmark}
-          onOpenChange={(open) => !open && setEditingBookmark(null)}
-          bookmark={editingBookmark}
+        {/* Dialogs */}
+        <AddBookmarkDialog
+          open={showAddBookmark}
+          onOpenChange={setShowAddBookmark}
+          folderId={folderId}
           onSuccess={() => {
-            setEditingBookmark(null);
+            setShowAddBookmark(false);
             // React Query will automatically refetch after mutation
           }}
         />
-      )}
 
-      <CollaboratorDialog
-        open={showCollaborators}
-        onOpenChange={setShowCollaborators}
-        folderId={folderId}
-        folderName={folder?.name || ""}
-      />
+        {editingBookmark && (
+          <EditBookmarkDialog
+            open={!!editingBookmark}
+            onOpenChange={(open) => !open && setEditingBookmark(null)}
+            bookmark={editingBookmark}
+            onSuccess={() => {
+              setEditingBookmark(null);
+              // React Query will automatically refetch after mutation
+            }}
+          />
+        )}
 
-      <SortBookmarksSheet
-        open={showSort}
-        onOpenChange={setShowSort}
-        folderId={folderId}
-        bookmarks={folder?.bookmarks ?? []}
-      />
+        <CollaboratorDialog
+          open={showCollaborators}
+          onOpenChange={setShowCollaborators}
+          folderId={folderId}
+          folderName={folder?.name || ""}
+        />
 
-      {/* Folder Deletion Confirmation Dialog */}
-      <ConfirmationDialog
-        open={showDeleteFolderConfirm}
-        onOpenChange={setShowDeleteFolderConfirm}
-        title="Delete Folder"
-        description={`Are you sure you want to delete "${folder.name}" and all its bookmarks? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="destructive"
-        onConfirm={confirmDeleteFolder}
-        isLoading={deleteFolderMutation.isPending}
-      />
-    </div>
+        <SortBookmarksSheet
+          open={showSort}
+          onOpenChange={setShowSort}
+          folderId={folderId}
+          bookmarks={folder?.bookmarks ?? []}
+        />
+
+        {/* Folder Deletion Confirmation Dialog */}
+        <ConfirmationDialog
+          open={showDeleteFolderConfirm}
+          onOpenChange={setShowDeleteFolderConfirm}
+          title="Delete Folder"
+          description={`Are you sure you want to delete "${folder.name}" and all its bookmarks? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+          onConfirm={confirmDeleteFolder}
+          isLoading={deleteFolderMutation.isPending}
+        />
+      </div>
+    </Skeleton>
   );
 };
 

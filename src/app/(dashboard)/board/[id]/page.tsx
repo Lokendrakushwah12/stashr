@@ -12,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import InlineEdit from "@/components/ui/inline-edit";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "skullet/react";
+import type { Board, BoardTimelineEntry } from "@/types";
 import {
   useBoard,
   useDeleteBoard,
@@ -33,6 +34,29 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const PANEL_KEY = "stashr.boardDetailsPanel";
+
+const SAMPLE_BOARD: Board = {
+  name: "Weekend ideas",
+  description: "Links, notes and images for one idea",
+  userRole: "viewer",
+};
+
+const SAMPLE_ENTRIES: BoardTimelineEntry[] = [
+  "1. Moodboard for the landing page\n2. Copy ideas",
+  "Notes from today's call",
+].map((content, i) => ({
+  _id: `sample-${i}`,
+  boardId: "sample",
+  userId: "sample",
+  userEmail: "",
+  userName: "Maya Chen",
+  userRole: "editor",
+  content,
+  action: "created",
+  images: [],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+}));
 
 const BoardDetailPage = () => {
   const params = useParams();
@@ -79,11 +103,18 @@ const BoardDetailPage = () => {
 
   // Fetch board data
   const { data: boardResponse, error } = useBoard(boardId);
-  const board = boardResponse?.data?.board;
+  // While loading, the real page renders from samples and skullet draws
+  // its skeleton from that, so nothing moves when the data arrives.
+  const loadedBoard = boardResponse?.data?.board;
+  const boardLoading = !loadedBoard;
+  const board = loadedBoard ?? { ...SAMPLE_BOARD, _id: boardId };
 
   // Fetch timeline entries
   const { data: timelineResponse } = useTimeline(boardId, !!boardId);
-  const timelineEntries = timelineResponse?.data?.entries ?? [];
+  const timelineLoading = !timelineResponse;
+  const timelineEntries = timelineLoading
+    ? SAMPLE_ENTRIES
+    : (timelineResponse.data?.entries ?? []);
   const activity = timelineResponse?.data?.activity ?? [];
 
   // Fetch folders for linking
@@ -174,32 +205,6 @@ const BoardDetailPage = () => {
     );
   }
 
-  if (!board) {
-    return (
-      <div className="relative min-h-screen space-y-4 pt-2">
-        <div className="absolute top-[33%] z-10 h-60 w-full bg-linear-to-b from-transparent to-[#fafafa] sm:top-[26%] dark:to-[#0f0f11]" />
-        {/* Header Skeleton */}
-        <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-9 w-64" />
-            <Skeleton className="h-5 w-96" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </div>
-
-        {/* Timeline Skeleton */}
-        <div className="mt-8 space-y-4">
-          <Skeleton className="h-12 w-1/4" />
-          <Skeleton className="h-32 w-3/4" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </div>
-    );
-  }
-
   const detailsPanel = (
     <BoardSidePanel
       entries={timelineEntries}
@@ -212,123 +217,130 @@ const BoardDetailPage = () => {
   );
 
   return (
-    <div className="min-h-screen space-y-4">
-      {/* Header */}
-      <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex w-full items-center justify-between">
-          <InlineEdit
-            value={board?.name || ""}
-            onSave={handleUpdateTitle}
-            placeholder="Enter board name..."
-            fontSize="3xl"
-            fontWeight="semibold"
-            disabled={!canEdit}
-            maxLength={100}
-            allowEmpty={false}
-            className="font-display tracking-tight"
-          />
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleDetails}
-              aria-label={panelOpen ? "Hide details" : "Show details"}
-              title={panelOpen ? "Hide details" : "Show details"}
-              className={cn("px-2", panelOpen && "lg:bg-muted")}
-            >
-              <PanelRight className="h-4 w-4" />
-            </Button>
-            {(board.userRole === "owner" || canEdit) && (
-              <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="px-2">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                  {board.userRole === "owner" && (
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        setShowCollaborators(true);
-                      }}
-                      className="cursor-pointer rounded-lg text-nowrap"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      Manage Collaborators
-                    </DropdownMenuItem>
-                  )}
-                  {board.userRole === "owner" && (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={handleDeleteFolder}
-                    >
-                      <TrashBinTrash className="h-4 w-4" />
-                      Delete Board
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+    <Skeleton loading={boardLoading} label="Loading board">
+      <div className="min-h-screen space-y-4">
+        {/* Header */}
+        <div className="m-0 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex w-full items-center justify-between">
+            <InlineEdit
+              value={board?.name || ""}
+              onSave={handleUpdateTitle}
+              placeholder="Enter board name..."
+              fontSize="3xl"
+              fontWeight="semibold"
+              disabled={!canEdit}
+              maxLength={100}
+              allowEmpty={false}
+              className="font-display tracking-tight"
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleDetails}
+                aria-label={panelOpen ? "Hide details" : "Show details"}
+                title={panelOpen ? "Hide details" : "Show details"}
+                className={cn("px-2", panelOpen && "lg:bg-muted")}
+              >
+                <PanelRight className="h-4 w-4" />
+              </Button>
+              {(board.userRole === "owner" || canEdit) && (
+                <DropdownMenu
+                  open={dropdownOpen}
+                  onOpenChange={setDropdownOpen}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="px-2">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                    {board.userRole === "owner" && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          setShowCollaborators(true);
+                        }}
+                        className="cursor-pointer rounded-lg text-nowrap"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Manage Collaborators
+                      </DropdownMenuItem>
+                    )}
+                    {board.userRole === "owner" && (
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={handleDeleteFolder}
+                      >
+                        <TrashBinTrash className="h-4 w-4" />
+                        Delete Board
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <InlineEdit
-        value={board?.description ?? ""}
-        onSave={handleUpdateDescription}
-        placeholder="Add a description..."
-        fontSize="base"
-        fontWeight="normal"
-        disabled={!canEdit}
-        multiline
-        maxLength={500}
-        allowEmpty={true}
-        className="text-muted-foreground"
-      />
+        <InlineEdit
+          value={board?.description ?? ""}
+          onSave={handleUpdateDescription}
+          placeholder="Add a description..."
+          fontSize="base"
+          fontWeight="normal"
+          disabled={!canEdit}
+          multiline
+          maxLength={500}
+          allowEmpty={true}
+          className="text-muted-foreground"
+        />
 
-      {/* Timeline, with board properties (folder, links, images) on the right */}
-      <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1">
-          <BoardTimelineEditor
-            boardId={boardId}
-            timelineEntries={timelineEntries}
-            disabled={!canEdit}
-            userRole={board?.userRole}
-          />
-        </div>
-        {panelOpen && (
-          <div className="hidden shrink-0 lg:block lg:w-72 lg:border-l lg:pl-6">
-            {detailsPanel}
+        {/* Timeline, with board properties (folder, links, images) on the right */}
+        <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1">
+            <Skeleton loading={timelineLoading} label="Loading timeline">
+              <BoardTimelineEditor
+                boardId={boardId}
+                timelineEntries={timelineEntries}
+                disabled={!canEdit || timelineLoading}
+                userRole={board?.userRole}
+              />
+            </Skeleton>
           </div>
-        )}
+          {panelOpen && (
+            <div className="hidden shrink-0 lg:block lg:w-72 lg:border-l lg:pl-6">
+              {detailsPanel}
+            </div>
+          )}
+        </div>
+
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen} title="Details">
+          {detailsPanel}
+        </Sheet>
+
+        {/* Dialogs */}
+        <BoardCollaboratorDialog
+          open={showCollaborators}
+          onOpenChange={setShowCollaborators}
+          boardId={boardId}
+          boardName={board?.name || ""}
+        />
+
+        {/* Board Deletion Confirmation Dialog */}
+        <ConfirmationDialog
+          open={showDeleteFolderConfirm}
+          onOpenChange={setShowDeleteFolderConfirm}
+          title="Delete Board"
+          description={`Are you sure you want to delete "${board.name}" and all its cards? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+          onConfirm={confirmDeleteBoard}
+          isLoading={deleteBoardMutation.isPending}
+        />
       </div>
-
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen} title="Details">
-        {detailsPanel}
-      </Sheet>
-
-      {/* Dialogs */}
-      <BoardCollaboratorDialog
-        open={showCollaborators}
-        onOpenChange={setShowCollaborators}
-        boardId={boardId}
-        boardName={board?.name || ""}
-      />
-
-      {/* Board Deletion Confirmation Dialog */}
-      <ConfirmationDialog
-        open={showDeleteFolderConfirm}
-        onOpenChange={setShowDeleteFolderConfirm}
-        title="Delete Board"
-        description={`Are you sure you want to delete "${board.name}" and all its cards? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="destructive"
-        onConfirm={confirmDeleteBoard}
-        isLoading={deleteBoardMutation.isPending}
-      />
-    </div>
+    </Skeleton>
   );
 };
 
