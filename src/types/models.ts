@@ -24,6 +24,8 @@ export interface Folder {
   createdAt?: string;
   updatedAt?: string;
   userRole?: "owner" | "editor" | "viewer";
+  /** Shared with the user individually; not part of the current team. */
+  shared?: boolean;
 }
 
 export interface FolderCollaboration {
@@ -56,6 +58,8 @@ export interface Board {
   createdAt?: string;
   updatedAt?: string;
   userRole?: "owner" | "editor" | "viewer";
+  /** Shared with the user individually; not part of the current team. */
+  shared?: boolean;
 }
 
 export interface BoardCard {

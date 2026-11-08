@@ -49,12 +49,12 @@ export default function BoardsPage() {
     localStorage.setItem("boardsSortBy", value);
   };
 
-  // Use React Query for data fetching with backend sorting and filtering
+  // One fetch (team boards + boards shared with you); tabs filter client-side
   const {
     data: boardsResponse,
     isLoading,
     refetch: originalRefetch,
-  } = useBoards(sortBy, roleFilter);
+  } = useBoards(sortBy, "all");
 
   // Custom refetch with toast notification
   const handleRefetch = async () => {
@@ -66,7 +66,25 @@ export default function BoardsPage() {
     }
   };
 
-  const boards = boardsResponse?.data?.boards ?? [];
+  const allBoards = useMemo(
+    () => boardsResponse?.data?.boards ?? [],
+    [boardsResponse],
+  );
+  const teamBoards = useMemo(
+    () => allBoards.filter((b) => !b.shared),
+    [allBoards],
+  );
+  const sharedBoards = useMemo(
+    () => allBoards.filter((b) => b.shared),
+    [allBoards],
+  );
+
+  // Shared boards live only under the Shared tab; the rest are this team's.
+  const boards = useMemo(() => {
+    if (roleFilter === "shared") return sharedBoards;
+    if (roleFilter === "all") return teamBoards;
+    return teamBoards.filter((b) => b.userRole === roleFilter);
+  }, [roleFilter, teamBoards, sharedBoards]);
 
   // Apply client-side search filter only
   const filteredBoards = useMemo(() => {
@@ -84,18 +102,15 @@ export default function BoardsPage() {
     setSearchQuery("");
   };
 
-  // Get all boards for role counts (unfiltered)
-  const { data: allBoardsResponse } = useBoards(sortBy, "all");
-  const allBoards = allBoardsResponse?.data?.boards ?? [];
-
   const roleCounts = useMemo(() => {
     return {
-      all: allBoards.length,
-      owner: allBoards.filter((b) => b.userRole === "owner").length,
-      editor: allBoards.filter((b) => b.userRole === "editor").length,
-      viewer: allBoards.filter((b) => b.userRole === "viewer").length,
+      all: teamBoards.length,
+      owner: teamBoards.filter((b) => b.userRole === "owner").length,
+      editor: teamBoards.filter((b) => b.userRole === "editor").length,
+      viewer: teamBoards.filter((b) => b.userRole === "viewer").length,
+      shared: sharedBoards.length,
     };
-  }, [allBoards]);
+  }, [teamBoards, sharedBoards]);
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {
@@ -206,6 +221,18 @@ export default function BoardsPage() {
                   {roleCounts.viewer}
                 </Badge>
               </TabsTrigger>
+              <TabsTrigger
+                value="shared"
+                className="flex w-fit flex-col items-center justify-center gap-0 sm:flex-row"
+              >
+                <span>Shared</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-background/70 text-muted-foreground flex size-5 items-center justify-center text-xs"
+                >
+                  {roleCounts.shared}
+                </Badge>
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           {/* Sort By */}
@@ -256,7 +283,19 @@ export default function BoardsPage() {
               </div>
             ))}
           </div>
-        ) : boards.length === 0 ? (
+        ) : roleFilter === "shared" && boards.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex items-center justify-center">
+              <Stars className="text-muted-foreground h-16 w-16" />
+            </div>
+            <h3 className="mb-2 text-2xl font-medium">
+              Nothing shared with you yet
+            </h3>
+            <p className="text-muted-foreground max-w-md">
+              Boards people outside your teams invite you to will show up here.
+            </p>
+          </div>
+        ) : teamBoards.length === 0 && roleFilter !== "shared" ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex items-center justify-center">
               <Stars className="text-muted-foreground h-16 w-16" />

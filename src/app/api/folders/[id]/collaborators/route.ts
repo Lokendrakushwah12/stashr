@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 // GET /api/folders/[id]/collaborators - Get collaborators for a folder
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
@@ -36,8 +36,10 @@ export async function GET(
     const collaboration = await FolderCollaboration.findOne({
       folderId: id,
       userId: session.user.id,
-      status: 'accepted'
-    }).lean().exec();
+      status: "accepted",
+    })
+      .lean()
+      .exec();
 
     if (!isOwner && !collaboration) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
@@ -45,8 +47,13 @@ export async function GET(
 
     // Get all collaborators for this folder (including pending)
     const collaborators = await FolderCollaboration.find({
-      folderId: id
-    }).select('_id userId email role invitedByUserId invitedByUserName status createdAt').lean().exec();
+      folderId: id,
+    })
+      .select(
+        "_id userId email role invitedByUserId invitedByUserName status createdAt",
+      )
+      .lean()
+      .exec();
 
     return NextResponse.json({ collaborators }, { status: 200 });
   } catch (error) {
@@ -55,13 +62,13 @@ export async function GET(
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to fetch collaborators: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to fetch collaborators" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -69,7 +76,7 @@ export async function GET(
 // POST /api/folders/[id]/collaborators - Add a collaborator to a folder
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
@@ -79,20 +86,25 @@ export async function POST(
     }
 
     const { id } = await params;
-    const body = await request.json() as { email?: string; role?: string };
-    const { email, role = 'editor' } = body;
+    const body = (await request.json()) as { email?: string; role?: string };
+    const { email, role = "editor" } = body;
 
     if (!email?.trim()) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    if (!["editor", "viewer"].includes(role)) {
       return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
+        { error: "Invalid role. Must be 'editor' or 'viewer'" },
+        { status: 400 },
       );
     }
 
-    if (!['editor', 'viewer'].includes(role)) {
+    // Only the owner can invite (checked below), so this is "inviting yourself".
+    if (email.trim().toLowerCase() === session.user.email?.toLowerCase()) {
       return NextResponse.json(
-        { error: "Invalid role. Must be 'editor' or 'viewer'" },
-        { status: 400 }
+        { error: "You can't invite yourself" },
+        { status: 400 },
       );
     }
 
@@ -107,19 +119,22 @@ export async function POST(
 
     // Check if user is the owner
     if (folder.userId !== session.user.id) {
-      return NextResponse.json({ error: "Only folder owner can add collaborators" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Only folder owner can add collaborators" },
+        { status: 403 },
+      );
     }
 
     // Check if collaborator already exists
     const existingCollaboration = await FolderCollaboration.findOne({
       folderId: id,
-      email: email.trim().toLowerCase()
+      email: email.trim().toLowerCase(),
     }).exec();
 
     if (existingCollaboration) {
       return NextResponse.json(
         { error: "User is already a collaborator or has a pending invitation" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -128,37 +143,41 @@ export async function POST(
       folderId: id,
       userId: email.trim(), // In production, you'd look up the actual user ID by email
       email: email.trim().toLowerCase(),
-      role: role as 'editor' | 'viewer',
+      role: role as "editor" | "viewer",
       invitedByUserId: session.user.id,
-      invitedByUserName: session.user.name ?? session.user.email ?? 'Unknown User',
-      status: 'pending', // In production, you might auto-accept or send an email invitation
+      invitedByUserName:
+        session.user.name ?? session.user.email ?? "Unknown User",
+      status: "pending", // In production, you might auto-accept or send an email invitation
     });
 
     await newCollaboration.save();
 
-    return NextResponse.json({ 
-      collaboration: {
-        _id: newCollaboration._id,
-        userId: newCollaboration.userId,
-        email: newCollaboration.email,
-        role: newCollaboration.role,
-        status: newCollaboration.status,
-        createdAt: newCollaboration.createdAt
-      }
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        collaboration: {
+          _id: newCollaboration._id,
+          userId: newCollaboration.userId,
+          email: newCollaboration.email,
+          role: newCollaboration.role,
+          status: newCollaboration.status,
+          createdAt: newCollaboration.createdAt,
+        },
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Error adding collaborator:", error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to add collaborator: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to add collaborator" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -166,7 +185,7 @@ export async function POST(
 // DELETE /api/folders/[id]/collaborators - Remove a collaborator from a folder
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
@@ -177,12 +196,12 @@ export async function DELETE(
 
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const collaboratorId = searchParams.get('collaboratorId');
+    const collaboratorId = searchParams.get("collaboratorId");
 
     if (!collaboratorId) {
       return NextResponse.json(
         { error: "Collaborator ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -197,34 +216,43 @@ export async function DELETE(
 
     // Check if user is the owner
     if (folder.userId !== session.user.id) {
-      return NextResponse.json({ error: "Only folder owner can remove collaborators" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Only folder owner can remove collaborators" },
+        { status: 403 },
+      );
     }
 
     const collaboration = await FolderCollaboration.findOne({
       _id: collaboratorId,
-      folderId: id
+      folderId: id,
     }).exec();
 
     if (!collaboration) {
-      return NextResponse.json({ error: "Collaboration not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Collaboration not found" },
+        { status: 404 },
+      );
     }
 
     await FolderCollaboration.findByIdAndDelete(collaboratorId).exec();
 
-    return NextResponse.json({ message: "Collaborator removed successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Collaborator removed successfully" },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error removing collaborator:", error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to remove collaborator: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to remove collaborator" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -232,7 +260,7 @@ export async function DELETE(
 // PATCH /api/folders/[id]/collaborators - Update collaborator role
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
@@ -244,13 +272,16 @@ export async function PATCH(
     const { id } = await params;
     const body = (await request.json()) as {
       collaboratorId: string;
-      role: 'editor' | 'viewer';
+      role: "editor" | "viewer";
     };
 
     const { collaboratorId, role } = body;
 
-    if (!collaboratorId || !role || !['editor', 'viewer'].includes(role)) {
-      return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    if (!collaboratorId || !role || !["editor", "viewer"].includes(role)) {
+      return NextResponse.json(
+        { error: "Invalid request data" },
+        { status: 400 },
+      );
     }
 
     await connectDB();
@@ -267,40 +298,48 @@ export async function PATCH(
 
     // Check if user is folder owner
     if (folder.userId !== session.user.id) {
-      return NextResponse.json({ error: "Only folder owner can update collaborator roles" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Only folder owner can update collaborator roles" },
+        { status: 403 },
+      );
     }
 
     const collaboration = await FolderCollaboration.findOneAndUpdate(
       {
         _id: collaboratorId,
-        folderId: id
+        folderId: id,
       },
       { role },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).exec();
 
     if (!collaboration) {
-      return NextResponse.json({ error: "Collaboration not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Collaboration not found" },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json({ 
-      message: "Collaborator role updated successfully",
-      collaboration 
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        message: "Collaborator role updated successfully",
+        collaboration,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error updating collaborator role:", error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Failed to update collaborator role: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to update collaborator role" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

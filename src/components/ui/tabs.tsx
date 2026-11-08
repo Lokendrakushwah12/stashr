@@ -8,7 +8,7 @@ import {
   useContext,
   useId,
   useState,
-  type ReactNode
+  type ReactNode,
 } from "react";
 
 type TabsContextType = {
@@ -51,15 +51,39 @@ function Tabs({
   };
 
   return (
-    <TabsContext.Provider value={{ value, setValue: handleChange, uniqueId, variant }}>
-      <div className={cn("relative", className)} style={style} >{children}</div>
+    <TabsContext.Provider
+      value={{ value, setValue: handleChange, uniqueId, variant }}
+    >
+      <div className={cn("relative", className)} style={style}>
+        {children}
+      </div>
     </TabsContext.Provider>
   );
 }
 
-function TabsList({ children, className, style }: { children: ReactNode; className?: string, style?: React.CSSProperties }) {
+function TabsList({
+  children,
+  className,
+  style,
+}: {
+  children: ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   const { variant } = useTabsContext();
-  return <div className={cn("flex relative", variant === "filled" && "p-px bg-accent/50 dark:bg-accent border rounded-lg", className)} style={style}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "relative flex",
+        variant === "filled" &&
+          "bg-accent/50 dark:bg-accent rounded-lg border p-px",
+        className,
+      )}
+      style={style}
+    >
+      {children}
+    </div>
+  );
 }
 
 function TabsTrigger({
@@ -67,7 +91,7 @@ function TabsTrigger({
   children,
   className,
   transition = {
-    type: 'spring',
+    type: "spring",
     stiffness: 300,
     damping: 26,
   },
@@ -85,9 +109,14 @@ function TabsTrigger({
       onClick={() => setValue(value)}
       data-checked={isActive}
       className={cn(
-        "relative p-2 cursor-pointer transition-colors",
-        isActive ? "text-foreground" : "text-muted-foreground",
-        className
+        "relative cursor-pointer p-2 transition-colors",
+        // filled: active tab sits on bg-primary, so use its paired text color
+        isActive
+          ? variant === "filled"
+            ? "text-primary-foreground"
+            : "text-foreground"
+          : "text-muted-foreground",
+        className,
       )}
     >
       <AnimatePresence initial={false}>
@@ -96,14 +125,17 @@ function TabsTrigger({
             layoutId={`underline-${uniqueId}`}
             className={cn(
               "absolute inset-0",
-              variant === "filled" && "bg-primary text-center rounded-md shadow-sm border border-border",
-              variant === "bordered" && "border-b-2 border-primary"
+              variant === "filled" &&
+                "bg-primary border-border rounded-md border text-center shadow-sm",
+              variant === "bordered" && "border-primary border-b-2",
             )}
             transition={transition}
           />
         )}
       </AnimatePresence>
-      <span className="relative flex justify-center items-center gap-2 z-10">{children}</span>
+      <span className="relative z-10 flex items-center justify-center gap-2">
+        {children}
+      </span>
     </div>
   );
 }
@@ -127,4 +159,3 @@ function TabsContent({
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 export { Tabs, TabsContent, TabsList, TabsTrigger };
-

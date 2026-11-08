@@ -3,6 +3,7 @@
 import AddFolderDialog from "@/components/bookmark/AddFolderDialog";
 import FolderCard from "@/components/bookmark/FolderCard";
 import ImportExportDialog from "@/components/bookmark/ImportExportDialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFolders } from "@/lib/hooks/use-bookmarks";
 import {
   AddSquare,
@@ -39,6 +41,7 @@ export default function AllBookmarksPage() {
   const [showImportExport, setShowImportExport] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("recent");
+  const [view, setView] = useState<"all" | "shared">("all");
 
   // Restore persisted sort on mount.
   useEffect(() => {
@@ -74,10 +77,22 @@ export default function AllBookmarksPage() {
     }
   };
 
-  const folders = foldersResponse?.data?.folders ?? [];
+  const allFolders = useMemo(
+    () => foldersResponse?.data?.folders ?? [],
+    [foldersResponse],
+  );
+  // `folders` = this team's; shared ones live only under the Shared tab.
+  const folders = useMemo(
+    () => allFolders.filter((f) => !f.shared),
+    [allFolders],
+  );
+  const sharedFolders = useMemo(
+    () => allFolders.filter((f) => f.shared),
+    [allFolders],
+  );
 
   const sortedFolders = useMemo(() => {
-    const copy = [...folders];
+    const copy = [...(view === "shared" ? sharedFolders : folders)];
     copy.sort((a, b) => {
       switch (sortBy) {
         case "name":
@@ -96,7 +111,7 @@ export default function AllBookmarksPage() {
       }
     });
     return copy;
-  }, [folders, sortBy]);
+  }, [view, folders, sharedFolders, sortBy]);
 
   const handleClearSearch = () => {
     setSearchQuery("");
@@ -215,6 +230,36 @@ export default function AllBookmarksPage() {
           </div>
         </div>
 
+        <Tabs
+          defaultValue={view}
+          onValueChange={(v) => setView(v === "shared" ? "shared" : "all")}
+          variant="filled"
+          className="w-fit"
+        >
+          <TabsList className="h-9 [&_div]:text-sm">
+            {(
+              [
+                ["all", "All", folders.length],
+                ["shared", "Shared", sharedFolders.length],
+              ] as const
+            ).map(([value, label, count]) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="flex w-fit items-center justify-center gap-0 sm:flex-row"
+              >
+                <span>{label}</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-background/70 text-muted-foreground flex size-5 items-center justify-center text-xs"
+                >
+                  {count}
+                </Badge>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
         {/* Folders Grid */}
         {isLoading ? (
           <div className="relative grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -234,7 +279,19 @@ export default function AllBookmarksPage() {
               </Card>
             ))}
           </div>
-        ) : folders.length === 0 ? (
+        ) : view === "shared" && sharedFolders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex items-center justify-center">
+              <FolderOpen className="text-muted-foreground h-16 w-16" />
+            </div>
+            <h3 className="mb-2 text-2xl font-medium">
+              Nothing shared with you yet
+            </h3>
+            <p className="text-muted-foreground max-w-md">
+              Folders people outside your teams invite you to will show up here.
+            </p>
+          </div>
+        ) : view === "all" && folders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex items-center justify-center">
               <FolderOpen className="text-muted-foreground h-16 w-16" />

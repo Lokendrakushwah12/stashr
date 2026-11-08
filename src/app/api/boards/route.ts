@@ -1,7 +1,7 @@
 import { getRequestContext, planLimitResponse } from "@/lib/api-team";
 import connectDB from "@/lib/mongodb";
 import { assertWithinLimit, PlanLimitError } from "@/lib/plans";
-import { canWrite } from "@/lib/team-service";
+import { canWrite, listUserTeamIds } from "@/lib/team-service";
 import { registerModels } from "@/models";
 import mongoose from "mongoose";
 import type { NextRequest } from "next/server";
@@ -39,20 +39,22 @@ export async function GET(request: NextRequest) {
       )
       .sort(sortOrder);
 
-    // Legacy: boards shared via per-board collaboration outside the current team
-    const collaborations = await models.BoardCollaboration.find({
-      userId: ctx.userId,
-      status: "accepted",
-    });
+    // Boards shared with you individually. Only ones you can't already see:
+    // anything you own or that lives in one of your teams shows in that team.
+    const [collaborations, myTeamIds] = await Promise.all([
+      models.BoardCollaboration.find({
+        userId: ctx.userId,
+        status: "accepted",
+      }),
+      listUserTeamIds(ctx.userId),
+    ]);
     const collaboratedBoardIds = collaborations.map((c) => c.boardId);
     const collaboratedBoards =
       collaboratedBoardIds.length > 0
         ? await models.Board.find({
             _id: { $in: collaboratedBoardIds },
-            $or: [
-              { teamId: { $ne: teamObjectId } },
-              { teamId: { $exists: false } },
-            ],
+            userId: { $ne: ctx.userId },
+            teamId: { $nin: myTeamIds },
           })
             .select(
               "_id name description userId teamId linkedFolderId cardCount createdAt updatedAt",
@@ -88,7 +90,7 @@ export async function GET(request: NextRequest) {
           userRole = collaboration?.role ?? "viewer";
         }
 
-        return { ...boardObject, cardCount, userRole };
+        return { ...boardObject, cardCount, userRole, shared: !isTeamBoard };
       }),
     );
 

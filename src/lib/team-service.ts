@@ -31,6 +31,14 @@ export async function getUserPlan(userId: string): Promise<PlanId> {
   return user?.planId === "pro" ? "pro" : "free";
 }
 
+/** Ids of every team the user is an active member of. */
+export async function listUserTeamIds(
+  userId: string,
+): Promise<mongoose.Types.ObjectId[]> {
+  const { TeamMember } = await registerModels();
+  return TeamMember.distinct("teamId", { userId, status: "active" });
+}
+
 export interface TeamSummary {
   id: string;
   name: string;

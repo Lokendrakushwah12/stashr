@@ -1,7 +1,7 @@
 import { getRequestContext, planLimitResponse } from "@/lib/api-team";
 import connectDB from "@/lib/mongodb";
 import { assertWithinLimit, PlanLimitError } from "@/lib/plans";
-import { canWrite } from "@/lib/team-service";
+import { canWrite, listUserTeamIds } from "@/lib/team-service";
 import { registerModels } from "@/models";
 import mongoose from "mongoose";
 import type { NextRequest } from "next/server";
@@ -29,20 +29,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .lean()
       .exec();
 
-    // Cross-team folders shared via per-folder collaboration (legacy)
-    const collabs = await FolderCollaboration.find({
-      userId: ctx.userId,
-      status: "accepted",
-    })
-      .select("folderId")
-      .lean()
-      .exec();
+    // Folders shared with you individually. Only ones you can't already see:
+    // anything you own or that lives in one of your teams shows in that team.
+    const [collabs, myTeamIds] = await Promise.all([
+      FolderCollaboration.find({ userId: ctx.userId, status: "accepted" })
+        .select("folderId")
+        .lean()
+        .exec(),
+      listUserTeamIds(ctx.userId),
+    ]);
     const collabIds = collabs.map((c) => c.folderId);
     const collabFolders =
       collabIds.length > 0
         ? await Folder.find({
             _id: { $in: collabIds },
-            teamId: { $ne: teamObjectId },
+            userId: { $ne: ctx.userId },
+            teamId: { $nin: myTeamIds },
           })
             .select(
               "_id name description color userId teamId bookmarks createdAt updatedAt",
@@ -91,6 +93,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       color: folder.color,
       userId: folder.userId,
       teamId: folder.teamId,
+      shared: String(folder.teamId) !== ctx.teamId,
       bookmarkCount: folder.bookmarks?.length ?? 0,
       createdAt: folder.createdAt,
       updatedAt: folder.updatedAt,
