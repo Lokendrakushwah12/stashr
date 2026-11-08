@@ -25,10 +25,14 @@ import {
   UserPlus,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { useTeam } from "@/lib/contexts/team-context";
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { Sheet } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { ArrowLeft, MoreVertical, PanelRight } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+const PANEL_KEY = "stashr.boardDetailsPanel";
 
 const BoardDetailPage = () => {
   const params = useParams();
@@ -38,6 +42,26 @@ const BoardDetailPage = () => {
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(false);
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  // Details panel: a column on desktop (remembered), a drawer below lg.
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(PANEL_KEY) === "closed") setPanelOpen(false);
+    } catch {}
+  }, []);
+  const toggleDetails = () => {
+    if (!window.matchMedia("(min-width: 1024px)").matches) {
+      setSheetOpen(true);
+      return;
+    }
+    setPanelOpen((open) => {
+      try {
+        localStorage.setItem(PANEL_KEY, open ? "closed" : "open");
+      } catch {}
+      return !open;
+    });
+  };
 
   const { currentTeam } = useTeam();
   const originalTeamIdRef = useRef<string | null>(null);
@@ -175,6 +199,16 @@ const BoardDetailPage = () => {
     );
   }
 
+  const detailsPanel = (
+    <BoardSidePanel
+      entries={timelineEntries}
+      folders={folders}
+      linkedFolder={board.linkedFolder}
+      canEdit={canEdit}
+      onLinkFolder={(id) => void handleLinkFolder(id)}
+    />
+  );
+
   return (
     <div className="min-h-screen space-y-4">
       {/* Header */}
@@ -192,6 +226,16 @@ const BoardDetailPage = () => {
             className="font-display tracking-tight"
           />
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleDetails}
+              aria-label={panelOpen ? "Hide details" : "Show details"}
+              title={panelOpen ? "Hide details" : "Show details"}
+              className={cn("px-2", panelOpen && "lg:bg-muted")}
+            >
+              <PanelRight className="h-4 w-4" />
+            </Button>
             {(board.userRole === "owner" || canEdit) && (
               <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                 <DropdownMenuTrigger asChild>
@@ -251,16 +295,16 @@ const BoardDetailPage = () => {
             userRole={board?.userRole}
           />
         </div>
-        <div className="shrink-0 lg:w-72 lg:border-l lg:pl-6">
-          <BoardSidePanel
-            entries={timelineEntries}
-            folders={folders}
-            linkedFolder={board.linkedFolder}
-            canEdit={canEdit}
-            onLinkFolder={(id) => void handleLinkFolder(id)}
-          />
-        </div>
+        {panelOpen && (
+          <div className="hidden shrink-0 lg:block lg:w-72 lg:border-l lg:pl-6">
+            {detailsPanel}
+          </div>
+        )}
       </div>
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen} title="Details">
+        {detailsPanel}
+      </Sheet>
 
       {/* Dialogs */}
       <BoardCollaboratorDialog

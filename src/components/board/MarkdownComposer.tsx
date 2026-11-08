@@ -247,7 +247,7 @@ export default function MarkdownComposer({
   return (
     <div
       className={cn(
-        "border-border/70 bg-background focus-within:border-primary/30 overflow-hidden rounded-xl border transition-colors",
+        "border-border/70 dark:bg-background focus-within:border-primary/30 overflow-hidden rounded-xl border bg-white transition-colors",
         disabled && "opacity-60",
         className,
       )}

@@ -8,6 +8,7 @@ import TeamDeletedNotice, {
 import TeamInvite from "@/components/notifications/TeamInvite";
 import TeamRoleChangeNotice from "@/components/notifications/TeamRoleChangeNotice";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTeam } from "@/lib/contexts/team-context";
@@ -428,22 +429,17 @@ export default function InboxPage() {
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <InboxLine className="text-muted-foreground mb-4 h-16 w-16 opacity-50" />
-          <h3 className="mb-2 text-lg font-medium">No invitations</h3>
-          <p className="text-muted-foreground mb-4">
-            You don&apos;t have any collaboration invitations at the moment.
-          </p>
-          <Button
-            onClick={() => {
-              void refetch();
-            }}
-            variant="outline"
-          >
-            <Refresh className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-        </div>
+        <EmptyState
+          icon={<InboxLine />}
+          title="You're all caught up"
+          description="Team invites, shared boards and folders, and team updates land here."
+          action={
+            <Button variant="outline" onClick={() => void refetch()}>
+              <Refresh className="h-4 w-4" />
+              Refresh
+            </Button>
+          }
+        />
       )}
     </div>
   );

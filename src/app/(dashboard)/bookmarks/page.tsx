@@ -5,6 +5,7 @@ import FolderCard from "@/components/bookmark/FolderCard";
 import ImportExportDialog from "@/components/bookmark/ImportExportDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -280,34 +281,32 @@ export default function AllBookmarksPage() {
             ))}
           </div>
         ) : view === "shared" && sharedFolders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex items-center justify-center">
-              <FolderOpen className="text-muted-foreground h-16 w-16" />
-            </div>
-            <h3 className="mb-2 text-2xl font-medium">
-              Nothing shared with you yet
-            </h3>
-            <p className="text-muted-foreground max-w-md">
-              Folders people outside your teams invite you to will show up here.
-            </p>
-          </div>
+          <EmptyState
+            icon={<FolderOpen />}
+            title="Nothing shared with you yet"
+            description="Folders people outside your teams invite you to will show up here."
+          />
         ) : view === "all" && folders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex items-center justify-center">
-              <FolderOpen className="text-muted-foreground h-16 w-16" />
-            </div>
-            <h3 className="mb-2 text-2xl font-medium">
-              You don&apos;t have any folders yet
-            </h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Get started by creating your first folder to organize your
-              bookmarks.
-            </p>
-            <Button variant="outline" onClick={() => setShowAddFolder(true)}>
-              <Plus className="h-4 w-4" />
-              Create Your First Folder
-            </Button>
-          </div>
+          <EmptyState
+            icon={<FolderOpen />}
+            title="No folders yet"
+            description="Folders group bookmarks by topic. Create one, or import your browser bookmarks."
+            action={
+              <div className="flex gap-2">
+                <Button onClick={() => setShowAddFolder(true)}>
+                  <Plus className="h-4 w-4" />
+                  Create a folder
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowImportExport(true)}
+                >
+                  <Upload className="h-4 w-4" />
+                  Import
+                </Button>
+              </div>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {sortedFolders.map((folder) => (

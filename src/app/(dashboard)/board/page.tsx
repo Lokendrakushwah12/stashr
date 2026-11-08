@@ -4,6 +4,7 @@ import AddBoardDialog from "@/components/board/AddBoardDialog";
 import FolderClip from "@/components/board/BoardFolder/FolderClip";
 import FolderListCard from "@/components/board/BoardFolder/FolderListCard";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBoards } from "@/lib/hooks/use-boards";
 import {
   AddFolder,
-  Stars,
+  Share,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
 import { Magnifer, Sort } from "@solar-icons/react-perf/Outline";
 import { Loader, Plus, X } from "lucide-react";
@@ -284,54 +285,44 @@ export default function BoardsPage() {
             ))}
           </div>
         ) : roleFilter === "shared" && boards.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex items-center justify-center">
-              <Stars className="text-muted-foreground h-16 w-16" />
-            </div>
-            <h3 className="mb-2 text-2xl font-medium">
-              Nothing shared with you yet
-            </h3>
-            <p className="text-muted-foreground max-w-md">
-              Boards people outside your teams invite you to will show up here.
-            </p>
-          </div>
+          <EmptyState
+            icon={<Share />}
+            title="Nothing shared with you yet"
+            description="Boards people outside your teams invite you to will show up here."
+          />
         ) : teamBoards.length === 0 && roleFilter !== "shared" ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex items-center justify-center">
-              <Stars className="text-muted-foreground h-16 w-16" />
-            </div>
-            <h3 className="mb-2 text-2xl font-medium">
-              You don&apos;t have any boards yet
-            </h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Get started by creating your first board to organize your ideas.
-            </p>
-            <Button variant="outline" onClick={() => setShowAddBoard(true)}>
-              <Plus className="h-4 w-4" />
-              Create Your First Board
-            </Button>
-          </div>
+          <EmptyState
+            icon={<AddFolder />}
+            title="No boards yet"
+            description="Boards hold the ideas, links and images for one topic. Start one and add your first note."
+            action={
+              <Button onClick={() => setShowAddBoard(true)}>
+                <Plus className="h-4 w-4" />
+                Create a board
+              </Button>
+            }
+          />
         ) : filteredBoards.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex items-center justify-center">
-              <Magnifer className="text-muted-foreground h-16 w-16" />
-            </div>
-            <h3 className="mb-2 text-2xl font-medium">No boards found</h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              {searchQuery
-                ? "Try adjusting your search to find what you're looking for."
-                : "No boards found with the selected role filter."}
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setRoleFilter("all");
-              }}
-            >
-              Clear Filters
-            </Button>
-          </div>
+          <EmptyState
+            icon={<Magnifer />}
+            title="No matching boards"
+            description={
+              searchQuery
+                ? `Nothing matches “${searchQuery}”.`
+                : "No boards with this role."
+            }
+            action={
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setRoleFilter("all");
+                }}
+              >
+                Clear filters
+              </Button>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 gap-8 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredBoards.map((board) => (

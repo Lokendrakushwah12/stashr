@@ -471,7 +471,7 @@ export default function BoardTimelineEditor({
                   </MarkdownComposer>
                 </div>
               ) : (
-                <div className="border-border bg-card overflow-hidden rounded-lg border">
+                <div className="border-border dark:bg-card overflow-hidden rounded-lg border bg-white">
                   <div className="space-y-0 p-4">
                     <MarkdownPreview
                       content={entry.content}

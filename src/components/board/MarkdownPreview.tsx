@@ -39,7 +39,7 @@ export function LinkChip({
       target="_blank"
       rel="noreferrer noopener"
       title={href}
-      className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex max-w-[min(100%,24rem)] items-center gap-1 rounded-md px-1.5 align-middle text-[0.95em] leading-6 no-underline transition-colors"
+      className="bg-primary/10 text-foreground hover:bg-primary/20 inline-flex max-w-[min(100%,24rem)] items-center gap-1 rounded-md px-1.5 align-middle text-[0.95em] leading-6 no-underline transition-colors"
     >
       {logo && !logoFailed ? (
         // eslint-disable-next-line @next/next/no-img-element

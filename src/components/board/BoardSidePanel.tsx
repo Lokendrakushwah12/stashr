@@ -9,7 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import type { BoardTimelineEntry, Folder } from "@/types";
+import { ImageIcon, Link2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -45,14 +47,55 @@ function Section({
     <section className="space-y-3 border-t pt-4 first:border-t-0 first:pt-0">
       <h3 className="text-sm font-medium">
         {title}
-        {count !== undefined && (
-          <span className="text-muted-foreground ml-1.5 font-normal">
+        {!!count && (
+          <span className="text-muted-foreground ml-1.5 font-normal tabular-nums">
             {count}
           </span>
         )}
       </h3>
       {children}
     </section>
+  );
+}
+
+/** Empty state: a faint outline of what will appear, plus one line. */
+function Ghost({
+  kind,
+  children,
+}: {
+  kind: "links" | "images";
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2.5">
+      {kind === "links" ? (
+        <div className="flex flex-col items-start gap-1.5" aria-hidden>
+          {["w-40", "w-28"].map((w) => (
+            <div
+              key={w}
+              className="border-border/70 flex h-6 items-center gap-1.5 rounded-md border border-dashed px-1.5"
+            >
+              <Link2 className="text-muted-foreground/40 size-3.5" />
+              <div className={cn("bg-muted-foreground/10 h-1.5 rounded", w)} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-1.5" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="border-border/70 flex aspect-square items-center justify-center rounded-md border border-dashed"
+            >
+              {i === 1 && (
+                <ImageIcon className="text-muted-foreground/40 size-4" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="text-muted-foreground text-xs">{children}</p>
+    </div>
   );
 }
 
@@ -157,9 +200,7 @@ export default function BoardSidePanel({
 
       <Section title="Links" count={links.length}>
         {links.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Links posted in this board show up here.
-          </p>
+          <Ghost kind="links">Links shared in this board collect here.</Ghost>
         ) : (
           <div className="flex flex-col items-start gap-1.5">
             {shownLinks.map((url) => (
@@ -177,9 +218,7 @@ export default function BoardSidePanel({
 
       <Section title="Images" count={images.length}>
         {images.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Images posted in this board show up here.
-          </p>
+          <Ghost kind="images">Images shared in this board collect here.</Ghost>
         ) : (
           <div className="space-y-2">
             <div className="grid grid-cols-3 gap-1.5">
