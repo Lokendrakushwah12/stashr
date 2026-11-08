@@ -1,5 +1,8 @@
 "use client";
 
+import TeamDeletedNotice, {
+  dismissTeamDeletedNotice,
+} from "@/components/notifications/TeamDeletedNotice";
 import { CreateTeamDialog } from "@/components/team/CreateTeamDialog";
 import {
   UpgradeDialogProvider,
@@ -7,9 +10,11 @@ import {
   useUpgradeDialog,
 } from "@/components/upgrade-dialog";
 import { TeamProvider, useTeam } from "@/lib/contexts/team-context";
+import type { TeamDeletedNotification } from "@/lib/hooks/use-inbox";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 function OnboardingInner() {
   const { data: session, status } = useSession();
@@ -17,6 +22,31 @@ function OnboardingInner() {
   const { teams, currentTeam, setCurrentTeamLocal, isLoading } = useTeam();
   const [open, setOpen] = useState(true);
   const { showUpgrade } = useUpgradeDialog();
+  // Members whose only team was deleted land here; tell them why.
+  const [deletedNotices, setDeletedNotices] = useState<
+    TeamDeletedNotification[]
+  >([]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    void fetch("/api/teams/invitations")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(
+        (
+          data: { teamDeletedNotifications?: TeamDeletedNotification[] } | null,
+        ) => setDeletedNotices(data?.teamDeletedNotifications ?? []),
+      )
+      .catch(() => undefined);
+  }, [status]);
+
+  const dismissNotice = async (id: string) => {
+    try {
+      await dismissTeamDeletedNotice(id);
+      setDeletedNotices((prev) => prev.filter((n) => n.id !== id));
+    } catch {
+      toast.error("Failed to dismiss");
+    }
+  };
 
   // If the user already has teams (e.g. existing user auto-migrated), bounce
   useEffect(() => {
@@ -53,6 +83,19 @@ function OnboardingInner() {
         open={open}
         onOpenChange={setOpen}
         required
+        notice={
+          deletedNotices.length > 0 ? (
+            <div className="space-y-2">
+              {deletedNotices.map((n) => (
+                <TeamDeletedNotice
+                  key={n.id}
+                  notification={n}
+                  onDismiss={dismissNotice}
+                />
+              ))}
+            </div>
+          ) : null
+        }
         handleApiResponse={handleApiResponse}
         onLimit={showUpgrade}
         onCreated={async (team) => {

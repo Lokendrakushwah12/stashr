@@ -1,7 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import { registerModels } from "@/models";
-import { canManageTeam } from "@/lib/team-service";
+import { canManageTeam, teamDeletedNotices } from "@/lib/team-service";
 import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
 import type { NextRequest } from "next/server";
@@ -109,8 +109,54 @@ export async function DELETE(
     );
   }
 
-  const { Team, TeamMember } = await registerModels();
-  await TeamMember.deleteMany({ teamId: new mongoose.Types.ObjectId(teamId) });
-  await Team.findByIdAndDelete(teamId);
+  const m = await registerModels();
+  const tid = new mongoose.Types.ObjectId(teamId);
+  const [team, members, boards, folders] = await Promise.all([
+    m.Team.findById(teamId).lean(),
+    m.TeamMember.find(
+      { teamId: tid, status: "active", userId: { $ne: session.user.id } },
+      { email: 1 },
+    ).lean(),
+    m.Board.find({ teamId: tid }, { _id: 1 }).lean(),
+    m.Folder.find({ teamId: tid }, { _id: 1 }).lean(),
+  ]);
+  const boardIds = boards.map((b) => String(b._id));
+  const folderIds = folders.map((f) => f._id);
+
+  // Children, then parents, then the team last: if anything fails part-way the
+  // team still exists and the owner can simply retry.
+  await Promise.all([
+    m.BoardCard.deleteMany({
+      $or: [{ teamId: tid }, { boardId: { $in: boardIds } }],
+    }),
+    m.BoardTimelineEntry.deleteMany({ boardId: { $in: boardIds } }),
+    m.BoardCollaboration.deleteMany({ boardId: { $in: boardIds } }),
+    m.FolderCollaboration.deleteMany({ folderId: { $in: folderIds } }),
+    m.Bookmark.deleteMany({
+      $or: [{ teamId: tid }, { folderId: { $in: folderIds } }],
+    }),
+  ]);
+  await Promise.all([
+    m.Board.deleteMany({ teamId: tid }),
+    m.Folder.deleteMany({ teamId: tid }),
+    m.TeamMember.deleteMany({ teamId: tid }),
+  ]);
+  await m.Team.findByIdAndDelete(teamId);
+
+  // Last, so a retried delete can't notify anyone twice.
+  if (team && members.length > 0) {
+    const deletedAt = new Date();
+    await (
+      await teamDeletedNotices()
+    ).insertMany(
+      members.map((mem) => ({
+        email: mem.email,
+        teamName: team.name,
+        teamLogoUrl: team.logoUrl ?? "",
+        deletedByName: session.user.name ?? null,
+        deletedAt,
+      })),
+    );
+  }
   return NextResponse.json({ success: true });
 }

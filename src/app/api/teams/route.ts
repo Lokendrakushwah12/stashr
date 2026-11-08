@@ -1,7 +1,11 @@
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import { registerModels } from "@/models";
-import { ensureUserHasTeam, listUserTeams } from "@/lib/team-service";
+import {
+  ensureUserHasTeam,
+  getUserPlan,
+  listUserTeams,
+} from "@/lib/team-service";
 import { assertWithinLimit, PlanLimitError } from "@/lib/plans";
 import { planLimitResponse } from "@/lib/api-team";
 import { getServerSession } from "next-auth";
@@ -49,10 +53,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { Team, TeamMember } = await registerModels();
 
     // Count user's existing OWNED teams to enforce teamsPerUser limit
-    const ownedCount = await Team.countDocuments({ ownerId: session.user.id });
+    const [ownedCount, planId] = await Promise.all([
+      Team.countDocuments({ ownerId: session.user.id }),
+      getUserPlan(session.user.id),
+    ]);
     try {
       assertWithinLimit({
-        planId: "free",
+        planId,
         key: "teamsPerUser",
         current: ownedCount,
       });
@@ -76,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       slug,
       logoUrl: body.logoUrl?.trim() ?? "",
       ownerId: session.user.id,
-      planId: "free",
+      planId,
     });
 
     await TeamMember.create({

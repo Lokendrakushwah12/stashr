@@ -135,13 +135,17 @@ export async function POST(
   }
 
   // enforce member limit
-  const activeCount = await TeamMember.countDocuments({
-    teamId: teamObjectId,
-    status: { $in: ["active", "pending"] },
-  });
+  const { Team } = await registerModels();
+  const [activeCount, team] = await Promise.all([
+    TeamMember.countDocuments({
+      teamId: teamObjectId,
+      status: { $in: ["active", "pending"] },
+    }),
+    Team.findById(teamObjectId, { planId: 1 }).lean(),
+  ]);
   try {
     assertWithinLimit({
-      planId: "free",
+      planId: team?.planId ?? "free",
       key: "membersPerTeam",
       current: activeCount,
     });

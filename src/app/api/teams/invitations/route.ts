@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
+import { teamDeletedNotices } from "@/lib/team-service";
 import { registerModels } from "@/models";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -16,39 +17,43 @@ export async function GET(): Promise<NextResponse> {
   const { TeamMember, Team } = await registerModels();
   const emailLower = session.user.email.toLowerCase();
 
-  const [received, sentDeclined, roleChanges] = await Promise.all([
-    TeamMember.find({
-      email: emailLower,
-      $or: [
-        { status: { $in: ["pending", "declined"] } },
-        // Active rows only count as "accepted invitations" if they were
-        // actually invited by someone — exclude teams the user created
-        // themselves (which have no invitedByUserId).
-        { status: "active", invitedByUserId: { $exists: true } },
-      ],
-    })
-      .lean()
-      .exec(),
-    TeamMember.find({
-      invitedByUserId: session.user.id,
-      status: "declined",
-      email: { $ne: emailLower },
-      acknowledgedByInviterAt: { $exists: false },
-    })
-      .lean()
-      .exec(),
-    TeamMember.find({
-      email: emailLower,
-      status: "active",
-      roleChangedAt: { $exists: true },
-      $or: [
-        { roleChangeAcknowledgedAt: { $exists: false } },
-        { $expr: { $lt: ["$roleChangeAcknowledgedAt", "$roleChangedAt"] } },
-      ],
-    })
-      .lean()
-      .exec(),
-  ]);
+  const [received, sentDeclined, roleChanges, deletedNotices] =
+    await Promise.all([
+      TeamMember.find({
+        email: emailLower,
+        $or: [
+          { status: { $in: ["pending", "declined"] } },
+          // Active rows only count as "accepted invitations" if they were
+          // actually invited by someone — exclude teams the user created
+          // themselves (which have no invitedByUserId).
+          { status: "active", invitedByUserId: { $exists: true } },
+        ],
+      })
+        .lean()
+        .exec(),
+      TeamMember.find({
+        invitedByUserId: session.user.id,
+        status: "declined",
+        email: { $ne: emailLower },
+        acknowledgedByInviterAt: { $exists: false },
+      })
+        .lean()
+        .exec(),
+      TeamMember.find({
+        email: emailLower,
+        status: "active",
+        roleChangedAt: { $exists: true },
+        $or: [
+          { roleChangeAcknowledgedAt: { $exists: false } },
+          { $expr: { $lt: ["$roleChangeAcknowledgedAt", "$roleChangedAt"] } },
+        ],
+      })
+        .lean()
+        .exec(),
+      teamDeletedNotices().then((c) =>
+        c.find({ email: emailLower }).sort({ deletedAt: -1 }).toArray(),
+      ),
+    ]);
 
   const teamIds = [
     ...new Set(
@@ -123,9 +128,18 @@ export async function GET(): Promise<NextResponse> {
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
+  const teamDeletedNotifications = deletedNotices.map((n) => ({
+    id: String(n._id),
+    teamName: n.teamName as string,
+    teamLogoUrl: (n.teamLogoUrl as string) || null,
+    deletedByName: (n.deletedByName as string | null) ?? null,
+    deletedAt: n.deletedAt as Date,
+  }));
+
   return NextResponse.json({
     invitations,
     declinedNotifications,
     roleChangeNotifications,
+    teamDeletedNotifications,
   });
 }

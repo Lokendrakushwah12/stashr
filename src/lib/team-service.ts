@@ -2,8 +2,34 @@ import "server-only";
 import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import { registerModels } from "@/models";
+import type { PlanId } from "@/lib/plans";
 import type { TeamRole } from "@/models/TeamMember";
 import type { TeamTheme } from "@/models/Team";
+
+/**
+ * "Your team was deleted" notices: { email, teamName, teamLogoUrl,
+ * deletedByName, deletedAt }. A raw collection rather than a model because the
+ * team (and its membership rows the other notices hang off) are already gone.
+ */
+export async function teamDeletedNotices() {
+  return (await connectDB()).collection("teamdeletednotices");
+}
+
+/**
+ * The account-level plan: `planId` on the user's next-auth `users` document
+ * (set by hand for now — there's no billing). Governs how many teams they can
+ * own and the plan their new teams start on.
+ */
+export async function getUserPlan(userId: string): Promise<PlanId> {
+  if (!mongoose.Types.ObjectId.isValid(userId)) return "free";
+  const user = await (await connectDB())
+    .collection("users")
+    .findOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      { projection: { planId: 1 } },
+    );
+  return user?.planId === "pro" ? "pro" : "free";
+}
 
 export interface TeamSummary {
   id: string;

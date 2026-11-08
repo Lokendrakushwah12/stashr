@@ -48,12 +48,21 @@ export interface TeamRoleChangeNotification {
   changedAt: string;
 }
 
+export interface TeamDeletedNotification {
+  id: string;
+  teamName: string;
+  teamLogoUrl: string | null;
+  deletedByName: string | null;
+  deletedAt: string;
+}
+
 export type InboxData = {
   folderInvitations: (FolderCollaboration & { folder?: Folder })[];
   boardInvitations: (BoardCollaboration & { board?: Board })[];
   teamInvitations: TeamInvitation[];
   teamDeclineNotifications: TeamDeclineNotification[];
   teamRoleChangeNotifications: TeamRoleChangeNotification[];
+  teamDeletedNotifications: TeamDeletedNotification[];
 };
 
 export function useInbox(
@@ -87,6 +96,7 @@ export function useInbox(
         invitations: TeamInvitation[];
         declinedNotifications: TeamDeclineNotification[];
         roleChangeNotifications: TeamRoleChangeNotification[];
+        teamDeletedNotifications: TeamDeletedNotification[];
       };
 
       return {
@@ -95,6 +105,7 @@ export function useInbox(
         teamInvitations: teamData.invitations ?? [],
         teamDeclineNotifications: teamData.declinedNotifications ?? [],
         teamRoleChangeNotifications: teamData.roleChangeNotifications ?? [],
+        teamDeletedNotifications: teamData.teamDeletedNotifications ?? [],
       };
     },
     enabled: !!userId,

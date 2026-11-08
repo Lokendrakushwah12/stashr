@@ -2,6 +2,9 @@
 
 import CollaborationInvite from "@/components/notifications/CollaborationInvite";
 import TeamDeclineNotice from "@/components/notifications/TeamDeclineNotice";
+import TeamDeletedNotice, {
+  dismissTeamDeletedNotice,
+} from "@/components/notifications/TeamDeletedNotice";
 import TeamInvite from "@/components/notifications/TeamInvite";
 import TeamRoleChangeNotice from "@/components/notifications/TeamRoleChangeNotice";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,7 @@ export default function InboxPage() {
   const teamInvitations = data?.teamInvitations ?? [];
   const teamDeclineNotifications = data?.teamDeclineNotifications ?? [];
   const teamRoleChangeNotifications = data?.teamRoleChangeNotifications ?? [];
+  const teamDeletedNotifications = data?.teamDeletedNotifications ?? [];
   const pendingTeamInvitations = teamInvitations.filter(
     (inv) => inv.status === "pending",
   );
@@ -76,6 +80,17 @@ export default function InboxPage() {
       toast.success("Notification dismissed");
     } catch (error) {
       console.error("Error dismissing role change notification:", error);
+      toast.error("Failed to dismiss");
+    }
+  };
+
+  const handleDismissTeamDeleted = async (noticeId: string) => {
+    try {
+      await dismissTeamDeletedNotice(noticeId);
+      void refetch();
+      toast.success("Notification dismissed");
+    } catch (error) {
+      console.error("Error dismissing team deleted notification:", error);
       toast.error("Failed to dismiss");
     }
   };
@@ -215,7 +230,8 @@ export default function InboxPage() {
                   .length +
                   pendingTeamInvitations.length +
                   teamDeclineNotifications.length +
-                  teamRoleChangeNotifications.length}
+                  teamRoleChangeNotifications.length +
+                  teamDeletedNotifications.length}
               </div>
             )}
             <div className="text-muted-foreground text-sm">
@@ -281,9 +297,31 @@ export default function InboxPage() {
       ) : pendingInvitations.length +
           teamInvitations.length +
           teamDeclineNotifications.length +
-          teamRoleChangeNotifications.length >
+          teamRoleChangeNotifications.length +
+          teamDeletedNotifications.length >
         0 ? (
         <div className="space-y-6">
+          {teamDeletedNotifications.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-medium tracking-tight">
+                  Deleted Teams
+                </h2>
+                <div className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
+                  {teamDeletedNotifications.length}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {teamDeletedNotifications.map((notification) => (
+                  <TeamDeletedNotice
+                    key={notification.id}
+                    notification={notification}
+                    onDismiss={handleDismissTeamDeleted}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           {teamRoleChangeNotifications.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">

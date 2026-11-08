@@ -51,6 +51,7 @@ export function useBookmarkSidebarConfig({
         }[];
         declinedNotifications: { id: string }[];
         roleChangeNotifications: { id: string }[];
+        teamDeletedNotifications: { id: string }[];
       };
       const folderPending =
         folderData.invitations?.filter((inv) => inv.status === "pending")
@@ -60,8 +61,9 @@ export function useBookmarkSidebarConfig({
           .length ?? 0;
       const teamDeclined = teamData.declinedNotifications?.length ?? 0;
       const roleChanges = teamData.roleChangeNotifications?.length ?? 0;
+      const teamsDeleted = teamData.teamDeletedNotifications?.length ?? 0;
       setPendingInvitationsCount(
-        folderPending + teamPending + teamDeclined + roleChanges,
+        folderPending + teamPending + teamDeclined + roleChanges + teamsDeleted,
       );
     } catch (error) {
       console.error("Error fetching invitations count:", error);

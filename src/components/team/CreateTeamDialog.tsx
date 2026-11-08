@@ -28,6 +28,8 @@ interface CreateTeamDialogProps {
   ) => Promise<T>;
   /** When true, dialog cannot be dismissed without creating (onboarding mode) */
   required?: boolean;
+  /** Shown above the form, e.g. why the user is back at onboarding. */
+  notice?: React.ReactNode;
 }
 
 export function CreateTeamDialog({
@@ -37,6 +39,7 @@ export function CreateTeamDialog({
   onLimit,
   handleApiResponse,
   required = false,
+  notice,
 }: CreateTeamDialogProps) {
   const [name, setName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string>("");
@@ -92,6 +95,7 @@ export function CreateTeamDialog({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-3">
+            {notice}
             <div className="flex flex-col items-center gap-2">
               <ImageUpload
                 currentImage={logoUrl}

@@ -47,7 +47,7 @@ interface Member {
 const ROLE_OPTIONS: TeamRole[] = ["admin", "editor", "viewer"];
 
 export default function SettingsPage() {
-  const { currentTeam, refresh, setCurrentTeamLocal } = useTeam();
+  const { teams, currentTeam, refresh, setCurrentTeamLocal } = useTeam();
   const { showUpgrade } = useUpgradeDialog();
 
   const [name, setName] = useState("");
@@ -62,6 +62,8 @@ export default function SettingsPage() {
   const [inviting, setInviting] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<Member | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (currentTeam) {
@@ -292,6 +294,25 @@ export default function SettingsPage() {
       toast.error(msg);
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/teams/${currentTeam.id}`, {
+        method: "DELETE",
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Failed to delete team");
+      toast.success(`Deleted ${currentTeam.name}`);
+      // Full reload: the team context falls back to another team, or to
+      // onboarding if this was the last one, with no stale cached data.
+      window.location.assign("/");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to delete team";
+      toast.error(msg);
+      setDeleting(false);
     }
   };
 
@@ -558,6 +579,36 @@ export default function SettingsPage() {
           ))}
         </ul>
       </section>
+
+      {currentTeam.role === "owner" && (
+        <section className="space-y-4">
+          <header>
+            <h2 className="text-lg font-semibold">Delete team</h2>
+            <p className="text-muted-foreground text-sm">
+              Permanently delete this team with all of its boards, folders and
+              bookmarks. This can&apos;t be undone.
+            </p>
+          </header>
+          <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+            Delete team
+          </Button>
+        </section>
+      )}
+
+      <ConfirmationDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={`Delete ${currentTeam.name}?`}
+        description={`All boards, folders and bookmarks in this team will be permanently deleted, and members will be notified that they've been removed. This can't be undone.${
+          teams.length === 1
+            ? " This is your only team, so you'll be asked to create a new one."
+            : ""
+        }`}
+        confirmText="Delete team"
+        variant="destructive"
+        onConfirm={handleDeleteTeam}
+        isLoading={deleting}
+      />
 
       <ConfirmationDialog
         open={!!removeTarget}
