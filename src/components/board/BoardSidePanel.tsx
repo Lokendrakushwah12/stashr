@@ -1,0 +1,215 @@
+"use client";
+
+import { LinkChip } from "@/components/board/MarkdownPreview";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { BoardTimelineEntry, Folder } from "@/types";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+const URL_RE = /https?:\/\/[^\s<>()[\]"'`]+/g;
+const PREVIEW_COUNT = { links: 8, images: 9 };
+
+/** Every distinct URL / image across the timeline, newest entry first. */
+export function collectMedia(entries: BoardTimelineEntry[]) {
+  const links = new Set<string>();
+  const images = new Set<string>();
+  const newestFirst = [...entries].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  for (const entry of newestFirst) {
+    for (const url of entry.content.match(URL_RE) ?? []) {
+      links.add(url.replace(/[.,;:!?]+$/, ""));
+    }
+    for (const img of entry.images ?? []) images.add(img);
+  }
+  return { links: [...links], images: [...images] };
+}
+
+function Section({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3 border-t pt-4 first:border-t-0 first:pt-0">
+      <h3 className="text-sm font-medium">
+        {title}
+        {count !== undefined && (
+          <span className="text-muted-foreground ml-1.5 font-normal">
+            {count}
+          </span>
+        )}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+function ShowAll({
+  total,
+  limit,
+  expanded,
+  onToggle,
+}: {
+  total: number;
+  limit: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  if (total <= limit) return null;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="text-muted-foreground hover:text-foreground text-xs"
+    >
+      {expanded ? "Show less" : `Show all ${total}`}
+    </button>
+  );
+}
+
+export default function BoardSidePanel({
+  entries,
+  folders,
+  linkedFolder,
+  canEdit,
+  onLinkFolder,
+}: {
+  entries: BoardTimelineEntry[];
+  folders: Folder[];
+  linkedFolder?: { id: string; name: string; color: string };
+  canEdit: boolean;
+  onLinkFolder: (folderId: string | null) => void;
+}) {
+  const { links, images } = useMemo(() => collectMedia(entries), [entries]);
+  const [allLinks, setAllLinks] = useState(false);
+  const [allImages, setAllImages] = useState(false);
+
+  const shownLinks = allLinks ? links : links.slice(0, PREVIEW_COUNT.links);
+  const shownImages = allImages
+    ? images
+    : images.slice(0, PREVIEW_COUNT.images);
+
+  return (
+    <aside className="space-y-4 lg:sticky lg:top-4">
+      <Section title="Linked folder">
+        {linkedFolder ? (
+          <div className="flex items-center gap-2">
+            <span
+              className="size-3 shrink-0 rounded-sm"
+              style={{ backgroundColor: linkedFolder.color }}
+            />
+            <Link
+              href={`/bookmarks/${linkedFolder.id}`}
+              className="min-w-0 flex-1 truncate text-sm hover:underline"
+            >
+              {linkedFolder.name}
+            </Link>
+            {canEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onLinkFolder(null)}
+                className="text-muted-foreground hover:text-destructive h-7 px-2 text-xs"
+              >
+                Unlink
+              </Button>
+            )}
+          </div>
+        ) : canEdit ? (
+          <Select
+            value="none"
+            onValueChange={(v) => onLinkFolder(v === "none" ? null : v)}
+          >
+            <SelectTrigger className="h-8 w-full text-sm">
+              <SelectValue placeholder="Link a bookmark folder" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No linked folder</SelectItem>
+              {folders.map((folder) => (
+                <SelectItem key={folder._id} value={folder._id!}>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="size-3 rounded-sm"
+                      style={{ backgroundColor: folder.color ?? "#3b82f6" }}
+                    />
+                    {folder.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <p className="text-muted-foreground text-sm">None</p>
+        )}
+      </Section>
+
+      <Section title="Links" count={links.length}>
+        {links.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            Links posted in this board show up here.
+          </p>
+        ) : (
+          <div className="flex flex-col items-start gap-1.5">
+            {shownLinks.map((url) => (
+              <LinkChip key={url} href={url} />
+            ))}
+            <ShowAll
+              total={links.length}
+              limit={PREVIEW_COUNT.links}
+              expanded={allLinks}
+              onToggle={() => setAllLinks((v) => !v)}
+            />
+          </div>
+        )}
+      </Section>
+
+      <Section title="Images" count={images.length}>
+        {images.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            Images posted in this board show up here.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-1.5">
+              {shownImages.map((src) => (
+                <a
+                  key={src}
+                  href={src}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="bg-muted aspect-square overflow-hidden rounded-md transition-opacity hover:opacity-80"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </a>
+              ))}
+            </div>
+            <ShowAll
+              total={images.length}
+              limit={PREVIEW_COUNT.images}
+              expanded={allImages}
+              onToggle={() => setAllImages((v) => !v)}
+            />
+          </div>
+        )}
+      </Section>
+    </aside>
+  );
+}

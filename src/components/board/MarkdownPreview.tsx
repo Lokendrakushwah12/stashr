@@ -1,8 +1,61 @@
 "use client";
 
+import { logoDevFallbackFor } from "@/lib/favicon";
 import { cn } from "@/lib/utils";
+import { Link2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+/** "https://www.instagram.com/p/abc/" -> "instagram.com/p/abc" */
+export function prettyUrl(href: string): string {
+  try {
+    const u = new URL(href);
+    const path = u.pathname.replace(/\/$/, "");
+    return `${u.host.replace(/^www\./, "")}${path}${u.search}`;
+  } catch {
+    return href;
+  }
+}
+
+/** Slack-style link: site logo (logo.dev) + short URL, truncated. */
+export function LinkChip({
+  href,
+  children,
+}: {
+  href: string;
+  children?: ReactNode;
+}) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const logo = /^https?:/i.test(href) ? logoDevFallbackFor(href) : null;
+  const text = typeof children === "string" ? children : null;
+  // Bare URLs read as the short form; links with their own label keep it.
+  const label = !children || text === href ? prettyUrl(href) : children;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      title={href}
+      className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex max-w-[min(100%,24rem)] items-center gap-1 rounded-md px-1.5 align-middle text-[0.95em] leading-6 no-underline transition-colors"
+    >
+      {logo && !logoFailed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logo}
+          alt=""
+          className="size-3.5 shrink-0 rounded-sm"
+          onError={() => setLogoFailed(true)}
+        />
+      ) : (
+        <Link2 className="size-3.5 shrink-0" />
+      )}
+      <span className="truncate">{label}</span>
+    </a>
+  );
+}
 
 interface MarkdownPreviewProps {
   content: string;
@@ -29,14 +82,8 @@ function MarkdownPreview({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          a: ({ node: _node, ...props }) => (
-            <a
-              {...props}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="text-primary decoration-primary/40 hover:decoration-primary underline underline-offset-4"
-            />
-          ),
+          a: ({ node: _node, href, children }) =>
+            href ? <LinkChip href={href}>{children}</LinkChip> : children,
           p: ({ node: _node, ...props }) => (
             <p {...props} className="mb-2 last:mb-0" />
           ),
@@ -46,8 +93,9 @@ function MarkdownPreview({
           ol: ({ node: _node, ...props }) => (
             <ol {...props} className="mb-2 list-decimal pl-5 last:mb-0" />
           ),
+          // [&>p]: "loose" lists wrap each item in <p>; keep them tight anyway
           li: ({ node: _node, ...props }) => (
-            <li {...props} className="my-0.5" />
+            <li {...props} className="my-0.5 [&>p]:mb-0" />
           ),
           blockquote: ({ node: _node, ...props }) => (
             <blockquote

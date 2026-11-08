@@ -52,8 +52,6 @@ export default function BoardTimelineEditor({
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [editingImages, setEditingImages] = useState<string[]>([]);
-  const [editingShowSource, setEditingShowSource] = useState(false);
-  const [editingWysiwygActive, setEditingWysiwygActive] = useState(false);
   const [isUploadingEditImages, setIsUploadingEditImages] = useState(false);
   const [editDragActive, setEditDragActive] = useState(false);
   const [viewingImages, setViewingImages] = useState<string[]>([]);
@@ -205,9 +203,6 @@ export default function BoardTimelineEditor({
     setEditingEntryId(entry._id);
     setEditingContent(entry.content);
     setEditingImages(entry.images ?? []);
-    // start in preview-only, and immediately activate WYSIWYG so users never see raw markdown
-    setEditingShowSource(false);
-    setEditingWysiwygActive(true);
   };
 
   const handleCancelEdit = () => {
@@ -426,11 +421,6 @@ export default function BoardTimelineEditor({
                     onCancel={handleCancelEdit}
                     onAttachImages={() => editFileInputRef.current?.click()}
                     imageCount={editingImages.length}
-                    previewOnly={!editingShowSource}
-                    onToggleSource={() => setEditingShowSource((v) => !v)}
-                    onStartWysiwyg={() => setEditingWysiwygActive(true)}
-                    onCommitWysiwyg={() => setEditingWysiwygActive(true)}
-                    wysiwygActive={editingWysiwygActive}
                   >
                     <input
                       ref={editFileInputRef}

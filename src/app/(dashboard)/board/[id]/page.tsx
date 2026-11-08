@@ -1,6 +1,7 @@
 "use client";
 
 import BoardCollaboratorDialog from "@/components/board/BoardCollaboratorDialog";
+import BoardSidePanel from "@/components/board/BoardSidePanel";
 import BoardTimelineEditor from "@/components/board/BoardTimelineEditor";
 import { Button } from "@/components/ui/button";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
@@ -11,13 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import InlineEdit from "@/components/ui/inline-edit";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useBoard,
@@ -27,9 +21,6 @@ import {
 import { useFolders } from "@/lib/hooks/use-bookmarks";
 import { useTimeline } from "@/lib/hooks/use-timeline";
 import {
-  LinkBrokenMinimalistic,
-  LinkMinimalistic2,
-  Share,
   TrashBinTrash,
   UserPlus,
 } from "@solar-icons/react-perf/category/style/BoldDuotone";
@@ -250,112 +241,25 @@ const BoardDetailPage = () => {
         className="text-muted-foreground"
       />
 
-      {/* Linked Folder Section */}
-      <div className="mt-4">
-        {canEdit ? (
-          <div className="flex items-center gap-3">
-            <LinkMinimalistic2 className="text-muted-foreground h-5 w-5" />
-            <div className="flex flex-1 items-center gap-2">
-              {board?.linkedFolder ? (
-                // Show linked folder with option to change
-                <div className="bg-muted/30 flex h-9 w-full flex-1 items-center justify-between gap-2 rounded-lg border pr-1 pl-2">
-                  <div
-                    className="h-3 w-3 rounded-sm"
-                    style={{ backgroundColor: board.linkedFolder.color }}
-                  />
-                  <span className="flex-1 text-sm font-medium">
-                    {board.linkedFolder.name}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleLinkFolder(null)}
-                    className="text-destructive hover:text-destructive h-7 gap-1 rounded-sm px-2 text-xs"
-                  >
-                    <LinkBrokenMinimalistic className="size-3" />
-                    Unlink
-                  </Button>
-                </div>
-              ) : (
-                // Show selector if no folder linked
-                <Select
-                  value={board?.linkedFolderId ?? "none"}
-                  onValueChange={(value) =>
-                    handleLinkFolder(value === "none" ? null : value)
-                  }
-                  disabled={!canEdit}
-                >
-                  <SelectTrigger className="w-full max-w-sm">
-                    <SelectValue placeholder="Link to a bookmark folder..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No linked folder</SelectItem>
-                    {folders.map((folder) => (
-                      <SelectItem key={folder._id} value={folder._id!}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-3 w-3 rounded-sm"
-                            style={{
-                              backgroundColor: folder.color ?? "#3b82f6",
-                            }}
-                          />
-                          {folder.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {board?.linkedFolder && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    router.push(`/bookmarks/${board.linkedFolder?.id}`)
-                  }
-                  className="gap-2"
-                >
-                  <LinkMinimalistic2 className="h-4 w-4" />
-                  Open Folder
-                </Button>
-              )}
-            </div>
-          </div>
-        ) : board?.linkedFolder ? (
-          <div className="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
-            <LinkMinimalistic2 className="text-muted-foreground h-5 w-5" />
-            <div className="flex flex-1 items-center gap-2">
-              <div
-                className="h-3 w-3 rounded-sm"
-                style={{ backgroundColor: board.linkedFolder.color }}
-              />
-              <span className="text-sm font-medium">
-                {board.linkedFolder.name}
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                router.push(`/bookmarks/${board.linkedFolder?.id}`)
-              }
-              className="gap-2"
-            >
-              <LinkMinimalistic2 className="h-4 w-4" />
-              Open Folder
-            </Button>
-          </div>
-        ) : null}
-      </div>
-
-      {/* Collaborative Timeline Editor */}
-      <div className="mt-8">
-        <BoardTimelineEditor
-          boardId={boardId}
-          timelineEntries={timelineEntries}
-          disabled={!canEdit}
-          userRole={board?.userRole}
-        />
+      {/* Timeline, with board properties (folder, links, images) on the right */}
+      <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1">
+          <BoardTimelineEditor
+            boardId={boardId}
+            timelineEntries={timelineEntries}
+            disabled={!canEdit}
+            userRole={board?.userRole}
+          />
+        </div>
+        <div className="shrink-0 lg:w-72 lg:border-l lg:pl-6">
+          <BoardSidePanel
+            entries={timelineEntries}
+            folders={folders}
+            linkedFolder={board.linkedFolder}
+            canEdit={canEdit}
+            onLinkFolder={(id) => void handleLinkFolder(id)}
+          />
+        </div>
       </div>
 
       {/* Dialogs */}

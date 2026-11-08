@@ -1,8 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
+import { TableKit } from "@tiptap/extension-table";
+import { Placeholder } from "@tiptap/extensions";
+import { Markdown } from "@tiptap/markdown";
+import {
+  EditorContent,
+  Extension,
+  useEditor,
+  useEditorState,
+} from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
   Code2,
@@ -19,31 +29,10 @@ import {
   Underline,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { MarkdownPreview } from "./MarkdownPreview";
-import TurndownService from "turndown";
-
-const getKeyboardShortcuts = () => {
-  const isMac =
-    typeof window !== "undefined" &&
-    /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-  const mod = isMac ? "⌘" : "Ctrl";
-  return {
-    bold: `${mod}+B`,
-    italic: `${mod}+I`,
-    underline: `${mod}+U`,
-    strikethrough: `${mod}+Shift+X`,
-    link: `${mod}+K`,
-    quote: `${mod}+Shift+.`,
-    code: `${mod}+\``,
-    list: `${mod}+Shift+8`,
-    orderedList: `${mod}+Shift+7`,
-    checklist: `${mod}+Shift+C`,
-  };
-};
+import { useEffect, useRef } from "react";
 
 interface MarkdownComposerProps {
+  /** Markdown in and out; the editor itself is WYSIWYG. */
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -53,15 +42,25 @@ interface MarkdownComposerProps {
   onCancel?: () => void;
   onAttachImages?: () => void;
   imageCount?: number;
-  showPreview?: boolean;
-  previewOnly?: boolean;
-  onToggleSource?: () => void;
-  onStartWysiwyg?: () => void;
-  wysiwygActive?: boolean;
-  onCommitWysiwyg?: () => void;
   className?: string;
   children?: ReactNode;
 }
+
+// Styles for the rendered document inside the editor (Tailwind preflight
+// strips list markers, quote borders, etc.).
+const CONTENT_CLASS = cn(
+  "min-h-[120px] max-h-[360px] overflow-y-auto px-4 py-3 text-[15px] leading-7 outline-none",
+  "[&_p]:my-0 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4",
+  "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li>p]:my-0",
+  "[&_ul[data-type=taskList]]:list-none [&_ul[data-type=taskList]]:pl-1",
+  "[&_ul[data-type=taskList]>li]:flex [&_ul[data-type=taskList]>li]:items-start [&_ul[data-type=taskList]>li]:gap-2",
+  "[&_ul[data-type=taskList]>li>label]:mt-1 [&_ul[data-type=taskList]>li>div]:flex-1",
+  "[&_blockquote]:border-border [&_blockquote]:text-muted-foreground [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+  "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.92em]",
+  "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:rounded-lg [&_pre]:px-3 [&_pre]:py-2",
+  "[&_table]:my-2 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:bg-muted/50 [&_th]:px-2 [&_th]:py-1",
+  "[&_p.is-editor-empty:first-child]:before:text-muted-foreground/60 [&_p.is-editor-empty:first-child]:before:pointer-events-none [&_p.is-editor-empty:first-child]:before:float-left [&_p.is-editor-empty:first-child]:before:h-0 [&_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]",
+);
 
 export default function MarkdownComposer({
   value,
@@ -73,709 +72,219 @@ export default function MarkdownComposer({
   onCancel,
   onAttachImages,
   imageCount = 0,
-  showPreview = true,
-  previewOnly = false,
-  onToggleSource,
-  onStartWysiwyg,
-  wysiwygActive = false,
-  onCommitWysiwyg,
   className,
   children,
 }: MarkdownComposerProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const wysiwygRef = useRef<HTMLDivElement>(null);
-  const [editorValue, setEditorValue] = useState(value);
-  const [shortcuts] = useState(getKeyboardShortcuts());
+  // Refs so the editor (created once) always calls the latest handlers.
+  const submitRef = useRef<() => void>(() => undefined);
+  submitRef.current = () => {
+    if (!disabled && !submitDisabled) onSubmit();
+  };
+  const changeRef = useRef(onChange);
+  changeRef.current = onChange;
+
+  const editor = useEditor({
+    immediatelyRender: false, // SSR-safe
+    editable: !disabled,
+    content: value,
+    contentType: "markdown",
+    extensions: [
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+          autolink: true,
+          linkOnPaste: true,
+          defaultProtocol: "https",
+        },
+      }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      TableKit.configure({ table: { resizable: false } }),
+      Placeholder.configure({ placeholder }),
+      Markdown,
+      // Mod-Enter sends. Runs before HardBreak, which also binds Mod-Enter;
+      // Shift-Enter still inserts a line break, Enter a new paragraph/item.
+      Extension.create({
+        name: "submitShortcut",
+        priority: 1000,
+        addKeyboardShortcuts: () => ({
+          "Mod-Enter": () => {
+            submitRef.current();
+            return true;
+          },
+        }),
+      }),
+    ],
+    editorProps: { attributes: { class: CONTENT_CLASS } },
+    onUpdate: ({ editor: e }) => changeRef.current(e.getMarkdown()),
+  });
+
+  // Follow outside changes (e.g. cleared after sending) without echoing back.
+  useEffect(() => {
+    if (!editor || editor.getMarkdown() === value) return;
+    editor.commands.setContent(value, {
+      contentType: "markdown",
+      emitUpdate: false,
+    });
+  }, [editor, value]);
 
   useEffect(() => {
-    setEditorValue(value);
-  }, [value]);
+    editor?.setEditable(!disabled);
+  }, [editor, disabled]);
 
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  const active = useEditorState({
+    editor,
+    selector: ({ editor: e }) => ({
+      bold: e?.isActive("bold") ?? false,
+      italic: e?.isActive("italic") ?? false,
+      underline: e?.isActive("underline") ?? false,
+      strike: e?.isActive("strike") ?? false,
+      link: e?.isActive("link") ?? false,
+      blockquote: e?.isActive("blockquote") ?? false,
+      code: e?.isActive("code") ?? false,
+      bulletList: e?.isActive("bulletList") ?? false,
+      orderedList: e?.isActive("orderedList") ?? false,
+      taskList: e?.isActive("taskList") ?? false,
+    }),
+  });
 
-    textarea.style.height = "0px";
-    const nextHeight = Math.min(Math.max(textarea.scrollHeight, 150), 360);
-    textarea.style.height = `${nextHeight}px`;
-    textarea.style.overflowY = textarea.scrollHeight > 360 ? "auto" : "hidden";
-  }, [editorValue]);
-
-  const updateValue = (nextValue: string) => {
-    setEditorValue(nextValue);
-    onChange(nextValue);
-  };
-
-  const applyEditorEdit = (
-    edit: (
-      currentValue: string,
-      selectionStart: number,
-      selectionEnd: number,
-    ) => {
-      nextValue: string;
-      nextSelectionStart?: number;
-      nextSelectionEnd?: number;
-    },
-  ) => {
-    const textarea = textareaRef.current;
-    if (!textarea || disabled) return;
-
-    const selectionStart = textarea.selectionStart;
-    const selectionEnd = textarea.selectionEnd;
-    const result = edit(editorValue, selectionStart, selectionEnd);
-
-    updateValue(result.nextValue);
-
-    requestAnimationFrame(() => {
-      const activeTextarea = textareaRef.current;
-      if (!activeTextarea) return;
-
-      activeTextarea.focus();
-      activeTextarea.setSelectionRange(
-        result.nextSelectionStart ?? selectionStart,
-        result.nextSelectionEnd ?? selectionEnd,
-      );
-    });
-  };
-
-  const wrapSelection = (
-    prefix: string,
-    suffix = prefix,
-    fallback = "text",
-  ) => {
-    applyEditorEdit((currentValue, start, end) => {
-      const selected = currentValue.slice(start, end);
-      const content = selected || fallback;
-      const wrapped = `${prefix}${content}${suffix}`;
-      const nextValue = `${currentValue.slice(0, start)}${wrapped}${currentValue.slice(end)}`;
-
-      if (selected) {
-        return {
-          nextValue,
-          nextSelectionStart: start + prefix.length,
-          nextSelectionEnd: start + prefix.length + selected.length,
-        };
-      }
-
-      return {
-        nextValue,
-        nextSelectionStart: start + prefix.length,
-        nextSelectionEnd: start + prefix.length + fallback.length,
-      };
-    });
-  };
-
-  const prefixSelectedLines = (prefixFactory: (index: number) => string) => {
-    applyEditorEdit((currentValue, start, end) => {
-      const lineStart =
-        currentValue.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-      const lineEnd = currentValue.indexOf("\n", end);
-      const normalizedLineEnd = lineEnd === -1 ? currentValue.length : lineEnd;
-
-      const block = currentValue.slice(lineStart, normalizedLineEnd);
-      const lines = block.split("\n");
-      const nextBlock = lines
-        .map((line, index) => {
-          if (!line.trim()) return line;
-          return `${prefixFactory(index)}${line}`;
-        })
-        .join("\n");
-
-      const nextValue =
-        currentValue.slice(0, lineStart) +
-        nextBlock +
-        currentValue.slice(normalizedLineEnd);
-
-      return {
-        nextValue,
-        nextSelectionStart: lineStart,
-        nextSelectionEnd: lineStart + nextBlock.length,
-      };
-    });
-  };
-
-  const addLink = () => {
-    applyEditorEdit((currentValue, start, end) => {
-      const selected = currentValue.slice(start, end);
-      const label = selected || "link text";
-      const link = `[${label}](https://)`;
-      const nextValue = `${currentValue.slice(0, start)}${link}${currentValue.slice(end)}`;
-      const urlStart = start + link.indexOf("https://");
-
-      return {
-        nextValue,
-        nextSelectionStart: urlStart,
-        nextSelectionEnd: urlStart + "https://".length,
-      };
-    });
-  };
-
-  const continueChecklistOnEnter = () => {
-    applyEditorEdit((currentValue, start) => {
-      const lineStart =
-        currentValue.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-      const lineEnd = currentValue.indexOf("\n", start);
-      const normalizedLineEnd = lineEnd === -1 ? currentValue.length : lineEnd;
-      const line = currentValue.slice(lineStart, normalizedLineEnd);
-
-      const checklistMatch = line.match(/^(\s*[-*]\s+\[(?: |x|X)\]\s*)/);
-      if (!checklistMatch) {
-        return { nextValue: currentValue };
-      }
-
-      const indent = checklistMatch[1] ?? "";
-      const nextValue = `${currentValue.slice(0, start)}\n${indent}${currentValue.slice(start)}`;
-
-      return {
-        nextValue,
-        nextSelectionStart: start + 1 + indent.length,
-        nextSelectionEnd: start + 1 + indent.length,
-      };
-    });
-  };
-
-  const toggleQuote = () => {
-    applyEditorEdit((currentValue, start, end) => {
-      const lineStart =
-        currentValue.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-      const lineEnd = currentValue.indexOf("\n", end);
-      const normalizedLineEnd = lineEnd === -1 ? currentValue.length : lineEnd;
-
-      const selectedLines = currentValue.slice(lineStart, normalizedLineEnd);
-      const lines = selectedLines.split("\n");
-
-      // Check if all selected lines start with '>'
-      const allQuoted = lines.every((line) => /^\s*>/.test(line));
-
-      const processedLines = lines.map((line) => {
-        if (allQuoted) {
-          // Remove quote
-          return line.replace(/^\s*>\s?/, "");
-        } else {
-          // Add quote
-          return `> ${line}`;
-        }
-      });
-
-      const nextBlock = processedLines.join("\n");
-      const nextValue = `${currentValue.slice(0, lineStart)}${nextBlock}${currentValue.slice(normalizedLineEnd)}`;
-
-      return {
-        nextValue,
-        nextSelectionStart: lineStart,
-        nextSelectionEnd: lineStart + nextBlock.length,
-      };
-    });
-  };
-
-  const toggleCode = () => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = editorValue.slice(start, end);
-
-    let nextValue: string;
-    let nextStart: number;
-    let nextEnd: number;
-
-    if (!selected) {
-      // No selection - insert placeholder
-      nextValue = `${editorValue.slice(0, start)}\`code\`${editorValue.slice(end)}`;
-      nextStart = start + 1;
-      nextEnd = start + 5;
-    } else if (
-      selected.startsWith("`") &&
-      selected.endsWith("`") &&
-      selected.length > 2
-    ) {
-      // Already wrapped - remove backticks
-      const unwrapped = selected.slice(1, -1);
-      nextValue = `${editorValue.slice(0, start)}${unwrapped}${editorValue.slice(end)}`;
-      nextStart = start;
-      nextEnd = start + unwrapped.length;
-    } else {
-      // Wrap with backticks
-      const wrapped = `\`${selected}\``;
-      nextValue = `${editorValue.slice(0, start)}${wrapped}${editorValue.slice(end)}`;
-      nextStart = start;
-      nextEnd = start + wrapped.length;
-    }
-
-    updateValue(nextValue);
-    requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(nextStart, nextEnd);
-    });
-  };
-
-  const insertTable = () => {
-    applyEditorEdit((currentValue, start) => {
-      const tableTemplate = `| Column 1 | Column 2 | Column 3 |
-| --- | --- | --- |
-| Row 1 Col 1 | Row 1 Col 2 | Row 1 Col 3 |
-| Row 2 Col 1 | Row 2 Col 2 | Row 2 Col 3 |`;
-
-      const nextValue = `${currentValue.slice(0, start)}\n${tableTemplate}\n${currentValue.slice(start)}`;
-
-      return {
-        nextValue,
-        nextSelectionStart: start + 1,
-        nextSelectionEnd: start + 1 + tableTemplate.length,
-      };
-    });
-  };
-
-  const toggleBulletList = () => {
-    applyEditorEdit((currentValue, start, end) => {
-      const lineStart =
-        currentValue.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-      const lineEnd = currentValue.indexOf("\n", end);
-      const normalizedLineEnd = lineEnd === -1 ? currentValue.length : lineEnd;
-
-      const selectedLines = currentValue.slice(lineStart, normalizedLineEnd);
-      const lines = selectedLines.split("\n");
-
-      // Check if all selected lines start with '- '
-      const allBulleted = lines.every((line) => /^\s*[-*]\s/.test(line));
-
-      const processedLines = lines.map((line) => {
-        if (allBulleted) {
-          // Remove bullet
-          return line.replace(/^\s*[-*]\s/, "");
-        } else {
-          // Add bullet
-          return `- ${line}`;
-        }
-      });
-
-      const nextBlock = processedLines.join("\n");
-      const nextValue = `${currentValue.slice(0, lineStart)}${nextBlock}${currentValue.slice(normalizedLineEnd)}`;
-
-      return {
-        nextValue,
-        nextSelectionStart: lineStart,
-        nextSelectionEnd: lineStart + nextBlock.length,
-      };
-    });
-  };
-
-  const toggleOrderedList = () => {
-    applyEditorEdit((currentValue, start, end) => {
-      const lineStart =
-        currentValue.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-      const lineEnd = currentValue.indexOf("\n", end);
-      const normalizedLineEnd = lineEnd === -1 ? currentValue.length : lineEnd;
-
-      const selectedLines = currentValue.slice(lineStart, normalizedLineEnd);
-      const lines = selectedLines.split("\n");
-
-      // Check if all selected lines start with number followed by '.'
-      const allNumbered = lines.every((line) => /^\s*\d+\.\s/.test(line));
-
-      const processedLines = lines.map((line, index) => {
-        if (allNumbered) {
-          // Remove number
-          return line.replace(/^\s*\d+\.\s/, "");
-        } else {
-          // Add number
-          return `${index + 1}. ${line}`;
-        }
-      });
-
-      const nextBlock = processedLines.join("\n");
-      const nextValue = `${currentValue.slice(0, lineStart)}${nextBlock}${currentValue.slice(normalizedLineEnd)}`;
-
-      return {
-        nextValue,
-        nextSelectionStart: lineStart,
-        nextSelectionEnd: lineStart + nextBlock.length,
-      };
-    });
-  };
-
-  const toggleChecklist = () => {
-    applyEditorEdit((currentValue, start, end) => {
-      const lineStart =
-        currentValue.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-      const lineEnd = currentValue.indexOf("\n", end);
-      const normalizedLineEnd = lineEnd === -1 ? currentValue.length : lineEnd;
-
-      const selectedLines = currentValue.slice(lineStart, normalizedLineEnd);
-      const lines = selectedLines.split("\n");
-
-      // Check if all selected lines start with checkbox
-      const allCheckboxed = lines.every((line) =>
-        /^\s*[-*]\s+\[(?: |x|X)\]\s/.test(line),
-      );
-
-      const processedLines = lines.map((line) => {
-        if (allCheckboxed) {
-          // Remove checkbox
-          return line.replace(/^\s*[-*]\s+\[(?: |x|X)\]\s/, "");
-        } else {
-          // Add checkbox
-          return `- [ ] ${line}`;
-        }
-      });
-
-      const nextBlock = processedLines.join("\n");
-      const nextValue = `${currentValue.slice(0, lineStart)}${nextBlock}${currentValue.slice(normalizedLineEnd)}`;
-
-      return {
-        nextValue,
-        nextSelectionStart: lineStart,
-        nextSelectionEnd: lineStart + nextBlock.length,
-      };
-    });
-  };
-
-  const turndown = new TurndownService();
-
-  const startWysiwyg = () => {
-    onStartWysiwyg?.();
-    requestAnimationFrame(() => {
-      const el = wysiwygRef.current;
-      if (!el) return;
-      el.focus();
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      const sel = window.getSelection();
-      if (sel) {
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
-    });
-  };
-
-  const commitWysiwyg = () => {
-    const el = wysiwygRef.current;
-    if (!el) return;
-    const html = el.innerHTML;
-    const md = turndown.turndown(html);
-    updateValue(md);
-    onCommitWysiwyg?.();
-  };
-
-  const wysiwygHtml = renderToStaticMarkup(
-    <MarkdownPreview content={editorValue} className="text-foreground" />,
-  );
-
-  const handleFormat = (command: string) => {
-    if (wysiwygActive) {
-      wysiwygRef.current?.focus();
-      document.execCommand(command, false);
-      wysiwygRef.current?.focus();
-    } else {
-      wrapSelection("**", "**", "text");
-    }
-  };
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (
-      (event.metaKey || event.ctrlKey) &&
-      event.key.toLowerCase() === "enter"
-    ) {
-      event.preventDefault();
-      if (!submitDisabled && !disabled) {
-        if (wysiwygActive) {
-          commitWysiwyg();
-          requestAnimationFrame(() => onSubmit());
-          return;
-        }
-        onSubmit();
-      }
+  const toggleLink = () => {
+    if (!editor) return;
+    if (editor.isActive("link")) {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
-
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey &&
-      !event.altKey &&
-      !event.metaKey &&
-      !event.ctrlKey
-    ) {
-      const textarea = textareaRef.current;
-      if (!textarea || disabled) return;
-
-      const selectionStart = textarea.selectionStart;
-      const lineStart =
-        editorValue.lastIndexOf("\n", Math.max(0, selectionStart - 1)) + 1;
-      const lineEnd = editorValue.indexOf("\n", selectionStart);
-      const normalizedLineEnd = lineEnd === -1 ? editorValue.length : lineEnd;
-      const line = editorValue.slice(lineStart, normalizedLineEnd);
-
-      if (/^\s*[-*]\s+\[(?: |x|X)\]\s*/.test(line)) {
-        event.preventDefault();
-        continueChecklistOnEnter();
-      }
-    }
+    const href = window.prompt("Link URL", "https://");
+    if (!href || href === "https://") return;
+    editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
   };
+
+  const tools: Array<
+    | "divider"
+    | {
+        label: string;
+        icon: typeof Bold;
+        run: () => void;
+        isActive?: boolean;
+      }
+  > = editor
+    ? [
+        {
+          label: "Bold",
+          icon: Bold,
+          run: () => editor.chain().focus().toggleBold().run(),
+          isActive: active?.bold,
+        },
+        {
+          label: "Italic",
+          icon: Italic,
+          run: () => editor.chain().focus().toggleItalic().run(),
+          isActive: active?.italic,
+        },
+        {
+          label: "Underline",
+          icon: Underline,
+          run: () => editor.chain().focus().toggleUnderline().run(),
+          isActive: active?.underline,
+        },
+        {
+          label: "Strikethrough",
+          icon: Strikethrough,
+          run: () => editor.chain().focus().toggleStrike().run(),
+          isActive: active?.strike,
+        },
+        {
+          label: "Table",
+          icon: Table,
+          run: () =>
+            editor
+              .chain()
+              .focus()
+              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+              .run(),
+        },
+        "divider",
+        {
+          label: "Link",
+          icon: Link2,
+          run: toggleLink,
+          isActive: active?.link,
+        },
+        {
+          label: "Quote",
+          icon: Quote,
+          run: () => editor.chain().focus().toggleBlockquote().run(),
+          isActive: active?.blockquote,
+        },
+        {
+          label: "Inline code",
+          icon: Code2,
+          run: () => editor.chain().focus().toggleCode().run(),
+          isActive: active?.code,
+        },
+        "divider",
+        {
+          label: "Bulleted list",
+          icon: List,
+          run: () => editor.chain().focus().toggleBulletList().run(),
+          isActive: active?.bulletList,
+        },
+        {
+          label: "Numbered list",
+          icon: ListOrdered,
+          run: () => editor.chain().focus().toggleOrderedList().run(),
+          isActive: active?.orderedList,
+        },
+        {
+          label: "Checklist",
+          icon: ListChecks,
+          run: () => editor.chain().focus().toggleTaskList().run(),
+          isActive: active?.taskList,
+        },
+      ]
+    : [];
 
   return (
     <div
       className={cn(
-        "border-border/70 from-background via-background to-muted/20 focus-within:border-primary/20 overflow-hidden rounded-lg border bg-linear-to-b shadow-[0_18px_50px_-28px_rgba(0,0,0,0.28)] backdrop-blur-xl transition-shadow focus-within:shadow-[0_0_0_4px_rgba(139,92,246,0.08),0_18px_50px_-28px_rgba(0,0,0,0.28)]",
+        "border-border/70 bg-background focus-within:border-primary/30 overflow-hidden rounded-xl border transition-colors",
+        disabled && "opacity-60",
         className,
       )}
     >
-      <div className="space-y-1 p-1">
-        <div className="border-border/70 bg-muted/25 flex flex-wrap items-center gap-1 rounded-md border p-1">
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("bold")
-                : wrapSelection("**", "**", "bold");
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Bold"
-            title={`Bold (${shortcuts.bold})`}
-          >
-            <Bold className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("italic")
-                : wrapSelection("*", "*", "italic");
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Italic"
-            title={`Italic (${shortcuts.italic})`}
-          >
-            <Italic className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("underline")
-                : wrapSelection("<u>", "</u>", "underline");
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Underline"
-            title={`Underline (${shortcuts.underline})`}
-          >
-            <Underline className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("strikethrough")
-                : wrapSelection("~~", "~~", "strike");
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Strikethrough"
-            title={`Strikethrough (${shortcuts.strikethrough})`}
-          >
-            <Strikethrough className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              insertTable();
-            }}
-            disabled={disabled}
-            aria-label="Table"
-            title="Insert table"
-          >
-            <Table className="size-3.5" />
-          </Button>
-          <div className="bg-border mx-1 h-5 w-px" />
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("createLink", false, "https://")
-                : addLink();
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Link"
-            title={`Link (${shortcuts.link})`}
-          >
-            <Link2 className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("formatBlock", false, "<blockquote>")
-                : toggleQuote();
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Quote"
-            title={`Quote (${shortcuts.quote})`}
-          >
-            <Quote className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("formatBlock", false, "<code>")
-                : toggleCode();
-            }}
-            disabled={disabled}
-            aria-label="Inline code"
-            title={`Code (${shortcuts.code})`}
-          >
-            <Code2 className="size-3.5" />
-          </Button>
-          <div className="bg-border mx-1 h-5 w-px" />
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("insertUnorderedList")
-                : toggleBulletList();
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Bulleted list"
-            title={`List (${shortcuts.list})`}
-          >
-            <List className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("insertOrderedList")
-                : toggleOrderedList();
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Numbered list"
-            title={`Ordered list (${shortcuts.orderedList})`}
-          >
-            <ListOrdered className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              wysiwygActive
-                ? document.execCommand("insertUnorderedList")
-                : toggleChecklist();
-              wysiwygRef.current?.focus();
-            }}
-            disabled={disabled}
-            aria-label="Checklist"
-            title={`Checklist (${shortcuts.checklist})`}
-          >
-            <ListChecks className="size-3.5" />
-          </Button>
-        </div>
-
-        {!previewOnly && !wysiwygActive && (
-          <Textarea
-            ref={textareaRef}
-            value={editorValue}
-            onChange={(event) => updateValue(event.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            autoFocus
-            className={cn(
-              "border-border/70 bg-background/90 placeholder:text-muted-foreground/60 focus-visible:border-primary/20 min-h-[150px] resize-none border px-4 py-3 text-[15px] leading-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-xl transition-all outline-none focus-visible:ring-0",
-              disabled && "cursor-not-allowed opacity-60",
-            )}
-          />
-        )}
-        {previewOnly && !wysiwygActive && (
-          <div className="space-y-2">
-            <div className="text-muted-foreground mb-2 text-[11px] font-medium tracking-wide uppercase">
-              Preview
-            </div>
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={startWysiwyg}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  startWysiwyg();
-                }
-              }}
-              className="border-border/70 bg-muted/20 hover:border-primary/30 cursor-pointer rounded-md border px-4 py-3 transition-colors"
+      <div className="border-border/60 flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1">
+        {tools.map((tool, i) =>
+          tool === "divider" ? (
+            <div key={`d${i}`} className="bg-border mx-1 h-4 w-px" />
+          ) : (
+            <Button
+              key={tool.label}
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={cn(
+                "text-muted-foreground h-7 w-7 p-0",
+                tool.isActive && "bg-muted text-foreground",
+              )}
+              // keep the editor's selection when clicking a tool
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={tool.run}
+              disabled={disabled}
+              aria-label={tool.label}
+              aria-pressed={tool.isActive}
+              title={tool.label}
             >
-              <MarkdownPreview
-                content={editorValue}
-                className="text-foreground"
-              />
-            </div>
-          </div>
+              <tool.icon className="size-3.5" />
+            </Button>
+          ),
         )}
-        {previewOnly && wysiwygActive && (
-          <div className="space-y-2">
-            <div
-              ref={wysiwygRef}
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={() => commitWysiwyg()}
-              className="border-border/70 bg-background/90 focus:border-primary/20 min-h-[150px] cursor-text overflow-auto rounded-md border px-4 py-3 text-[15px] leading-7 outline-none"
-              dangerouslySetInnerHTML={{ __html: wysiwygHtml }}
-            />
-          </div>
-        )}
-        {children}
       </div>
 
-      <div className="border-border/70 bg-muted/30 flex flex-wrap items-center justify-between gap-3 border-t px-3 py-2">
+      <EditorContent editor={editor} />
+
+      {children && <div className="px-3 pb-2">{children}</div>}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 px-3 pb-2">
         <div className="flex flex-wrap items-center gap-2">
           {onAttachImages && (
             <Button
@@ -784,7 +293,7 @@ export default function MarkdownComposer({
               variant="ghost"
               onClick={onAttachImages}
               disabled={disabled}
-              className="text-muted-foreground hover:border-primary/10 hover:bg-primary/8 hover:text-foreground h-8 gap-1.5 rounded-full border border-transparent px-2.5 text-xs"
+              className="text-muted-foreground hover:text-foreground h-8 gap-1.5 rounded-full px-2.5 text-xs"
             >
               <Paperclip className="size-3.5" />
               Add images
@@ -796,7 +305,8 @@ export default function MarkdownComposer({
             </span>
           )}
           <span className="text-muted-foreground hidden text-xs md:inline">
-            Use <span className="font-medium">⌘/Ctrl + Enter</span> to send
+            <span className="font-medium">Shift + Enter</span> new line ·{" "}
+            <span className="font-medium">⌘/Ctrl + Enter</span> send
           </span>
         </div>
 
@@ -816,17 +326,10 @@ export default function MarkdownComposer({
           <Button
             type="button"
             size="sm"
-            onClick={() => {
-              if (wysiwygActive) {
-                commitWysiwyg();
-                requestAnimationFrame(() => onSubmit());
-                return;
-              }
-              onSubmit();
-            }}
+            onClick={() => submitRef.current()}
             disabled={disabled || submitDisabled}
-            className="h-8 w-8 p-0"
-            title="Send"
+            className="h-8 w-8 rounded-full p-0"
+            title="Send (⌘/Ctrl + Enter)"
           >
             <CornerDownLeft className="size-4" />
           </Button>
