@@ -8,11 +8,18 @@ import "./src/env.js";
 const config = {
   transpilePackages: [],
   // One host only: login cookies are per-host, so www would look logged out.
+  // ponytail: "/" gets its own rule; OpenNext leaves an empty :path* unfilled.
   redirects: async () => [
     {
-      source: "/:path*",
+      source: "/",
       has: [{ type: "host", value: "www.stashr.in" }],
-      destination: "https://stashr.in/:path*",
+      destination: "https://stashr.in/",
+      permanent: true,
+    },
+    {
+      source: "/:path+",
+      has: [{ type: "host", value: "www.stashr.in" }],
+      destination: "https://stashr.in/:path+",
       permanent: true,
     },
   ],
