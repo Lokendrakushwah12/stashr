@@ -1,4 +1,5 @@
 import { authOptions } from "@/lib/auth";
+import { daysSince, listUserActivity } from "@/lib/user-activity";
 import { registerModels } from "@/models";
 import connectDB from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
@@ -16,10 +17,7 @@ export async function GET(): Promise<NextResponse> {
 
     // Check if user is admin
     if (session.user.userType !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await connectDB();
@@ -31,28 +29,21 @@ export async function GET(): Promise<NextResponse> {
       Bookmark.countDocuments().exec(),
     ]);
 
-    // Get unique users (from folders)
-    const uniqueUsers = await Folder.distinct('userId').exec();
-    const totalUsers = uniqueUsers.length;
-
-    // Get active users (users with activity in last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const activeUsers = await Folder.distinct('userId', {
-      updatedAt: { $gte: thirtyDaysAgo }
-    }).exec();
+    // Every signed-up user; active = seen or created something in 30 days.
+    const users = await listUserActivity();
+    const totalUsers = users.length;
+    const activeUsers = users.filter((u) => daysSince(u.lastActivityAt) <= 30);
 
     // Get recent activity (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const recentFolders = await Folder.countDocuments({
-      createdAt: { $gte: sevenDaysAgo }
+      createdAt: { $gte: sevenDaysAgo },
     }).exec();
 
     const recentBookmarks = await Bookmark.countDocuments({
-      createdAt: { $gte: sevenDaysAgo }
+      createdAt: { $gte: sevenDaysAgo },
     }).exec();
 
     // Calculate growth rates (mock data for now)
@@ -95,22 +86,22 @@ export async function GET(): Promise<NextResponse> {
 // Helper function to get top users by activity
 async function getTopUsers() {
   const { Folder, Bookmark } = await registerModels();
-  
+
   // Get users with most folders
   const topUsersByFolders = await Folder.aggregate([
     {
       $group: {
         _id: "$userId",
         folderCount: { $sum: 1 },
-        lastActivity: { $max: "$updatedAt" }
-      }
+        lastActivity: { $max: "$updatedAt" },
+      },
     },
     {
-      $sort: { folderCount: -1 }
+      $sort: { folderCount: -1 },
     },
     {
-      $limit: 5
-    }
+      $limit: 5,
+    },
   ]).exec();
 
   // Get users with most bookmarks
@@ -119,19 +110,19 @@ async function getTopUsers() {
       $group: {
         _id: "$userId",
         bookmarkCount: { $sum: 1 },
-        lastActivity: { $max: "$updatedAt" }
-      }
+        lastActivity: { $max: "$updatedAt" },
+      },
     },
     {
-      $sort: { bookmarkCount: -1 }
+      $sort: { bookmarkCount: -1 },
     },
     {
-      $limit: 5
-    }
+      $limit: 5,
+    },
   ]).exec();
 
   return {
     byFolders: topUsersByFolders,
     byBookmarks: topUsersByBookmarks,
   };
-} 
+}

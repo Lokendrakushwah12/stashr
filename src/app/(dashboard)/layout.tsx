@@ -38,7 +38,22 @@ function ContentPanel({ children }: { children: React.ReactNode }) {
   );
 }
 
+const SEEN_KEY = "stashr.lastSeenPing";
+
+// Tells the server this user is around, at most once an hour per browser.
+function useSeenPing() {
+  React.useEffect(() => {
+    try {
+      const last = Number(localStorage.getItem(SEEN_KEY) ?? 0);
+      if (Date.now() - last < 60 * 60 * 1000) return;
+      localStorage.setItem(SEEN_KEY, String(Date.now()));
+    } catch {}
+    void fetch("/api/user/seen", { method: "POST" }).catch(() => undefined);
+  }, []);
+}
+
 const DashboardLayout = ({ children }: Props) => {
+  useSeenPing();
   const pathname = usePathname();
   const isProfileRoute = pathname.startsWith("/profile");
 

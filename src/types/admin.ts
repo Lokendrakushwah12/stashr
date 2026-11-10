@@ -42,16 +42,8 @@ export interface AdminUsersResponse {
     uniqueDomains: number;
     firstActivity: string;
     lastActivity: string;
-    lastBookmarkCreated?: string | null;
     daysSinceLastActivity: number;
     activityScore: number;
-    folders: Array<{
-      _id: string;
-      name: string;
-      color: string;
-      createdAt: string;
-      updatedAt: string;
-    }>;
   }>;
 }
 
@@ -79,4 +71,4 @@ export interface AdminAnalyticsResponse {
     averageFoldersPerUser: number;
     averageBookmarksPerUser: number;
   };
-} 
+}

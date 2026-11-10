@@ -71,7 +71,6 @@ const SAMPLE_USERS: AdminUsersResponse["users"] = [
   lastActivity: new Date().toISOString(),
   daysSinceLastActivity: 1,
   activityScore: 80,
-  folders: [],
 }));
 
 export default function AdminPage() {

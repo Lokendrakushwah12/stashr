@@ -1,40 +1,7 @@
 import { authOptions } from "@/lib/auth";
-import connectDB from "@/lib/mongodb";
-import { getMongoClient } from "@/lib/mongodb-adapter";
-import { registerModels } from "@/models";
+import { daysSince, listUserActivity } from "@/lib/user-activity";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-
-// Types for MongoDB aggregation results
-interface UserStats {
-  _id: string;
-  folderCount: number;
-  totalBookmarks: number;
-  firstActivity: string;
-  lastActivity: string;
-  folders: Array<{
-    _id: string;
-    name: string;
-    color: string;
-    createdAt: string;
-    updatedAt: string;
-  }>;
-}
-
-interface BookmarkStats {
-  _id: string | null;
-  totalBookmarks: number;
-  uniqueDomains: string[];
-  lastBookmarkCreated: string | null;
-}
-
-interface UserDoc {
-  _id: string;
-  name?: string;
-  email?: string;
-  image?: string;
-}
 
 // GET /api/admin/users - Get all users with their statistics
 export async function GET(): Promise<NextResponse> {
@@ -51,145 +18,33 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await connectDB();
-    const { Folder, Bookmark, Board, BoardCard, BoardTimelineEntry } =
-      await registerModels();
-
-    // Get MongoDB client to access NextAuth users collection
-    const client = await getMongoClient();
-    const db = client.db();
-    const usersCollection = db.collection("users");
-
-    // Get all unique users with their statistics
-    const usersWithStats = (await Folder.aggregate([
-      {
-        $group: {
-          _id: "$userId",
-          folderCount: { $sum: 1 },
-          totalBookmarks: { $sum: { $size: "$bookmarks" } },
-          firstActivity: { $min: "$createdAt" },
-          lastActivity: { $max: "$updatedAt" },
-          folders: {
-            $push: {
-              _id: "$_id",
-              name: "$name",
-              color: "$color",
-              createdAt: "$createdAt",
-              updatedAt: "$updatedAt",
-            },
-          },
-        },
-      },
-      {
-        $sort: { lastActivity: -1 },
-      },
-    ]).exec()) as UserStats[];
-
-    // Get additional bookmark statistics for each user and fetch user details
-    const usersWithDetailedStats = await Promise.all(
-      usersWithStats.map(async (user) => {
-        // Aggregate the most recent activity timestamp across every resource
-        // type the user touches: folders, bookmarks, boards, board cards, and
-        // timeline entries. Each is the max(updatedAt) for rows owned by this
-        // user; the overall lastActivity is the max across them.
-        const [bookmarkStats, boardMax, boardCardMax, timelineMax] =
-          await Promise.all([
-            Bookmark.aggregate([
-              { $match: { userId: user._id } },
-              {
-                $group: {
-                  _id: null,
-                  totalBookmarks: { $sum: 1 },
-                  uniqueDomains: {
-                    $addToSet: { $substr: ["$url", 0, 50] },
-                  },
-                  lastBookmarkCreated: { $max: "$createdAt" },
-                  lastBookmarkUpdated: { $max: "$updatedAt" },
-                },
-              },
-            ]).exec() as Promise<
-              Array<BookmarkStats & { lastBookmarkUpdated?: string | null }>
-            >,
-            Board.aggregate([
-              { $match: { userId: user._id } },
-              { $group: { _id: null, max: { $max: "$updatedAt" } } },
-            ]).exec() as Promise<Array<{ _id: null; max?: string | null }>>,
-            BoardCard.aggregate([
-              { $match: { userId: user._id } },
-              { $group: { _id: null, max: { $max: "$updatedAt" } } },
-            ]).exec() as Promise<Array<{ _id: null; max?: string | null }>>,
-            BoardTimelineEntry.aggregate([
-              { $match: { userId: user._id } },
-              { $group: { _id: null, max: { $max: "$updatedAt" } } },
-            ]).exec() as Promise<Array<{ _id: null; max?: string | null }>>,
-          ]);
-
-        const bookmarkCount = bookmarkStats[0]?.totalBookmarks ?? 0;
-        const uniqueDomains = bookmarkStats[0]?.uniqueDomains?.length ?? 0;
-        const lastBookmarkCreated =
-          bookmarkStats[0]?.lastBookmarkCreated ?? null;
-        const lastBookmarkUpdated =
-          bookmarkStats[0]?.lastBookmarkUpdated ?? null;
-
-        const candidates = [
-          user.lastActivity, // max(folders.updatedAt) from the parent aggregate
-          lastBookmarkCreated,
-          lastBookmarkUpdated,
-          boardMax[0]?.max ?? null,
-          boardCardMax[0]?.max ?? null,
-          timelineMax[0]?.max ?? null,
-        ]
-          .filter((v): v is string => !!v)
-          .map((v) => new Date(v).getTime())
-          .filter((n) => !Number.isNaN(n));
-
-        const overallLastActivity =
-          candidates.length > 0 ? new Date(Math.max(...candidates)) : null;
-
-        const daysSinceLastActivity = overallLastActivity
-          ? Math.floor(
-              (Date.now() - overallLastActivity.getTime()) /
-                (1000 * 60 * 60 * 24),
-            )
-          : Infinity;
-
-        const activityScore = calculateActivityScore(
-          user.folderCount,
-          bookmarkCount,
-          daysSinceLastActivity,
-        );
-
-        // Get user details from NextAuth users collection
-        const userDoc = (await usersCollection.findOne({
-          _id: new ObjectId(user._id),
-        })) as UserDoc | null;
-        const userDetails = {
-          id: user._id,
-          name: userDoc?.name ?? `User ${user._id.slice(-6)}`,
-          email: userDoc?.email ?? `user-${user._id.slice(-6)}@example.com`,
-          image: userDoc?.image ?? null,
-        };
-
+    const users = (await listUserActivity())
+      .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())
+      .map((u) => {
+        const daysSinceLastActivity = daysSince(u.lastActivityAt);
         return {
-          userId: user._id,
-          userDetails,
-          folderCount: user.folderCount,
-          totalBookmarks: bookmarkCount,
-          uniqueDomains,
-          firstActivity: user.firstActivity,
-          lastActivity: overallLastActivity?.toISOString() ?? user.lastActivity,
-          lastBookmarkCreated,
+          userId: u.id,
+          userDetails: {
+            id: u.id,
+            name: u.name ?? `User ${u.id.slice(-6)}`,
+            email: u.email ?? "",
+            image: u.image ?? null,
+          },
+          folderCount: u.folderCount,
+          totalBookmarks: u.bookmarkCount,
+          uniqueDomains: u.uniqueDomains,
+          firstActivity: u.signupAt.toISOString(),
+          lastActivity: u.lastActivityAt.toISOString(),
           daysSinceLastActivity,
-          activityScore,
-          folders: user.folders,
+          activityScore: calculateActivityScore(
+            u.folderCount,
+            u.bookmarkCount,
+            daysSinceLastActivity,
+          ),
         };
-      }),
-    );
+      });
 
-    return NextResponse.json(
-      { users: usersWithDetailedStats },
-      { status: 200 },
-    );
+    return NextResponse.json({ users }, { status: 200 });
   } catch (error) {
     console.error("Error fetching admin users:", error);
 
